@@ -1,0 +1,16 @@
+<Project>
+  <Import Project="version.props" />
+  <PropertyGroup>
+    <Product>MicroElements.Functional</Product>
+    <Copyright>2018</Copyright>
+    <Authors>micro-elements</Authors>
+    <Description>C# implementation of functional concepts: Maybe (Option), Either (Result), Try</Description>
+
+    <PackageTags>monads functional Maybe Option Either Result Try</PackageTags>
+    <PackageProjectUrl>https://github.com/micro-elements/MicroElements.Functional</PackageProjectUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/micro-elements/MicroElements.Functional/master/LICENSE</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/micro-elements/MicroElements.Functional</RepositoryUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/micro-elements/MicroElements/master/image/logo_rounded.png</PackageIconUrl>
+  </PropertyGroup>
+</Project>
