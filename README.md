@@ -1,5 +1,5 @@
 # MicroElements.Functional
-{Subject}
+Small subset of functional methodology in C#
 
 ## Statuses
 [![License](https://img.shields.io/github/license/micro-elements/MicroElements.Functional.svg)](https://raw.githubusercontent.com/micro-elements/MicroElements.Functional/master/LICENSE)
