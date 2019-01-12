@@ -5,11 +5,23 @@ VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E98929FA-7AE9-4690-9ECD-CE9DD8BCAA00}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroElements.Functional", "src\MicroElements.Functional\MicroElements.Functional.csproj", "{70D3D67D-E619-418C-ADC9-AD584C560B65}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicroElements.Functional", "src\MicroElements.Functional\MicroElements.Functional.csproj", "{70D3D67D-E619-418C-ADC9-AD584C560B65}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{85286AD6-3C34-40B9-953B-EB32BF4C34F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroElements.Functional.Tests", "test\MicroElements.Functional.Tests\MicroElements.Functional.Tests.csproj", "{7975A356-0381-4B78-A34B-2E39785442F7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicroElements.Functional.Tests", "test\MicroElements.Functional.Tests\MicroElements.Functional.Tests.csproj", "{7975A356-0381-4B78-A34B-2E39785442F7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{715B0E60-CE28-4212-8ADE-31AF2DED6B42}"
+	ProjectSection(SolutionItems) = preProject
+		CHANGELOG.md = CHANGELOG.md
+		common.props = common.props
+		README.md = README.md
+		version.props = version.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{32117F28-2233-46B2-8CD9-5A7125BBDC9E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionalSample", "samples\FunctionalSample\FunctionalSample.csproj", "{2D7794F2-6AD2-4407-B0CF-9A3699C67592}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,9 +31,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{70D3D67D-E619-418C-ADC9-AD584C560B65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -48,9 +57,28 @@ Global
 		{7975A356-0381-4B78-A34B-2E39785442F7}.Release|x64.Build.0 = Release|Any CPU
 		{7975A356-0381-4B78-A34B-2E39785442F7}.Release|x86.ActiveCfg = Release|Any CPU
 		{7975A356-0381-4B78-A34B-2E39785442F7}.Release|x86.Build.0 = Release|Any CPU
+		{2D7794F2-6AD2-4407-B0CF-9A3699C67592}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D7794F2-6AD2-4407-B0CF-9A3699C67592}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D7794F2-6AD2-4407-B0CF-9A3699C67592}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2D7794F2-6AD2-4407-B0CF-9A3699C67592}.Debug|x64.Build.0 = Debug|Any CPU
+		{2D7794F2-6AD2-4407-B0CF-9A3699C67592}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2D7794F2-6AD2-4407-B0CF-9A3699C67592}.Debug|x86.Build.0 = Debug|Any CPU
+		{2D7794F2-6AD2-4407-B0CF-9A3699C67592}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D7794F2-6AD2-4407-B0CF-9A3699C67592}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D7794F2-6AD2-4407-B0CF-9A3699C67592}.Release|x64.ActiveCfg = Release|Any CPU
+		{2D7794F2-6AD2-4407-B0CF-9A3699C67592}.Release|x64.Build.0 = Release|Any CPU
+		{2D7794F2-6AD2-4407-B0CF-9A3699C67592}.Release|x86.ActiveCfg = Release|Any CPU
+		{2D7794F2-6AD2-4407-B0CF-9A3699C67592}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{70D3D67D-E619-418C-ADC9-AD584C560B65} = {E98929FA-7AE9-4690-9ECD-CE9DD8BCAA00}
 		{7975A356-0381-4B78-A34B-2E39785442F7} = {85286AD6-3C34-40B9-953B-EB32BF4C34F3}
+		{2D7794F2-6AD2-4407-B0CF-9A3699C67592} = {32117F28-2233-46B2-8CD9-5A7125BBDC9E}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FEE34C02-12E1-45C5-9E19-596898B979B1}
 	EndGlobalSection
 EndGlobal
