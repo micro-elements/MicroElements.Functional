@@ -66,6 +66,15 @@ namespace MicroElements.Functional
         public Result Match<Result>(Func<T, Result> Some, Func<Result> None)
             => IsSome ? Some(Value) : None();
 
+
+        /// <summary>
+        /// Match the two states of the Option
+        /// </summary>
+        /// <param name="Some">Some match operation</param>
+        /// <param name="None">None match operation</param>
+        public Unit Match(Action<T> Some, Action None) =>
+            MOption<T>.Inst.Match(this, Some, None);
+
         public IEnumerable<T> AsEnumerable()
         {
             if (IsSome)
@@ -134,6 +143,14 @@ namespace MicroElements.Functional
             return opt.IsSome
                 ? Check.NullReturn(Some(opt.Value))
                 : Check.NullReturn(None);
+        }
+
+        public Unit Match(Option<A> opt, Action<A> Some, Action None)
+        {
+            if (Some == null) throw new ArgumentNullException(nameof(Some));
+            if (None == null) throw new ArgumentNullException(nameof(None));
+            if (opt.IsSome) Some(opt.Value); else None();
+            return Unit.Default;
         }
     }
 
