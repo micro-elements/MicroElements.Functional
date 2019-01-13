@@ -4,8 +4,15 @@
     using System.Diagnostics.Contracts;
     using Unit = System.ValueTuple;
 
+    /// <summary>
+    /// Common functions that acts like a functional language's 'prelude'.
+    /// </summary>
     public static partial class Prelude
     {
+        /// <summary>
+        /// Returns Unit result (void).
+        /// </summary>
+        /// <returns>Unit.</returns>
         public static Unit Unit() => default(Unit);
 
         /// <summary>

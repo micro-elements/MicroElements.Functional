@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel;
+using MicroElements.Design.Annotations;
 using MicroElements.Functional;
 
-namespace FunctionalSample
+namespace FunctionalSample.Domain
 {
     /// <summary>
     /// Address for delivery.
     /// </summary>
-    [ImmutableObject(true)]
+    [Model(Convention = ModelConvention.ValueObject)]
     public class Address : ValueObject
     {
         public string Country { get; }

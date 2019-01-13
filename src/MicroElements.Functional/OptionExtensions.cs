@@ -1,11 +1,17 @@
-﻿using System;
+﻿// Copyright (c) MicroElements. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 
 namespace MicroElements.Functional
 {
+    /// <summary>
+    /// Option extensions.
+    /// </summary>
     public static class OptionExtensions
     {
-        public static ValueTuple Match<T>(this Option<T> @this, Action<T> Some, Action None)
-            => @this.Match(Some.ToFunc(), None.ToFunc());
+        public static ValueTuple Match<T>(this Option<T> @this, Action<T> some, Action none)
+            => @this.Match(some.ToFunc(), none.ToFunc());
 
         internal static bool IsSome<T>(this Option<T> @this)
             => @this.Match((_) => true, () => false);

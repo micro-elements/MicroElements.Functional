@@ -1,8 +1,15 @@
-﻿namespace MicroElements.Functional
+﻿// Copyright (c) MicroElements. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace MicroElements.Functional
 {
     public static partial class Prelude
     {
         public static Option<T> Some<T>(T value) => new Some<T>(value); // wrap the given value into a Some
-        public static None<T> None<T>() => default(None<T>);  // the None value
+
+        /// <summary>
+        /// 'No value' state of Option T.
+        /// </summary>
+        public static OptionNone None => OptionNone.Default;
     }
 }

@@ -38,9 +38,9 @@
             if (GetType() != obj.GetType())
                 throw new ArgumentException($"Invalid comparison of Value Objects of different types: {GetType()} and {obj.GetType()}");
 
-            ValueObject valueObject = (ValueObject)obj;
+            ValueObject other = (ValueObject)obj;
 
-            return GetEqualityComponents().SequenceEqual(valueObject.GetEqualityComponents());
+            return GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());
         }
 
         /// <inheritdoc/>
