@@ -3,7 +3,6 @@
 
 using System;
 using static MicroElements.Functional.Prelude;
-using Unit = System.ValueTuple;
 
 namespace MicroElements.Functional
 {

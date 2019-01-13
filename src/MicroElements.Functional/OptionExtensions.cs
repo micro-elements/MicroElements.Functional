@@ -10,7 +10,7 @@ namespace MicroElements.Functional
     /// </summary>
     public static class OptionExtensions
     {
-        public static ValueTuple Match<T>(this Option<T> @this, Action<T> some, Action none)
+        public static Unit Match<T>(this Option<T> @this, Action<T> some, Action none)
             => @this.Match(some.ToFunc(), none.ToFunc());
 
         internal static bool IsSome<T>(this Option<T> @this)

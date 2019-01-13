@@ -1,9 +1,11 @@
-﻿namespace MicroElements.Functional
-{
-    using System;
-    using System.Diagnostics.Contracts;
-    using Unit = System.ValueTuple;
+﻿// Copyright (c) MicroElements. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Diagnostics.Contracts;
+
+namespace MicroElements.Functional
+{
     /// <summary>
     /// Common functions that acts like a functional language's 'prelude'.
     /// </summary>

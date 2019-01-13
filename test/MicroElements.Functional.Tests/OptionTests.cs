@@ -28,10 +28,12 @@ namespace MicroElements.Functional.Tests
         {
             Option<int> optional = None;
 
-            optional.Match(Some: i => Assert.False(true, "Shouldn't get here"),
+            optional.Match(
+                Some: i => Assert.False(true, "Shouldn't get here"),
                 None: () => Assert.True(true));
 
-            int c = optional.Match(Some: i => i + 1,
+            int c = optional.Match(
+                Some: i => i + 1,
                 None: () => 0);
 
             Assert.True(c == 0);
