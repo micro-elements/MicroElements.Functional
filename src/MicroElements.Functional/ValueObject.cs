@@ -1,9 +1,9 @@
-﻿namespace MicroElements.Functional
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
+namespace MicroElements.Functional
+{
     /// <summary>
     /// ValueObject base class.
     /// <para>Use it for quick and simple <see cref="IEquatable{T}"/> implementation.</para>

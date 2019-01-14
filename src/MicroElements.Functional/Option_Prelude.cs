@@ -5,6 +5,12 @@ namespace MicroElements.Functional
 {
     public static partial class Prelude
     {
+        /// <summary>
+        /// Wrap the given value into a Some.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static Option<T> Some<T>(T value) => new Some<T>(value); // wrap the given value into a Some
 
         /// <summary>
