@@ -189,21 +189,21 @@ namespace MicroElements.Functional
         /// <summary>
         /// Match the two states of the Option and return a non-null Result.
         /// </summary>
-        /// <typeparam name="Result">Result type.</typeparam>
+        /// <typeparam name="TResult">Result type.</typeparam>
         /// <param name="some">Some match operation.</param>
         /// <param name="none">None match operation.</param>
         /// <returns>non null Result.</returns>
-        public Result Match<Result>(Func<T, Result> some, Func<Result> none)
+        public TResult Match<TResult>(Func<T, TResult> some, Func<TResult> none)
             => MOption<T>.Inst.Match(this, some, none);
 
         /// <summary>
         /// Match the two states of the Option and return a non-null Result.
         /// </summary>
-        /// <typeparam name="Result">Result type.</typeparam>
+        /// <typeparam name="TResult">Result type.</typeparam>
         /// <param name="some">Some match operation.</param>
         /// <param name="none">None match operation.</param>
         /// <returns>non null Result.</returns>
-        public Result Match<Result>(Func<T, Result> some, Result none)
+        public TResult Match<TResult>(Func<T, TResult> some, TResult none)
             => MOption<T>.Inst.Match(this, some, none);
 
         /// <summary>

@@ -12,6 +12,6 @@ namespace FunctionalSample.Domain
         /// </summary>
         /// <param name="id">Customer id.</param>
         /// <returns>Optional customer.</returns>
-        Option<Customer> GetById(string id);
+        Option<Customer> FindById(string id);
     }
 }
