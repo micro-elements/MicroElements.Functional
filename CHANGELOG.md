@@ -1,3 +1,7 @@
+# 0.2.0
+- More functional Option
+- Linq for Option
+
 # 0.1.0
 - Initial version
 
