@@ -26,12 +26,12 @@ namespace MicroElements.Functional
         /// <summary>
         /// Is the option in a Some state.
         /// </summary>
-        private readonly bool isSome;
+        private readonly bool _isSome;
 
         /// <summary>
         /// Option value.
         /// </summary>
-        private readonly T value;
+        private readonly T _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Option{T}"/> struct.
@@ -40,12 +40,12 @@ namespace MicroElements.Functional
         /// <param name="value">Option value.</param>
         private Option(bool isSome, T value)
         {
-            this.isSome = isSome;
-            this.value = value;
+            _isSome = isSome;
+            _value = value;
         }
 
         /// <summary>
-        /// Creates option from IEnumarable.
+        /// Initializes a new instance of the <see cref="Option{T}"/> struct.
         /// </summary>
         /// <param name="option">IEnumerable as value source.</param>
         public Option(IEnumerable<T> option)
@@ -53,13 +53,13 @@ namespace MicroElements.Functional
             var first = option.Take(1).ToArray();
             if (first.Length == 0)
             {
-                isSome = false;
-                value = default(T);
+                _isSome = false;
+                _value = default(T);
             }
             else
             {
-                isSome = true;
-                value = first[0];
+                _isSome = true;
+                _value = first[0];
             }
         }
 
@@ -67,7 +67,7 @@ namespace MicroElements.Functional
         /// Is the option in a Some state.
         /// </summary>
         [Pure]
-        public bool IsSome => isSome;
+        public bool IsSome => _isSome;
 
         /// <summary>
         /// Is the option in a None state.
@@ -90,7 +90,7 @@ namespace MicroElements.Functional
             get
             {
                 if (IsSome)
-                    return value;
+                    return _value;
                 throw new ValueIsNoneException();
             }
         }
@@ -132,6 +132,14 @@ namespace MicroElements.Functional
         }
 
         /// <inheritdoc />
+        public override bool Equals(object obj)
+        {
+            if (obj is Option<T> option)
+                return Equals(option);
+            return false;
+        }
+
+        /// <inheritdoc />
         public override int GetHashCode() =>
             IsSome
                 ? Value.GetHashCode()
@@ -154,7 +162,7 @@ namespace MicroElements.Functional
         /// Implicit conversion of None to Option{T}.
         /// </summary>
         /// <param name="none">None.</param>
-        public static implicit operator Option<T>(OptionNone none) => MOption<T>.Inst.None;
+        public static implicit operator Option<T>(OptionNone none) => None;
 
         /// <summary>
         /// Implicit conversion of Some to Option.
@@ -182,96 +190,29 @@ namespace MicroElements.Functional
         /// Match the two states of the Option and return a non-null Result.
         /// </summary>
         /// <typeparam name="Result">Result type.</typeparam>
-        /// <param name="Some">Some match operation.</param>
-        /// <param name="None">None match operation.</param>
+        /// <param name="some">Some match operation.</param>
+        /// <param name="none">None match operation.</param>
         /// <returns>non null Result.</returns>
-        public Result Match<Result>(Func<T, Result> Some, Func<Result> None)
-            => MOption<T>.Inst.Match(this, Some, None);
+        public Result Match<Result>(Func<T, Result> some, Func<Result> none)
+            => MOption<T>.Inst.Match(this, some, none);
 
         /// <summary>
         /// Match the two states of the Option and return a non-null Result.
         /// </summary>
         /// <typeparam name="Result">Result type.</typeparam>
-        /// <param name="Some">Some match operation.</param>
-        /// <param name="None">None match operation.</param>
+        /// <param name="some">Some match operation.</param>
+        /// <param name="none">None match operation.</param>
         /// <returns>non null Result.</returns>
-        public Result Match<Result>(Func<T, Result> Some, Result None)
-            => MOption<T>.Inst.Match(this, Some, None);
+        public Result Match<Result>(Func<T, Result> some, Result none)
+            => MOption<T>.Inst.Match(this, some, none);
 
         /// <summary>
         /// Match the two states of the Option.
         /// </summary>
-        /// <param name="Some">Some match operation.</param>
-        /// <param name="None">None match operation.</param>
+        /// <param name="some">Some match operation.</param>
+        /// <param name="none">None match operation.</param>
         /// <returns>Unit.</returns>
-        public Unit Match(Action<T> Some, Action None) =>
-            MOption<T>.Inst.Match(this, Some, None);
-    }
-
-    /// <summary>
-    /// Some wrapper for value. Can not be null.
-    /// </summary>
-    /// <typeparam name="T">Value type.</typeparam>
-    public struct Some<T>
-    {
-        internal T Value { get; }
-
-        internal Some(T value)
-        {
-            if (value == null)
-                throw new ArgumentNullException(nameof(value), "Cannot wrap a null value in a 'Some'; use 'None' instead");
-            Value = value;
-        }
-    }
-
-    public struct MOption<A>
-    {
-        public static readonly MOption<A> Inst = default(MOption<A>);
-
-        [Pure]
-        public Option<A> None => Option<A>.None;
-
-        [Pure]
-        public B Match<B>(Option<A> opt, Func<A, B> Some, Func<B> None)
-        {
-            if (Some == null) throw new ArgumentNullException(nameof(Some));
-            if (None == null) throw new ArgumentNullException(nameof(None));
-
-            return opt.IsSome
-                ? Check.NotNull(Some(opt.Value))
-                : Check.NotNull(None());
-        }
-
-        [Pure]
-        public B Match<B>(Option<A> opt, Func<A, B> Some, B None)
-        {
-            if (Some == null) throw new ArgumentNullException(nameof(Some));
-            if (None == null) throw new ArgumentNullException(nameof(None));
-
-            return opt.IsSome
-                ? Check.NotNull(Some(opt.Value))
-                : None;
-        }
-
-        [Pure]
-        public Unit Match(Option<A> opt, Action<A> Some, Action None)
-        {
-            if (Some == null) throw new ArgumentNullException(nameof(Some));
-            if (None == null) throw new ArgumentNullException(nameof(None));
-
-            if (opt.IsSome)
-                Some(opt.Value);
-            else
-                None();
-            return Unit.Default;
-        }
-    }
-
-    internal static class Check
-    {
-        internal static T NotNull<T>(this T value) =>
-            value.IsNull()
-                ? throw new ResultIsNullException()
-                : value;
+        public Unit Match(Action<T> some, Action none) =>
+            MOption<T>.Inst.Match(this, some, none);
     }
 }

@@ -8,10 +8,10 @@ namespace MicroElements.Functional
         /// <summary>
         /// Wrap the given value into a Some.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Option<T> Some<T>(T value) => new Some<T>(value); // wrap the given value into a Some
+        /// <typeparam name="T">Type of value.</typeparam>
+        /// <param name="value">Value.</param>
+        /// <returns>Option of T in Some state.</returns>
+        public static Option<T> Some<T>(T value) => new Some<T>(value);
 
         /// <summary>
         /// 'No value' state of Option T.

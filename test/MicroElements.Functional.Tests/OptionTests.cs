@@ -13,12 +13,12 @@ namespace MicroElements.Functional.Tests
             var optional = Some(123);
 
             optional.Match(
-                Some: i => (i == 123).Should().BeTrue(),
-                None: () => throw new InvalidOperationException("Shouldn't get here"));
+                some: i => (i == 123).Should().BeTrue(),
+                none: () => throw new InvalidOperationException("Shouldn't get here"));
 
             int addOne = optional.Match(
-                Some: i => i + 1,
-                None: () => 0);
+                some: i => i + 1,
+                none: () => 0);
 
             Assert.True(addOne == 124);
         }
@@ -29,12 +29,12 @@ namespace MicroElements.Functional.Tests
             Option<int> optional = None;
 
             optional.Match(
-                Some: i => Assert.False(true, "Shouldn't get here"),
-                None: () => Assert.True(true));
+                some: i => Assert.False(true, "Shouldn't get here"),
+                none: () => Assert.True(true));
 
             int c = optional.Match(
-                Some: i => i + 1,
-                None: () => 0);
+                some: i => i + 1,
+                none: () => 0);
 
             Assert.True(c == 0);
         }
@@ -53,8 +53,8 @@ namespace MicroElements.Functional.Tests
                 select x + y + z;
 
             expr.Match(
-                Some: i => (i == 12).Should().BeTrue(),
-                None: () => throw new InvalidOperationException("Shouldn't get here"));
+                some: i => (i == 12).Should().BeTrue(),
+                none: () => throw new InvalidOperationException("Shouldn't get here"));
         }
     }
 }
