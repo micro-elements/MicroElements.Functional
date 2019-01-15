@@ -53,7 +53,7 @@ namespace MicroElements.Functional
 
         [Pure]
         public R MatchUntyped<R>(Func<object, R> Some, Func<R> None) =>
-            Check.NullReturn(None());
+            Check.NotNull(None());
 
         [Pure]
         public R MatchUntypedUnsafe<R>(Func<object, R> Some, Func<R> None) =>

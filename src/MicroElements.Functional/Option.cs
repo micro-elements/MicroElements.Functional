@@ -186,7 +186,17 @@ namespace MicroElements.Functional
         /// <param name="None">None match operation.</param>
         /// <returns>non null Result.</returns>
         public Result Match<Result>(Func<T, Result> Some, Func<Result> None)
-            => IsSome ? Some(Value) : None();
+            => MOption<T>.Inst.Match(this, Some, None);
+
+        /// <summary>
+        /// Match the two states of the Option and return a non-null Result.
+        /// </summary>
+        /// <typeparam name="Result">Result type.</typeparam>
+        /// <param name="Some">Some match operation.</param>
+        /// <param name="None">None match operation.</param>
+        /// <returns>non null Result.</returns>
+        public Result Match<Result>(Func<T, Result> Some, Result None)
+            => MOption<T>.Inst.Match(this, Some, None);
 
         /// <summary>
         /// Match the two states of the Option.
@@ -224,99 +234,44 @@ namespace MicroElements.Functional
         [Pure]
         public B Match<B>(Option<A> opt, Func<A, B> Some, Func<B> None)
         {
-            if (Some == null)
-                throw new ArgumentNullException(nameof(Some));
-            if (None == null)
-                throw new ArgumentNullException(nameof(None));
+            if (Some == null) throw new ArgumentNullException(nameof(Some));
+            if (None == null) throw new ArgumentNullException(nameof(None));
+
             return opt.IsSome
-                ? Check.NullReturn(Some(opt.Value))
-                : Check.NullReturn(None());
+                ? Check.NotNull(Some(opt.Value))
+                : Check.NotNull(None());
         }
 
         [Pure]
         public B Match<B>(Option<A> opt, Func<A, B> Some, B None)
         {
-            if (Some == null)
-                throw new ArgumentNullException(nameof(Some));
+            if (Some == null) throw new ArgumentNullException(nameof(Some));
+            if (None == null) throw new ArgumentNullException(nameof(None));
+
             return opt.IsSome
-                ? Check.NullReturn(Some(opt.Value))
-                : Check.NullReturn(None);
+                ? Check.NotNull(Some(opt.Value))
+                : None;
         }
 
+        [Pure]
         public Unit Match(Option<A> opt, Action<A> Some, Action None)
         {
             if (Some == null) throw new ArgumentNullException(nameof(Some));
             if (None == null) throw new ArgumentNullException(nameof(None));
-            if (opt.IsSome) Some(opt.Value); else None();
+
+            if (opt.IsSome)
+                Some(opt.Value);
+            else
+                None();
             return Unit.Default;
         }
     }
 
     internal static class Check
     {
-        internal static T NullReturn<T>(T value) =>
+        internal static T NotNull<T>(this T value) =>
             value.IsNull()
                 ? throw new ResultIsNullException()
                 : value;
-    }
-
-    /// <summary>
-    /// Result is null.
-    /// </summary>
-    [Serializable]
-    public class ResultIsNullException : Exception
-    {
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        public ResultIsNullException()
-            : base("Result is null.")
-        {
-        }
-
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        public ResultIsNullException(string message) : base(message)
-        {
-        }
-
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        public ResultIsNullException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-    }
-
-    /// <summary>
-    /// Value is none.
-    /// </summary>
-    [Serializable]
-    public class ValueIsNoneException : Exception
-    {
-        public static readonly ValueIsNoneException Default = new ValueIsNoneException();
-
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        public ValueIsNoneException()
-            : base("Value is none.")
-        {
-        }
-
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        public ValueIsNoneException(string message) : base(message)
-        {
-        }
-
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        public ValueIsNoneException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
     }
 }

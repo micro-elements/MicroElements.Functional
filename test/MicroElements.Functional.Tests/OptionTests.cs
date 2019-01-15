@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using FluentAssertions;
 using Xunit;
 using static MicroElements.Functional.Prelude;
@@ -47,15 +46,15 @@ namespace MicroElements.Functional.Tests
             var four = Some(4);
             var six = Some(6);
 
-            //Option<int> expr = 
-            //    from x in two
-            //    from y in four
-            //    from z in six
-            //    select x + y + z;
+            var expr =
+                from x in two
+                from y in four
+                from z in six
+                select x + y + z;
 
-            //match(expr,
-            //    Some: v => Assert.True(v == 12),
-            //    None: failwith("Shouldn't get here"));
+            expr.Match(
+                Some: i => (i == 12).Should().BeTrue(),
+                None: () => throw new InvalidOperationException("Shouldn't get here"));
         }
     }
 }
