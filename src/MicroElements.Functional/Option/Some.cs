@@ -7,12 +7,20 @@ namespace MicroElements.Functional
 {
     /// <summary>
     /// Some wrapper for value. Can not be null.
+    /// Implicitly converts to <see cref="Option{T}"/>.
     /// </summary>
     /// <typeparam name="T">Value type.</typeparam>
     public struct Some<T>
     {
+        /// <summary>
+        /// Wrapped not null value.
+        /// </summary>
         public T Value { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Some{T}"/> struct.
+        /// </summary>
+        /// <param name="value">Value to wrap.</param>
         public Some(T value)
         {
             if (value.IsNull())

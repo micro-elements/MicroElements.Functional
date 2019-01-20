@@ -1,3 +1,6 @@
+# 0.3.0
+- Initial implementation of Either and Result
+
 # 0.2.0
 - More functional Option
 - Linq for Option

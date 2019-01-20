@@ -12,11 +12,8 @@ namespace MicroElements.Functional
     /// </summary>
     public static class OptionExtensions
     {
-        internal static bool IsSome<T>(this Option<T> option)
-            => option.Match((_) => true, () => false);
-
-        internal static T ValueUnsafe<T>(this Option<T> option)
-            => option.Match((t) => t, () => { throw new InvalidOperationException(); });
+        public static T GetValueUnsafe<T>(this Option<T> option)
+            => option.Match((t) => t, () => throw new ValueIsNoneException());
 
         public static T GetOrElse<T>(this Option<T> opt, T defaultValue)
             => opt.Match((t) => t, () => defaultValue);

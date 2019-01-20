@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.Contracts;
 
+// ReSharper disable CheckNamespace
 namespace MicroElements.Functional
 {
     /// <summary>
@@ -16,6 +17,12 @@ namespace MicroElements.Functional
         /// </summary>
         /// <returns>Unit.</returns>
         public static Unit Unit() => default(Unit);
+
+        /// <summary>
+        /// Returns Unit result (void).
+        /// </summary>
+        /// <returns>Unit.</returns>
+        public static Unit unit => default(Unit);
 
         /// <summary>
         /// Curry the function 'f' provided.

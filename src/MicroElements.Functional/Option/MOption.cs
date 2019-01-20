@@ -8,37 +8,37 @@ namespace MicroElements.Functional
         public static readonly MOption<A> Inst = default(MOption<A>);
 
         [Pure]
-        public B Match<B>(Option<A> opt, Func<A, B> Some, Func<B> None)
+        public B Match<B>(Option<A> opt, Func<A, B> some, Func<B> none)
         {
-            if (Some == null) throw new ArgumentNullException(nameof(Some));
-            if (None == null) throw new ArgumentNullException(nameof(None));
+            if (some == null) throw new ArgumentNullException(nameof(some));
+            if (none == null) throw new ArgumentNullException(nameof(none));
 
             return opt.IsSome
-                ? Check.NotNull(Some(opt.Value))
-                : Check.NotNull(None());
+                ? Check.NotNullResult(some(opt.Value))
+                : Check.NotNullResult(none());
         }
 
         [Pure]
-        public B Match<B>(Option<A> opt, Func<A, B> Some, B None)
+        public B Match<B>(Option<A> opt, Func<A, B> some, B none)
         {
-            if (Some == null) throw new ArgumentNullException(nameof(Some));
-            if (None == null) throw new ArgumentNullException(nameof(None));
+            if (some == null) throw new ArgumentNullException(nameof(some));
+            if (none == null) throw new ArgumentNullException(nameof(none));
 
             return opt.IsSome
-                ? Check.NotNull(Some(opt.Value))
-                : None;
+                ? Check.NotNullResult(some(opt.Value))
+                : none;
         }
 
         [Pure]
-        public Unit Match(Option<A> opt, Action<A> Some, Action None)
+        public Unit Match(Option<A> opt, Action<A> some, Action none)
         {
-            if (Some == null) throw new ArgumentNullException(nameof(Some));
-            if (None == null) throw new ArgumentNullException(nameof(None));
+            if (some == null) throw new ArgumentNullException(nameof(some));
+            if (none == null) throw new ArgumentNullException(nameof(none));
 
             if (opt.IsSome)
-                Some(opt.Value);
+                some(opt.Value);
             else
-                None();
+                none();
             return Unit.Default;
         }
     }

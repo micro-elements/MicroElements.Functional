@@ -5,4 +5,12 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Prelude\Prelude_Parse.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Prelude\Prelude_Parse.cs" />
+  </ItemGroup>
+
 </Project>
