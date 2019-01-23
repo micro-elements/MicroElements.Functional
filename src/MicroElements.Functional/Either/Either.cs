@@ -21,16 +21,23 @@ namespace MicroElements.Functional
         IEquatable<Either.Right<R>>,
         IEquatable<R>,*/
     {
+        /// <summary>
+        /// Left state of Either (Error).
+        /// </summary>
         internal L Left { get; }
+
+        /// <summary>
+        /// Right state of Either (Success).
+        /// </summary>
         internal R Right { get; }
 
         /// <summary>
-        /// Is the Either in a Right state?
+        /// Gets value whether the Either is in a Right state (Success).
         /// </summary>
         public bool IsRight { get; }
 
         /// <summary>
-        /// Is the Either in a Left state?
+        /// Gets value whether the Either is in a Left state (Error).
         /// </summary>
         public bool IsLeft => !IsRight;
 
