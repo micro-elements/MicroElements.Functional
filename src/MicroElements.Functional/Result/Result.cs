@@ -7,17 +7,12 @@ using System.Diagnostics.Contracts;
 using System.Threading.Tasks;
 using static MicroElements.Functional.Prelude;
 
-#pragma warning disable SA1629 // Documentation text should end with a period
-// ReSharper disable CheckNamespace
 namespace MicroElements.Functional
 {
     /// <summary>
-    /// Represents the result of an operation:
-    ///
-    ///     A | Exception
-    ///
+    /// Represents the result of an operation: {A | Exception}.
     /// </summary>
-    /// <typeparam name="A">Bound value type</typeparam>
+    /// <typeparam name="A">Bound value type.</typeparam>
     public struct Result<A> : IEquatable<Result<A>>
     {
         public static readonly Result<A> Bottom = default(Result<A>);
@@ -45,7 +40,7 @@ namespace MicroElements.Functional
         [Pure]
         public Result(Exception e)
         {
-            State = ResultState.Faulted;
+            State = ResultState.Error;
             Exception = e;
             Value = default(A);
         }
@@ -63,7 +58,7 @@ namespace MicroElements.Functional
         /// </summary>
         [Pure]
         public bool IsFaulted =>
-            State == ResultState.Faulted;
+            State == ResultState.Error;
 
         /// <summary>
         /// True if the struct is in an success
@@ -77,7 +72,7 @@ namespace MicroElements.Functional
         /// </summary>
         [Pure]
         public bool IsBottom =>
-            State == ResultState.Faulted && (Exception == null || Exception is BottomException);
+            State == ResultState.Error && (Exception == null || Exception is BottomException);
 
         /// <inheritdoc />
         public bool Equals(Result<A> other)

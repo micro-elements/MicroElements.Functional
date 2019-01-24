@@ -13,6 +13,8 @@ namespace MicroElements.Functional
         /// <returns>Option of T in Some state.</returns>
         public static Option<T> Some<T>(T value) => new Some<T>(value);
 
+        public static Some<T> ToSome<T>(this T value) => new Some<T>(value);
+
         /// <summary>
         /// 'No value' state of Option T.
         /// </summary>

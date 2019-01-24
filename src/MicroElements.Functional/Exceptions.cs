@@ -11,6 +11,18 @@ using System;
 namespace MicroElements.Functional
 {
     /// <summary>
+    /// Some T not initialized.
+    /// </summary>
+    [Serializable]
+    public class SomeNotInitializedException : Exception
+    {
+        public SomeNotInitializedException(Type type)
+            : base($"Unitialized Some<{type.Name}>.")
+        {
+        }
+    }
+
+    /// <summary>
     /// Result is null.
     /// </summary>
     [Serializable]

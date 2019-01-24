@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MicroElements.Functional.Result
+namespace MicroElements.Functional
 {
     /// <summary>
     /// Represents some diagnostic message.
@@ -31,5 +31,26 @@ namespace MicroElements.Functional.Result
         /// Gets a value indicating whether the message is error.
         /// </summary>
         bool IsError { get; }
+    }
+
+    /// <summary>
+    /// Message severity.
+    /// </summary>
+    public enum Severity
+    {
+        /// <summary>
+        /// Information message.
+        /// </summary>
+        Information,
+
+        /// <summary>
+        /// Warning.
+        /// </summary>
+        Warning,
+
+        /// <summary>
+        /// Error message.
+        /// </summary>
+        Error,
     }
 }
