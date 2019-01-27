@@ -1,3 +1,6 @@
+# 0.4.0
+- ParseResult
+
 # 0.3.0
 - Initial implementation of Either and Result
 

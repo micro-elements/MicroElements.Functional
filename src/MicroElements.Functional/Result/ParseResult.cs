@@ -5,138 +5,12 @@ namespace MicroElements.Functional
 {
     /// <summary>
     /// Represents the result of an operation with additional messages.
-    /// Result can be Success: Value | Failed: Error.
+    /// Result can be Success: {Value, Messages} | Failed: {Messages}.
     /// Result has message list that can contain additional diagnostic information.
     /// </summary>
     /// <typeparam name="TValue">The value type.</typeparam>
-    /// <typeparam name="TError">Error type.</typeparam>
     /// <typeparam name="TMessage">Message type.</typeparam>
-    public class ParseResult<TValue, TError, TMessage>
-    {
-        /// <summary>
-        /// Value.
-        /// </summary>
-        internal TValue Value { get; }
-
-        /// <summary>
-        /// Error value.
-        /// </summary>
-        internal TError Error { get; }
-
-        /// <summary>
-        /// Message list.
-        /// </summary>
-        internal IMessageList<TMessage> Messages { get; }
-
-        /// <summary>
-        /// Gets value whether result in Success state.
-        /// </summary>
-        public bool IsSuccess { get; }
-
-        public ParseResult(TValue value, IMessageList<TMessage> messages)
-        {
-            Value = value;
-            Messages = messages;
-            IsSuccess = true;
-        }
-
-        public ParseResult(TError error, IMessageList<TMessage> messages)
-        {
-            Error = error;
-            Messages = messages;
-            IsSuccess = false;
-        }
-
-        public TResult Match<TResult>(Func<TValue, IMessageList<TMessage>, TResult> success, Func<TError, IMessageList<TMessage>, TResult> failed)
-            => IsSuccess ? success(Value, Messages) : failed(Error, Messages);
-
-        public Unit Match<TResult>(Action<TValue, IMessageList<TMessage>> success, Action<TError, IMessageList<TMessage>> failed)
-            => Match(success.ToFunc(), failed.ToFunc());
-    }
-
-    public static class ParseResultExt
-    {
-        public static ParseResult<TValue, TError, TMessage> WithMessages<TValue, TError, TMessage>(
-            this ParseResult<TValue, TError, TMessage> @this, IMessageList<TMessage> messages)
-        {
-            return @this.Match<ParseResult<TValue, TError, TMessage>>(
-                (value, list) => new ParseResult<TValue, TError, TMessage>(@this.Value, @this.Messages.AddRange(messages)),
-                (error, list) => new ParseResult<TValue, TError, TMessage>(@this.Error, @this.Messages.AddRange(messages)));
-        }
-
-        //Monad<U> Map(Func<T, U> f);
-        public static ParseResult<TValue2, TError, TMessage> Map<TValue, TError, TMessage, TValue2>
-            (this ParseResult<TValue, TError, TMessage> @this, Func<TValue, TValue2> f)
-            => @this.Match<ParseResult<TValue2, TError, TMessage>>(
-                (value, list) => new ParseResult<TValue2, TError, TMessage>(f(value), list),
-                (error, list) => new ParseResult<TValue2, TError, TMessage>(error, list));
-
-        //Monad<U> Bind(Func<T, Monad<U>> f);
-        public static ParseResult<TValue2, TError, TMessage> Bind<TValue, TError, TMessage, TValue2>
-            (this ParseResult<TValue, TError, TMessage> @this, Func<TValue, ParseResult<TValue2, TError, TMessage>> f)
-            => @this.Match<ParseResult<TValue2, TError, TMessage>>(
-                (value, list) => f(value).WithMessages(list),
-                (error, list) => new ParseResult<TValue2, TError, TMessage>(error, list));
-    }
-
-    //public static partial class Prelude
-    //{
-    //    public static ParseResult<TValue, TMessage> Success<TValue, TMessage>
-    //        (TValue value, IMessageList<TMessage> messages)
-    //        => new ParseResult<TValue, TMessage>();
-    //}
-
-    // Value | Error | Message
-    public class ResultWithMessage
-    {
-    }
-
-    // Value | Error | Messages
-    public class ResultWithMessages
-    {
-    }
-
-    // Value | Exception
-    public class ResultWithException
-    {
-    }
-
-    // Value | Error
-    public class ResultWithError
-    {
-    }
-
-    public class ValueWithMessages<TValue, TMessage>
-    {
-        /// <summary>
-        /// Value.
-        /// </summary>
-        public TValue Value { get; }
-
-        /// <summary>
-        /// Message list.
-        /// </summary>
-        public IMessageList<TMessage> Messages { get; }
-
-        /// <summary>
-        /// Creates value with messages.
-        /// </summary>
-        /// <param name="value">Value.</param>
-        /// <param name="messages">Message list.</param>
-        public ValueWithMessages(Some<TValue> value, IMessageList<TMessage> messages = null)
-        {
-            Value = value.Value;
-            Messages = messages ?? EmptyMessageList<TMessage>();
-        }
-
-        public void Deconstruct(out TValue value, out IMessageList<TMessage> messages)
-        {
-            value = Value;
-            messages = Messages;
-        }
-    }
-
-    public class ParseResult2<TValue, TMessage>
+    public class ParseResult<TValue, TMessage>
     {
         /// <summary>
         /// Value.
@@ -163,65 +37,135 @@ namespace MicroElements.Functional
         /// </summary>
         public bool IsError => State == ResultState.Error;
 
-        internal ParseResult2(ValueWithMessages<TValue, TMessage> valueWithMessages)
+        internal ParseResult(SuccessData<TValue, TMessage> successData)
         {
-            Value = valueWithMessages.Value;
-            Messages = valueWithMessages.Messages;
+            Value = successData.Value;
+            Messages = successData.Messages;
             State = ResultState.Success;
         }
 
-        internal ParseResult2(IMessageList<TMessage> messages)
+        internal ParseResult(IMessageList<TMessage> messages)
         {
-            Messages = messages ?? EmptyMessageList<TMessage>();
+            Messages = messages ?? MessageList<TMessage>.Empty;
             State = ResultState.Error;
         }
 
+        public static implicit operator ParseResult<TValue, TMessage>(TMessage message) =>
+            ParseResult.Error<TValue, TMessage>(message);
+
+        public static implicit operator ParseResult<TValue, TMessage>(MessageList<TMessage> messages) =>
+            ParseResult.Error<TValue, TMessage>(messages);
+
         public TResult Match<TResult>(Func<TValue, IMessageList<TMessage>, TResult> success, Func<IMessageList<TMessage>, TResult> error)
-            => IsSuccess? success(Value, Messages) : error(Messages);
+            => IsSuccess ? success(Value, Messages) : error(Messages);
 
-        public Unit Match<TResult>(Action<TValue, IMessageList<TMessage>> success, Action<IMessageList<TMessage>> error)
+        public Unit Match(Action<TValue, IMessageList<TMessage>> success, Action<IMessageList<TMessage>> error)
             => Match(success.ToFunc(), error.ToFunc());
+
+        public ParseResult<TValue, TMessage> MatchSuccess(Action<TValue, IMessageList<TMessage>> success)
+        {
+            if (IsSuccess)
+                success(Value, Messages);
+            return this;
+        }
+
+        public ParseResult<TValue, TMessage> MatchError(Action<IMessageList<TMessage>> error)
+        {
+            if (IsError)
+                error(Messages);
+            return this;
+        }
+
+        public ParseResult<TValue, TMessage> MatchMessages(Action<IMessageList<TMessage>> onMessages)
+        {
+            onMessages(Messages);
+            return this;
+        }
     }
 
-    public static class ParseResult2
+    internal class SuccessData<TValue, TMessage>
     {
-        public static ParseResult2<TValue, TMessage> Success<TValue, TMessage>(TValue value, IMessageList<TMessage> messages)
-            => new ParseResult2<TValue, TMessage>(new ValueWithMessages<TValue, TMessage>(value.ToSome(), messages));
+        /// <summary>
+        /// Value.
+        /// </summary>
+        public TValue Value { get; }
 
-        public static ParseResult2<TValue, TMessage> ToSuccess<TValue, TMessage>
-            (this TValue value, IMessageList<TMessage> messages)
-            => Success(value, messages);
+        /// <summary>
+        /// Message list.
+        /// </summary>
+        public IMessageList<TMessage> Messages { get; }
 
-        public static ParseResult2<TValue, TMessage> Error<TValue, TMessage>(IMessageList<TMessage> messages)
-            => new ParseResult2<TValue, TMessage>(messages);
-
-
-        public static ParseResult2<TValue, TMessage> ToError<TValue, TMessage>(this IMessageList<TMessage> messages)
-            => Error<TValue, TMessage>(messages);
+        /// <summary>
+        /// Creates value with messages.
+        /// </summary>
+        /// <param name="value">Value.</param>
+        /// <param name="messages">Message list.</param>
+        public SuccessData(TValue value, IMessageList<TMessage> messages = null)
+        {
+            if (value.IsNull())
+                throw new ArgumentNullException(nameof(value), "Cannot use null for SuccessData");
+            Value = value;
+            Messages = messages ?? MessageList<TMessage>.Empty;
+        }
     }
 
-    public static class ParseResultExt2
+    public static class ParseResult
     {
-        public static ParseResult2<TValue, TMessage> WithMessages<TValue, TMessage>(
-            this ParseResult2<TValue, TMessage> @this, IMessageList<TMessage> messages)
+        public static ParseResult<TValue, TMessage> Success<TValue, TMessage>(TValue value, IMessageList<TMessage> messages)
+            => new ParseResult<TValue, TMessage>(new SuccessData<TValue, TMessage>(value, messages));
+
+        public static ParseResult<TValue, TMessage> Error<TValue, TMessage>(IMessageList<TMessage> messages)
+            => new ParseResult<TValue, TMessage>(messages);
+
+        public static ParseResult<TValue, TMessage> Error<TValue, TMessage>(MessageList<TMessage> messages)
+            => new ParseResult<TValue, TMessage>(messages);
+    }
+
+    public static class ParseResultExt
+    {
+        public static ParseResult<TValue, string> ToSuccess<TValue>(this TValue value)
+            => ParseResult.Success(value, EmptyMessageList);
+
+        public static ParseResult<TValue, TMessage> ToSuccess<TValue, TMessage>(this TValue value, params TMessage[] messages)
+            => ParseResult.Success(value, MessageList<TMessage>.Empty.AddRange(messages));
+
+        public static ParseResult<TValue, TMessage> ToSuccess<TValue, TMessage>(this TValue value, IMessageList<TMessage> messages)
+            => ParseResult.Success(value, messages);
+
+        public static ParseResult<TValue, TMessage> ToError<TValue, TMessage>(this IMessageList<TMessage> messages)
+            => ParseResult.Error<TValue, TMessage>(messages);
+
+        public static ParseResult<TValue, TMessage> ToError<TValue, TMessage>(this TMessage message)
+            => ParseResult.Error<TValue, TMessage>(new MessageList<TMessage>(message));
+
+        public static ParseResult<TValue, TMessage> WithMessages<TValue, TMessage>(
+            this ParseResult<TValue, TMessage> @this, IMessageList<TMessage> messages)
         {
             return @this.Match(
-                (value, list) => ParseResult2.Success(@this.Value, @this.Messages.AddRange(messages)),
-                (list) => ParseResult2.Error<TValue, TMessage>(@this.Messages.AddRange(messages)));
+                (value, list) => ParseResult.Success(@this.Value, @this.Messages.AddRange(messages)),
+                (list) => ParseResult.Error<TValue, TMessage>(@this.Messages.AddRange(messages)));
         }
 
         //Monad<U> Map(Func<T, U> f);
-        public static ParseResult2<TValue2, TMessage> Map<TValue, TMessage, TValue2>
-            (this ParseResult2<TValue, TMessage> @this, Func<TValue, TValue2> f)
+        public static ParseResult<TValue2, TMessage> Map<TValue, TMessage, TValue2>
+            (this ParseResult<TValue, TMessage> @this, Func<TValue, TValue2> f)
             => @this.Match(
-                (value, list) => new ParseResult2<TValue2, TMessage>(new ValueWithMessages<TValue2, TMessage>(f(value).ToSome(), list)),
-                (list) => new ParseResult2<TValue2, TMessage>(list));
+                (value, list) => new ParseResult<TValue2, TMessage>(new SuccessData<TValue2, TMessage>(f(value), list)),
+                (list) => new ParseResult<TValue2, TMessage>(list));
 
         //Monad<U> Bind(Func<T, Monad<U>> f);
-        public static ParseResult2<TValue2, TMessage> Bind<TValue, TMessage, TValue2>
-            (this ParseResult2<TValue, TMessage> @this, Func<TValue, ParseResult2<TValue2, TMessage>> f)
+        public static ParseResult<TValue2, TMessage> Bind<TValue, TMessage, TValue2>
+            (this ParseResult<TValue, TMessage> @this, Func<TValue, ParseResult<TValue2, TMessage>> f)
             => @this.Match(
                 (value, list) => f(value).WithMessages(list),
                 (list) => list.ToError<TValue2, TMessage>());
+    }
+
+    public static partial class Prelude
+    {
+        public static ParseResult<TValue, TMessage> SuccessParseResult<TValue, TMessage>(TValue value, TMessage message)
+        {
+            return ParseResult.Success(value, new MessageList<TMessage>(message));
+        }
     }
 }

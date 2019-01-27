@@ -3,7 +3,6 @@ using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Net;
 
-// ReSharper disable CheckNamespace
 namespace MicroElements.Functional
 {
     public static partial class Prelude
