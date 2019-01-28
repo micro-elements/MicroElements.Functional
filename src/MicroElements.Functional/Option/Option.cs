@@ -212,7 +212,7 @@ namespace MicroElements.Functional
         /// <param name="some">Some match operation.</param>
         /// <param name="none">None match operation.</param>
         /// <returns>Unit.</returns>
-        public Unit Match(Action<T> some, Action none) =>
-            MOption<T>.Inst.Match(this, some, none);
+        public Unit Match(Action<T> some, Action none)
+            => MOption<T>.Inst.Match(this, some, none);
     }
 }

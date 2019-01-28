@@ -37,6 +37,9 @@ namespace MicroElements.Functional
         /// </summary>
         public bool IsError => State == ResultState.Error;
 
+        /// <summary>
+        /// Creates Success Result.
+        /// </summary>
         internal ParseResult(SuccessData<TValue, TMessage> successData)
         {
             Value = successData.Value;
@@ -55,6 +58,14 @@ namespace MicroElements.Functional
 
         public static implicit operator ParseResult<TValue, TMessage>(MessageList<TMessage> messages) =>
             ParseResult.Error<TValue, TMessage>(messages);
+
+        public static implicit operator Option<TValue>(ParseResult<TValue, TMessage> parseResult) =>
+            parseResult.Match(success: (value, list) => Some(value), error: list => None);
+
+        public static implicit operator ParseResult<TValue, TMessage>(Option<TValue> optional)
+            => optional.Match(
+                some: value => ParseResult.Success(value, MessageList<TMessage>.Empty),
+                none: () => ParseResult.Error<TValue, TMessage>(MessageList<TMessage>.Empty));
 
         public TResult Match<TResult>(Func<TValue, IMessageList<TMessage>, TResult> success, Func<IMessageList<TMessage>, TResult> error)
             => IsSuccess ? success(Value, Messages) : error(Messages);
