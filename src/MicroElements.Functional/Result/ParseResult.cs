@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using static MicroElements.Functional.Prelude;
 
 namespace MicroElements.Functional
@@ -10,17 +12,17 @@ namespace MicroElements.Functional
     /// </summary>
     /// <typeparam name="TValue">The value type.</typeparam>
     /// <typeparam name="TMessage">Message type.</typeparam>
-    public class ParseResult<TValue, TMessage>
+    public class ParseResult<TValue, TMessage> : ValueObject, IParseResult
     {
-        /// <summary>
-        /// Value.
-        /// </summary>
-        internal TValue Value { get; }
-
         /// <summary>
         /// Result state.
         /// </summary>
         internal ResultState State { get; }
+
+        /// <summary>
+        /// Value.
+        /// </summary>
+        internal TValue Value { get; }
 
         /// <summary>
         /// Message list.
@@ -32,6 +34,23 @@ namespace MicroElements.Functional
         /// </summary>
         public bool IsSuccess => State == ResultState.Success;
 
+        /// <inheritdoc />
+        public Type GetUnderlyingType() => typeof(TValue);
+
+        /// <inheritdoc />
+        public Type GetMessageUnderlyingType() => typeof(TMessage);
+
+        /// <inheritdoc />
+        public TResult MatchUntyped<TResult>(Func<object, IEnumerable, TResult> success, Func<IEnumerable, TResult> error)
+            => IsSuccess ? success(Value, Messages) : error(Messages);
+
+        /// <inheritdoc />
+        public override IEnumerable<object> GetEqualityComponents()
+        {
+            yield return State;
+            yield return Value;
+        }
+
         /// <summary>
         /// Gets value whether the result in Error state.
         /// </summary>
@@ -40,13 +59,18 @@ namespace MicroElements.Functional
         /// <summary>
         /// Creates Success Result.
         /// </summary>
-        internal ParseResult(SuccessData<TValue, TMessage> successData)
+        /// <param name="successData">ValueWithMessages.</param>
+        internal ParseResult(ValueWithMessages<TValue, TMessage> successData)
         {
             Value = successData.Value;
             Messages = successData.Messages;
             State = ResultState.Success;
         }
 
+        /// <summary>
+        /// ParseResult in error state.
+        /// </summary>
+        /// <param name="messages">Messages.</param>
         internal ParseResult(IMessageList<TMessage> messages)
         {
             Messages = messages ?? MessageList<TMessage>.Empty;
@@ -94,7 +118,7 @@ namespace MicroElements.Functional
         }
     }
 
-    internal class SuccessData<TValue, TMessage>
+    public class ValueWithMessages<TValue, TMessage>
     {
         /// <summary>
         /// Value.
@@ -111,10 +135,10 @@ namespace MicroElements.Functional
         /// </summary>
         /// <param name="value">Value.</param>
         /// <param name="messages">Message list.</param>
-        public SuccessData(TValue value, IMessageList<TMessage> messages = null)
+        public ValueWithMessages(TValue value, IMessageList<TMessage> messages = null)
         {
             if (value.IsNull())
-                throw new ArgumentNullException(nameof(value), "Cannot use null for SuccessData");
+                throw new ArgumentNullException(nameof(value), "Cannot use null for ValueWithMessages");
             Value = value;
             Messages = messages ?? MessageList<TMessage>.Empty;
         }
@@ -123,7 +147,7 @@ namespace MicroElements.Functional
     public static class ParseResult
     {
         public static ParseResult<TValue, TMessage> Success<TValue, TMessage>(TValue value, IMessageList<TMessage> messages)
-            => new ParseResult<TValue, TMessage>(new SuccessData<TValue, TMessage>(value, messages));
+            => new ParseResult<TValue, TMessage>(new ValueWithMessages<TValue, TMessage>(value, messages));
 
         public static ParseResult<TValue, TMessage> Error<TValue, TMessage>(IMessageList<TMessage> messages)
             => new ParseResult<TValue, TMessage>(messages);
@@ -161,7 +185,7 @@ namespace MicroElements.Functional
         public static ParseResult<TValue2, TMessage> Map<TValue, TMessage, TValue2>
             (this ParseResult<TValue, TMessage> @this, Func<TValue, TValue2> f)
             => @this.Match(
-                (value, list) => new ParseResult<TValue2, TMessage>(new SuccessData<TValue2, TMessage>(f(value), list)),
+                (value, list) => new ParseResult<TValue2, TMessage>(new ValueWithMessages<TValue2, TMessage>(f(value), list)),
                 (list) => new ParseResult<TValue2, TMessage>(list));
 
         //Monad<U> Bind(Func<T, Monad<U>> f);

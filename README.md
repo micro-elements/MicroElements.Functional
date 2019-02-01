@@ -103,4 +103,21 @@ TODO
 ### ParseResult
 TODO
 
+## Design Notes
+- Most of types are structs so they can not be null
+- Don't use monadic values for persistence because structs have default constructors and can be in uninitialized state
+- Don't use monadic values in other data structures
+
+## Monad checklist
+- Readonly struct
+- Internal constructors, all factory checks in prelude
+- Monadic methods: Match, Map, Bind, Filter
+- LINQ operations: AsEnumerable, Select(Map), Where(Filter), SelectMany
+- Equality methods
+- Implicit conversions
+- Intermonad conversions
+- Uninitialized checks or bottom state?
+- Check Monad laws
+- Async interoparability or async version
+
 [LICENSE]: https://raw.githubusercontent.com/micro-elements/MicroElements.Functional/master/LICENSE

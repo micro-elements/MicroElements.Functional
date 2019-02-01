@@ -13,9 +13,9 @@ namespace MicroElements.Functional
     /// Represents the result of an operation: {A | Exception}.
     /// </summary>
     /// <typeparam name="A">Bound value type.</typeparam>
-    public struct Result<A> : IEquatable<Result<A>>
+    public struct ResultOld<A> : IEquatable<ResultOld<A>>
     {
-        public static readonly Result<A> Bottom = default(Result<A>);
+        public static readonly ResultOld<A> Bottom = default(ResultOld<A>);
 
         internal readonly ResultState State;
         internal readonly A Value;
@@ -26,7 +26,7 @@ namespace MicroElements.Functional
         /// </summary>
         /// <param name="value"></param>
         [Pure]
-        public Result(A value)
+        public ResultOld(A value)
         {
             State = ResultState.Success;
             Value = value;
@@ -38,7 +38,7 @@ namespace MicroElements.Functional
         /// </summary>
         /// <param name="e"></param>
         [Pure]
-        public Result(Exception e)
+        public ResultOld(Exception e)
         {
             State = ResultState.Error;
             Exception = e;
@@ -50,8 +50,8 @@ namespace MicroElements.Functional
         /// </summary>
         /// <param name="value">Value</param>
         [Pure]
-        public static implicit operator Result<A>(A value) =>
-            new Result<A>(value);
+        public static implicit operator ResultOld<A>(A value) =>
+            new ResultOld<A>(value);
 
         /// <summary>
         /// True if the result is faulted
@@ -75,7 +75,7 @@ namespace MicroElements.Functional
             State == ResultState.Error && (Exception == null || Exception is BottomException);
 
         /// <inheritdoc />
-        public bool Equals(Result<A> other)
+        public bool Equals(ResultOld<A> other)
         {
             return State == other.State && EqualityComparer<A>.Default.Equals(Value, other.Value) && Equals(Exception, other.Exception);
         }
@@ -84,7 +84,7 @@ namespace MicroElements.Functional
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
-            return obj is Result<A> other && Equals(other);
+            return obj is ResultOld<A> other && Equals(other);
         }
 
         /// <inheritdoc />
@@ -142,19 +142,19 @@ namespace MicroElements.Functional
         //        : new OptionalResult<A>(Optional(Value));
 
         [Pure]
-        public Result<B> Map<B>(Func<A, B> f) =>
+        public ResultOld<B> Map<B>(Func<A, B> f) =>
             IsBottom
-                ? Result<B>.Bottom
+                ? ResultOld<B>.Bottom
                 : IsFaulted
-                    ? new Result<B>(Exception)
-                    : new Result<B>(f(Value));
+                    ? new ResultOld<B>(Exception)
+                    : new ResultOld<B>(f(Value));
 
         [Pure]
-        public async Task<Result<B>> MapAsync<B>(Func<A, Task<B>> f) =>
+        public async Task<ResultOld<B>> MapAsync<B>(Func<A, Task<B>> f) =>
             IsBottom
-                ? Result<B>.Bottom
+                ? ResultOld<B>.Bottom
                 : IsFaulted
-                    ? new Result<B>(Exception)
-                    : new Result<B>(await f(Value));
+                    ? new ResultOld<B>(Exception)
+                    : new ResultOld<B>(await f(Value));
     }
 }
