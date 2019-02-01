@@ -12,53 +12,53 @@ namespace MicroElements.Functional
     /// <summary>
     /// Discriminated union type. Can be in one of two states: Some(a) or None.
     /// </summary>
-    /// <typeparam name="T">Value type.</typeparam>
-    public struct Option<T> :
-        IEnumerable<T>,
+    /// <typeparam name="A">Value type.</typeparam>
+    public struct Option<A> :
+        IEnumerable<A>,
         IOptional,
-        IEquatable<Option<T>>
+        IEquatable<Option<A>>
     {
         /// <summary>
         /// None.
         /// </summary>
-        public static readonly Option<T> None = new Option<T>(false, default(T));
+        public static readonly Option<A> None = new Option<A>(false, default(A));
 
         /// <summary>
         /// Is the option in a Some state.
         /// </summary>
-        private readonly bool _isSome;
+        private readonly OptionState _optionState;
 
         /// <summary>
         /// Option value.
         /// </summary>
-        private readonly T _value;
+        private readonly A _value;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Option{T}"/> struct.
+        /// Initializes a new instance of the <see cref="Option{A}"/> struct.
         /// </summary>
         /// <param name="isSome">Is the option in a Some state.</param>
         /// <param name="value">Option value.</param>
-        private Option(bool isSome, T value)
+        private Option(bool isSome, A value)
         {
-            _isSome = isSome;
+            _optionState = isSome ? OptionState.Some : OptionState.None;
             _value = value;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Option{T}"/> struct.
+        /// Initializes a new instance of the <see cref="Option{A}"/> struct.
         /// </summary>
         /// <param name="option">IEnumerable as value source.</param>
-        public Option(IEnumerable<T> option)
+        public Option(IEnumerable<A> option)
         {
             var first = option.Take(1).ToArray();
             if (first.Length == 0)
             {
-                _isSome = false;
-                _value = default(T);
+                _optionState = OptionState.None;
+                _value = default(A);
             }
             else
             {
-                _isSome = true;
+                _optionState = OptionState.Some;
                 _value = first[0];
             }
         }
@@ -67,25 +67,25 @@ namespace MicroElements.Functional
         /// Is the option in a Some state.
         /// </summary>
         [Pure]
-        public bool IsSome => _isSome;
+        public bool IsSome => _optionState == OptionState.Some;
 
         /// <summary>
         /// Is the option in a None state.
         /// </summary>
         [Pure]
-        public bool IsNone => !IsSome;
+        public bool IsNone => _optionState == OptionState.None;
 
         /// <summary>
         /// Returns option underlying type.
         /// </summary>
         /// <returns>Option underlying type.</returns>
         [Pure]
-        public Type GetUnderlyingType() => typeof(T);
+        public Type GetUnderlyingType() => typeof(A);
 
         /// <summary>
         /// Gets the Option Value.
         /// </summary>
-        internal T Value
+        internal A Value
         {
             get
             {
@@ -99,7 +99,7 @@ namespace MicroElements.Functional
         /// Convert the Option to an enumerable of zero or one items.
         /// </summary>
         /// <returns>An enumerable of zero or one items.</returns>
-        public IEnumerable<T> AsEnumerable()
+        public IEnumerable<A> AsEnumerable()
         {
             if (IsSome)
                 yield return Value;
@@ -109,7 +109,7 @@ namespace MicroElements.Functional
         /// Gets enumerator for option.
         /// </summary>
         /// <returns>Enumerator for option.</returns>
-        public IEnumerator<T> GetEnumerator()
+        public IEnumerator<A> GetEnumerator()
             => AsEnumerable().GetEnumerator();
 
         /// <summary>
@@ -120,13 +120,13 @@ namespace MicroElements.Functional
             => AsEnumerable().GetEnumerator();
 
         /// <inheritdoc />
-        public bool Equals(Option<T> other)
+        public bool Equals(Option<A> other)
         {
             if (IsNone && other.IsNone)
                 return true;
 
             if (IsSome && other.IsSome)
-                return EqualityComparer<T>.Default.Equals(Value, other.Value);
+                return EqualityComparer<A>.Default.Equals(Value, other.Value);
 
             return false;
         }
@@ -134,7 +134,7 @@ namespace MicroElements.Functional
         /// <inheritdoc />
         public override bool Equals(object obj)
         {
-            if (obj is Option<T> option)
+            if (obj is Option<A> option)
                 return Equals(option);
             return false;
         }
@@ -148,12 +148,12 @@ namespace MicroElements.Functional
         /// <summary>
         /// Equality operator.
         /// </summary>
-        public static bool operator ==(Option<T> @this, Option<T> other) => @this.Equals(other);
+        public static bool operator ==(Option<A> @this, Option<A> other) => @this.Equals(other);
 
         /// <summary>
         /// Non-equality operator.
         /// </summary>
-        public static bool operator !=(Option<T> @this, Option<T> other) => !(@this == other);
+        public static bool operator !=(Option<A> @this, Option<A> other) => !(@this == other);
 
         /// <inheritdoc />
         public override string ToString() => IsSome ? $"Some({Value})" : "None";
@@ -162,26 +162,26 @@ namespace MicroElements.Functional
         /// Implicit conversion of None to Option{T}.
         /// </summary>
         /// <param name="none">None.</param>
-        public static implicit operator Option<T>(OptionNone none) => None;
+        public static implicit operator Option<A>(OptionNone none) => None;
 
         /// <summary>
         /// Implicit conversion of Some to Option.
         /// </summary>
         /// <param name="some">Some.</param>
-        public static implicit operator Option<T>(Some<T> some) => new Option<T>(true, some.Value);
+        public static implicit operator Option<A>(Some<A> some) => new Option<A>(true, some.Value);
 
         /// <summary>
         /// Implicit conversion of value to Option.
         /// </summary>
         /// <param name="value">Value.</param>
-        public static implicit operator Option<T>(T value) => value.IsNull() ? None : Prelude.Some(value);
+        public static implicit operator Option<A>(A value) => value.IsNull() ? None : Prelude.Some(value);
 
         /// <summary>
         /// Explicit conversion to underlying type.
         /// </summary>
         /// <param name="option">Optional.</param>
         [Pure]
-        public static explicit operator T(Option<T> option) =>
+        public static explicit operator A(Option<A> option) =>
             option.IsSome
                 ? option.Value
                 : throw new InvalidCastException("Option is not in a Some state");
@@ -193,8 +193,8 @@ namespace MicroElements.Functional
         /// <param name="some">Some match operation.</param>
         /// <param name="none">None match operation.</param>
         /// <returns>non null Result.</returns>
-        public TResult Match<TResult>(Func<T, TResult> some, Func<TResult> none)
-            => MOption<T>.Inst.Match(this, some, none);
+        public TResult Match<TResult>(Func<A, TResult> some, Func<TResult> none)
+            => MOption<A>.Inst.Match(this, some, none);
 
         /// <summary>
         /// Match the two states of the Option and return a non-null Result.
@@ -203,8 +203,8 @@ namespace MicroElements.Functional
         /// <param name="some">Some match operation.</param>
         /// <param name="none">None match operation.</param>
         /// <returns>non null Result.</returns>
-        public TResult Match<TResult>(Func<T, TResult> some, TResult none)
-            => MOption<T>.Inst.Match(this, some, none);
+        public TResult Match<TResult>(Func<A, TResult> some, TResult none)
+            => MOption<A>.Inst.Match(this, some, none);
 
         /// <summary>
         /// Match the two states of the Option.
@@ -212,7 +212,7 @@ namespace MicroElements.Functional
         /// <param name="some">Some match operation.</param>
         /// <param name="none">None match operation.</param>
         /// <returns>Unit.</returns>
-        public Unit Match(Action<T> some, Action none)
-            => MOption<T>.Inst.Match(this, some, none);
+        public Unit Match(Action<A> some, Action none)
+            => MOption<A>.Inst.Match(this, some, none);
     }
 }
