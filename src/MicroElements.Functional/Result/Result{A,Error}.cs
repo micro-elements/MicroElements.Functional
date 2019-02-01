@@ -1,4 +1,9 @@
-﻿namespace MicroElements.Functional
+﻿// Copyright (c) MicroElements. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Diagnostics.Contracts;
+
+namespace MicroElements.Functional
 {
     /// <summary>
     /// Represents the result of an operation: {A | Error}.
@@ -11,6 +16,8 @@
         /// Empty result.
         /// </summary>
         public static readonly Result<A, Error> Empty = default(Result<A, Error>);
+
+        #region Fields
 
         /// <summary>
         /// Result state.
@@ -27,6 +34,10 @@
         /// </summary>
         internal readonly Error ErrorValue;
 
+        #endregion
+
+        #region Ctor
+
         /// <summary>
         /// Creates success result.
         /// </summary>
@@ -35,19 +46,35 @@
         {
             State = ResultState.Success;
             Value = value;
-            ErrorValue = default(Error);
+            ErrorValue = default;
         }
 
         /// <summary>
-        /// Creates faulted result.
+        /// Creates failed result.
         /// </summary>
-        /// <param name="error">Error.</param>
+        /// <param name="error">Error value.</param>
         internal Result(Error error)
         {
             State = ResultState.Error;
-            Value = default(A);
+            Value = default;
             ErrorValue = error;
         }
+
+        #endregion
+
+        #region Conversions
+
+        /// <summary>
+        /// Implicit conversion operator from A to Result.
+        /// </summary>
+        /// <param name="value">Value.</param>
+        [Pure]
+        public static implicit operator Result<A, Error>(A value) =>
+            Result.Success<A, Error>(value);
+
+
+
+        #endregion
     }
 
     /// <summary>

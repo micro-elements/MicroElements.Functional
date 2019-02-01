@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace MicroElements.Functional
@@ -27,6 +28,11 @@ namespace MicroElements.Functional
         {
             ThrowIfMessageIsNull(message);
             _node = new LinkedList<TMessage>().AddLast(message);
+        }
+
+        public MessageList(IEnumerable<TMessage> messages)
+        {
+            _node = AddRangeInternal(messages);
         }
 
         /// <summary>
@@ -80,6 +86,12 @@ namespace MicroElements.Functional
         /// <inheritdoc />
         public IMessageList<TMessage> AddRange(IEnumerable<TMessage> other)
         {
+            var listNode = AddRangeInternal(other);
+            return new MessageList<TMessage>(listNode);
+        }
+
+        private LinkedListNode<TMessage> AddRangeInternal(IEnumerable<TMessage> other)
+        {
             IEnumerable<T> CheckItemsNotNull<T>(IEnumerable<T> items)
             {
                 foreach (var message in items)
@@ -93,7 +105,7 @@ namespace MicroElements.Functional
             if (_node == null)
             {
                 var list = new LinkedList<TMessage>(otherChecked);
-                return new MessageList<TMessage>(list.Last);
+                return list.Last;
             }
 
             LinkedListNode<TMessage> newNode = _node;
@@ -102,7 +114,7 @@ namespace MicroElements.Functional
                 newNode = newNode.List.AddAfter(newNode, message);
             }
 
-            return new MessageList<TMessage>(newNode);
+            return newNode;
         }
 
         private static void ThrowIfMessageIsNull<T>(T message)
@@ -110,6 +122,23 @@ namespace MicroElements.Functional
             if (message.IsNull())
                 throw new ArgumentNullException(nameof(message), "Message can not be null");
         }
+    }
+
+    public static class MessageList
+    {
+        public static MessageList<Message> Empty<Message>() => MessageList<Message>.Empty;
+
+        public static MessageList<Message> FromEnumerable<Message>(IEnumerable<Message> messages)
+        {
+            return messages is MessageList<Message> list ? list :
+                messages != null ? new MessageList<Message>(messages) : Empty<Message>();
+        }
+    }
+
+    public static class MessageListExt
+    {
+        public static MessageList<Message> ToMessageList<Message>(this IEnumerable<Message> messages)
+            => MessageList.FromEnumerable(messages);
     }
 
     public static partial class Prelude
