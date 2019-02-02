@@ -7,38 +7,57 @@ namespace MicroElements.Functional
 {
     /// <summary>
     /// Some wrapper for value. Can not be null.
-    /// Implicitly converts to <see cref="Option{T}"/>.
+    /// Implicitly converts to <see cref="Option{A}"/>.
     /// </summary>
-    /// <typeparam name="T">Value type.</typeparam>
-    public struct Some<T> : IOptional
+    /// <typeparam name="A">Value type.</typeparam>
+    public struct Some<A> : IOptional
     {
-        private readonly bool _isInitialized;
-        private readonly T _value;
-
         /// <summary>
-        /// Wrapped not null value.
+        /// The option state.
         /// </summary>
-        public T Value => _isInitialized ? _value : throw new SomeNotInitializedException(typeof(T));
+        internal readonly OptionState State;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Some{T}"/> struct.
+        /// Some value.
+        /// </summary>
+        private readonly A value;
+
+        /// <summary>
+        /// Wrapped NotNull value.
+        /// </summary>
+        public A Value => IsInitialized ? value : throw new SomeNotInitializedException(typeof(A));
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Some{A}"/> struct.
         /// </summary>
         /// <param name="value">Value to wrap.</param>
-        public Some(T value)
+        public Some(A value)
         {
             if (value.IsNull())
                 throw new ArgumentNullException(nameof(value), "Cannot wrap a null value in a 'Some'; use 'None' instead");
-            _value = value;
-            _isInitialized = true;
+
+            State = OptionState.Some;
+            this.value = value;
         }
 
-        /// <inheritdoc />
-        public bool IsSome => _isInitialized;
+        /// <summary>
+        /// Checks that Some is initialized.
+        /// </summary>
+        internal bool IsInitialized => State == OptionState.Some;
 
         /// <inheritdoc />
-        public bool IsNone => !_isInitialized;
+        public bool IsSome => IsInitialized;
 
         /// <inheritdoc />
-        public Type GetUnderlyingType() => typeof(T);
+        public bool IsNone => !IsInitialized;
+
+        /// <inheritdoc />
+        public Type GetUnderlyingType() => typeof(A);
+
+        /// <inheritdoc />
+        public Res MatchUntyped<Res>(Func<object, Res> some, Func<Res> none) =>
+            IsSome
+                ? some(value).AssertNotNullResult()
+                : none().AssertNotNullResult();
     }
 }

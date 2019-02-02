@@ -1,6 +1,7 @@
 ﻿// Copyright (c) MicroElements. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Diagnostics.Contracts;
 
 namespace MicroElements.Functional
@@ -10,7 +11,7 @@ namespace MicroElements.Functional
     /// </summary>
     /// <typeparam name="A">Success result type.</typeparam>
     /// <typeparam name="Error">Error type.</typeparam>
-    public readonly struct Result<A, Error>
+    public readonly struct Result<A, Error> : IResult
     {
         /// <summary>
         /// Empty result.
@@ -73,6 +74,26 @@ namespace MicroElements.Functional
             Result.Success<A, Error>(value);
 
 
+
+        #endregion
+
+        #region IResult
+
+        /// <inheritdoc />
+        public bool IsSuccess => State == ResultState.Success;
+
+        /// <inheritdoc />
+        public bool IsFailed => State == ResultState.Error;
+
+        /// <inheritdoc />
+        public Type GetSuccessValueType() => typeof(A);
+
+        /// <inheritdoc />
+        public Type GetErrorValueType() => typeof(Error);
+
+        /// <inheritdoc />
+        public TResult MatchUntyped<TResult>(Func<object, TResult> success, Func<TResult> error)
+            => IsSuccess ? success(Value) : error();
 
         #endregion
     }

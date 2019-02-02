@@ -82,6 +82,12 @@ namespace MicroElements.Functional
         [Pure]
         public Type GetUnderlyingType() => typeof(A);
 
+        /// <inheritdoc />
+        public R MatchUntyped<R>(Func<object, R> some, Func<R> none) =>
+            IsSome
+                ? some(Value).AssertNotNullResult()
+                : none().AssertNotNullResult();
+
         /// <summary>
         /// Gets the Option Value.
         /// </summary>
@@ -192,9 +198,9 @@ namespace MicroElements.Functional
         /// <typeparam name="TResult">Result type.</typeparam>
         /// <param name="some">Some match operation.</param>
         /// <param name="none">None match operation.</param>
-        /// <returns>non null Result.</returns>
+        /// <returns>Not null Result.</returns>
         public TResult Match<TResult>(Func<A, TResult> some, Func<TResult> none)
-            => MOption<A>.Inst.Match(this, some, none);
+            => OptionOperations.Match(ref this, some, none);
 
         /// <summary>
         /// Match the two states of the Option and return a non-null Result.
@@ -202,9 +208,9 @@ namespace MicroElements.Functional
         /// <typeparam name="TResult">Result type.</typeparam>
         /// <param name="some">Some match operation.</param>
         /// <param name="none">None match operation.</param>
-        /// <returns>non null Result.</returns>
+        /// <returns>Not null Result.</returns>
         public TResult Match<TResult>(Func<A, TResult> some, TResult none)
-            => MOption<A>.Inst.Match(this, some, none);
+            => OptionOperations.Match(ref this, some, none);
 
         /// <summary>
         /// Match the two states of the Option.
@@ -213,6 +219,6 @@ namespace MicroElements.Functional
         /// <param name="none">None match operation.</param>
         /// <returns>Unit.</returns>
         public Unit Match(Action<A> some, Action none)
-            => MOption<A>.Inst.Match(this, some, none);
+            => OptionOperations.Match(ref this, some, none);
     }
 }

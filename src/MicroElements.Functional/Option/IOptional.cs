@@ -22,5 +22,14 @@ namespace MicroElements.Functional
         /// </summary>
         /// <returns>Option underlying type.</returns>
         Type GetUnderlyingType();
+
+        /// <summary>
+        /// Evaluates one of the specified function based on the Option state.
+        /// </summary>
+        /// <typeparam name="R">Result type.</typeparam>
+        /// <param name="some">Function to evaluate on <see cref="OptionState.Some"/> state.</param>
+        /// <param name="none">Function to evaluate on <see cref="OptionState.None"/> state.</param>
+        /// <returns>Evaluated NotNull result.</returns>
+        R MatchUntyped<R>(Func<object, R> some, Func<R> none);
     }
 }

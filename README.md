@@ -107,11 +107,14 @@ TODO
 - Most of types are structs so they can not be null
 - Don't use monadic values for persistence because structs have default constructors and can be in uninitialized state
 - Don't use monadic values in other data structures
+- Main monad type is A, result type is B or Res
 
 ## Monad checklist
 - Readonly struct
 - Internal constructors, all factory checks in prelude
-- Monadic methods: Match, Map, Bind, Filter
+- Monadic methods: Match, Map, Bind(FlatMap), Filter
+  - inputs should be not null
+  - result types named Res
 - LINQ operations: AsEnumerable, Select(Map), Where(Filter), SelectMany
 - Equality methods
 - Implicit conversions
@@ -119,5 +122,13 @@ TODO
 - Uninitialized checks or bottom state?
 - Check Monad laws
 - Async interoparability or async version
+
+## Monadic operations
+- Monad<B> Map(Func<A, B> f);
+- Monad<B> Select(Func<A, B> f);
+- Monad<B> Bind(Func<A, Monad<B>> f)
+- Monad<C> SelectMany<B, C>(
+            Func<A, Monad<B>> bind,
+            Func<A, B, C> project)
 
 [LICENSE]: https://raw.githubusercontent.com/micro-elements/MicroElements.Functional/master/LICENSE

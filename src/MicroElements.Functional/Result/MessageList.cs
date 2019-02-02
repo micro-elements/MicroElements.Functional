@@ -130,8 +130,11 @@ namespace MicroElements.Functional
 
         public static MessageList<Message> FromEnumerable<Message>(IEnumerable<Message> messages)
         {
-            return messages is MessageList<Message> list ? list :
-                messages != null ? new MessageList<Message>(messages) : Empty<Message>();
+            return messages is MessageList<Message> list
+                ? list
+                : messages != null
+                    ? new MessageList<Message>(messages)
+                    : Empty<Message>();
         }
     }
 
