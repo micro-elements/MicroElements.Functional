@@ -3,158 +3,92 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Threading.Tasks;
-using static MicroElements.Functional.Prelude;
 
 namespace MicroElements.Functional
 {
     /// <summary>
-    /// Represents the result of an operation: {A | Exception}.
+    /// Result helpers.
     /// </summary>
-    /// <typeparam name="A">Bound value type.</typeparam>
-    public struct Result<A> : IEquatable<Result<A>>
+    public static class Result
     {
-        public static readonly Result<A> Bottom = default(Result<A>);
-
-        internal readonly ResultState State;
-        internal readonly A Value;
-        internal readonly Exception Exception;
+        /// <summary>
+        /// Creates success result from value.
+        /// </summary>
+        /// <typeparam name="A">Success value type.</typeparam>
+        /// <typeparam name="Error">Error value type.</typeparam>
+        /// <param name="value">Success result value.</param>
+        /// <returns>Success result.</returns>
+        public static Result<A, Error> Success<A, Error>(A value)
+            => new Result<A, Error>(value);
 
         /// <summary>
-        /// Constructor of a concrete value
+        /// Creates failed result.
         /// </summary>
-        /// <param name="value"></param>
-        [Pure]
-        public Result(A value)
-        {
-            State = ResultState.Success;
-            Value = value;
-            Exception = null;
-        }
+        /// <typeparam name="A">Success value type.</typeparam>
+        /// <typeparam name="Error">Error value type.</typeparam>
+        /// <param name="error">Error value.</param>
+        /// <returns>Failed result.</returns>
+        public static Result<A, Error> Fail<A, Error>(Error error)
+            => new Result<A, Error>(error);
 
         /// <summary>
-        /// Constructor of an error value
+        /// Creates success result from value and messages.
         /// </summary>
-        /// <param name="e"></param>
-        [Pure]
-        public Result(Exception e)
-        {
-            State = ResultState.Error;
-            Exception = e;
-            Value = default(A);
-        }
+        /// <typeparam name="A">Success value type.</typeparam>
+        /// <typeparam name="Error">Error value type.</typeparam>
+        /// <typeparam name="Message">Message type.</typeparam>
+        /// <param name="value">Success result value.</param>
+        /// <param name="messages">Message list.</param>
+        /// <returns>Success result.</returns>
+        public static Result<A, Error, Message> Success<A, Error, Message>(A value, IEnumerable<Message> messages)
+            => new Result<A, Error, Message>(value, messages.ToMessageList());
 
         /// <summary>
-        /// Implicit conversion operator from A to Result<A>
+        /// Creates success result from value.
         /// </summary>
-        /// <param name="value">Value</param>
-        [Pure]
-        public static implicit operator Result<A>(A value) =>
-            new Result<A>(value);
+        /// <typeparam name="A">Success value type.</typeparam>
+        /// <typeparam name="Error">Error value type.</typeparam>
+        /// <typeparam name="Message">Message type.</typeparam>
+        /// <param name="value">Success result value.</param>
+        /// <returns>Success result.</returns>
+        public static Result<A, Error, Message> Success<A, Error, Message>(A value)
+            => new Result<A, Error, Message>(value, MessageList<Message>.Empty);
 
         /// <summary>
-        /// True if the result is faulted
+        /// Creates success result from value.
         /// </summary>
-        [Pure]
-        public bool IsFaulted =>
-            State == ResultState.Error;
+        /// <typeparam name="A">Success value type.</typeparam>
+        /// <param name="value">Success result value.</param>
+        /// <returns>Specific SuccessResult that can be implicitly converted to concrete result..</returns>
+        public static SuccessResult<A> Success<A>(A value)
+            => new SuccessResult<A>(value);
 
         /// <summary>
-        /// True if the struct is in an success
+        /// Creates failed result from error.
         /// </summary>
-        [Pure]
-        public bool IsSuccess =>
-            State == ResultState.Success;
+        /// <typeparam name="Error">Error type.</typeparam>
+        /// <param name="value">Success result value.</param>
+        /// <returns>Specific FailedResult that can be implicitly converted to concrete result..</returns>
+        public static FailedResult<Error> Fail<Error>(Error value)
+            => new FailedResult<Error>(value);
 
         /// <summary>
-        /// True if the struct is in an invalid state
+        /// Creates failed result.
         /// </summary>
-        [Pure]
-        public bool IsBottom =>
-            State == ResultState.Error && (Exception == null || Exception is BottomException);
+        /// <typeparam name="A">Success value type.</typeparam>
+        /// <typeparam name="Error">Error value type.</typeparam>
+        /// <typeparam name="Message">Message type.</typeparam>
+        /// <param name="error">Error value.</param>
+        /// <param name="messages">Message list.</param>
+        /// <returns>Failed result.</returns>
+        public static Result<A, Error, Message> Fail<A, Error, Message>(Error error, IEnumerable<Message> messages)
+            => new Result<A, Error, Message>(error, messages.ToMessageList());
 
-        /// <inheritdoc />
-        public bool Equals(Result<A> other)
-        {
-            return State == other.State && EqualityComparer<A>.Default.Equals(Value, other.Value) && Equals(Exception, other.Exception);
-        }
+        public static Result<A, Error, Message> Fail<A, Error, Message>(Error error, Message message)
+            => new Result<A, Error, Message>(error, new MessageList<Message>(message));
 
-        /// <inheritdoc />
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            return obj is Result<A> other && Equals(other);
-        }
-
-        /// <inheritdoc />
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                if (IsFaulted) return -1;
-
-                var hashCode = (int) State;
-                hashCode = (hashCode * 397) ^ EqualityComparer<A>.Default.GetHashCode(Value);
-                hashCode = (hashCode * 397) ^ (Exception != null ? Exception.GetHashCode() : 0);
-                return hashCode;
-            }
-        }
-
-        [Pure]
-        public A IfFail(A defaultValue) =>
-            IsFaulted
-                ? defaultValue
-                : Value;
-
-        [Pure]
-        public A IfFail(Func<Exception, A> f) =>
-            IsFaulted
-                ? f(Exception ?? BottomException.Default)
-                : Value;
-
-        public Unit IfFail(Action<Exception> f)
-        {
-            if (IsFaulted)
-                f(Exception ?? BottomException.Default);
-            return unit;
-        }
-
-        public Unit IfSucc(Action<A> f)
-        {
-            if (IsSuccess)
-                f(Value);
-            return unit;
-        }
-
-        [Pure]
-        public R Match<R>(Func<A, R> Succ, Func<Exception, R> Fail) =>
-            IsBottom
-                ? Fail(BottomException.Default)
-                : IsFaulted
-                    ? Fail(Exception)
-                    : Succ(Value);
-
-        //[Pure]
-        //internal OptionalResult<A> ToOptional() =>
-        //    IsFaulted
-        //        ? new OptionalResult<A>(Exception)
-        //        : new OptionalResult<A>(Optional(Value));
-
-        [Pure]
-        public Result<B> Map<B>(Func<A, B> f) =>
-            IsBottom
-                ? Result<B>.Bottom
-                : IsFaulted
-                    ? new Result<B>(Exception)
-                    : new Result<B>(f(Value));
-
-        [Pure]
-        public async Task<Result<B>> MapAsync<B>(Func<A, Task<B>> f) =>
-            IsBottom
-                ? Result<B>.Bottom
-                : IsFaulted
-                    ? new Result<B>(Exception)
-                    : new Result<B>(await f(Value));
+        [Obsolete("add sugar")]
+        public static Result<A, Exception, string> FailFromMessages<A>(IEnumerable<string> messages)
+            => new Result<A, Exception, string>(default(Exception), messages.ToMessageList());
     }
 }
