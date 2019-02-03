@@ -10,7 +10,8 @@ namespace MicroElements.Functional
     /// Implicitly converts to <see cref="Option{A}"/>.
     /// </summary>
     /// <typeparam name="A">Value type.</typeparam>
-    public struct Some<A> : IOptional
+    public readonly struct Some<A> :
+        IOptional
     {
         /// <summary>
         /// The option state.

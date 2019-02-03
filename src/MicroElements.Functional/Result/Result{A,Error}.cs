@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 
 namespace MicroElements.Functional
@@ -11,7 +12,11 @@ namespace MicroElements.Functional
     /// </summary>
     /// <typeparam name="A">Success result type.</typeparam>
     /// <typeparam name="Error">Error type.</typeparam>
-    public readonly struct Result<A, Error> : IResult
+    public readonly struct Result<A, Error> :
+        IResult,
+        IEquatable<Result<A, Error>>,
+        IEquatable<SuccessResult<A>>,
+        IEquatable<A>
     {
         /// <summary>
         /// Empty result.
@@ -66,14 +71,36 @@ namespace MicroElements.Functional
         #region Conversions
 
         /// <summary>
-        /// Implicit conversion operator from A to Result.
+        /// Implicit conversion operator from <typeparamref name="A"/> to Result.
         /// </summary>
-        /// <param name="value">Value.</param>
+        /// <param name="value">Success Value.</param>
         [Pure]
         public static implicit operator Result<A, Error>(A value) =>
             Result.Success<A, Error>(value);
 
+        /// <summary>
+        /// Implicit conversion from <see cref="SuccessResult{A}"/>.
+        /// </summary>
+        /// <param name="successResult">SuccessResult of type <typeparamref name="A"/>.</param>
+        [Pure]
+        public static implicit operator Result<A, Error>(SuccessResult<A> successResult) =>
+            Result.Success<A, Error>(successResult.Value);
 
+        /// <summary>
+        /// Implicit conversion from <see cref="FailedResult{Error}"/>.
+        /// </summary>
+        /// <param name="failedResult">FailedResult of type <typeparamref name="Error"/>.</param>
+        [Pure]
+        public static implicit operator Result<A, Error>(FailedResult<Error> failedResult) =>
+            Result.Fail<A, Error>(failedResult.ErrorValue);
+
+        /// <summary>
+        /// Implicit conversion from <typeparamref name="Error"/> to Result.
+        /// </summary>
+        /// <param name="error">Error value.</param>
+        [Pure]
+        public static implicit operator Result<A, Error>(Error error) =>
+            Result.Fail<A, Error>(error);
 
         #endregion
 
@@ -92,35 +119,98 @@ namespace MicroElements.Functional
         public Type GetErrorValueType() => typeof(Error);
 
         /// <inheritdoc />
-        public TResult MatchUntyped<TResult>(Func<object, TResult> success, Func<TResult> error)
-            => IsSuccess ? success(Value) : error();
+        public TResult MatchUntyped<TResult>(Func<object, TResult> success, Func<object, TResult> error)
+            => IsSuccess ? success(Value) : error(ErrorValue);
 
         #endregion
-    }
 
-    /// <summary>
-    /// Result helpers.
-    /// </summary>
-    public static partial class Result
-    {
-        /// <summary>
-        /// Creates success result from value.
-        /// </summary>
-        /// <typeparam name="A">Success value type.</typeparam>
-        /// <typeparam name="Error">Error value type.</typeparam>
-        /// <param name="value">Success result value.</param>
-        /// <returns>Success result.</returns>
-        public static Result<A, Error> Success<A, Error>(A value)
-            => new Result<A, Error>(value);
+        #region Operations
 
         /// <summary>
-        /// Creates failed result.
+        /// Evaluates a specified function based on the result state.
         /// </summary>
-        /// <typeparam name="A">Success value type.</typeparam>
-        /// <typeparam name="Error">Error value type.</typeparam>
-        /// <param name="error">Error value.</param>
-        /// <returns>Failed result.</returns>
-        public static Result<A, Error> Fail<A, Error>(Error error)
-            => new Result<A, Error>(error);
+        /// <typeparam name="B">Result type.</typeparam>
+        /// <param name="success">Function to evaluate on <see cref="ResultState.Success"/> state.</param>
+        /// <param name="error">Function to evaluate on <see cref="ResultState.Error"/> state.</param>
+        /// <returns>Evaluated result.</returns>
+        public B Match<B>(
+            SuccessFunc<A, B> success,
+            ErrorFunc<Error, B> error)
+            => ResultOperations.Match(this, success, error);
+
+        /// <summary>
+        /// Executes a specified action based on the result state.
+        /// </summary>
+        /// <param name="success">Action to execute on <see cref="ResultState.Success"/> state.</param>
+        /// <param name="error">Action to execute on <see cref="ResultState.Error"/> state.</param>
+        /// <returns>Unit.</returns>
+        public Unit Match(
+            SuccessAction<A> success,
+            ErrorAction<Error> error)
+            => Match(success.ToFunc(), error.ToFunc());
+
+        /// <summary>
+        /// Monad Bind operation.
+        /// </summary>
+        /// <typeparam name="B">Result type.</typeparam>
+        /// <param name="bind">Bind function.</param>
+        /// <returns>New result of type <typeparamref name="B"/>.</returns>
+        public Result<B, Error> Bind<B>(
+            Func<A, Result<B, Error>> bind)
+            => ResultOperations.Bind(this, bind);
+
+        #endregion
+
+        #region Equality
+
+        /// <inheritdoc />
+        public bool Equals(Result<A, Error> other)
+        {
+            return Match(
+                (value) => other.IsSuccess && EqualityComparer<A>.Default.Equals(value, other.Value),
+                (error) => other.IsFailed && EqualityComparer<Error>.Default.Equals(error, other.ErrorValue));
+        }
+
+        /// <inheritdoc />
+        public bool Equals(SuccessResult<A> other)
+        {
+            return IsSuccess == other.IsSuccess && EqualityComparer<A>.Default.Equals(Value, other.Value);
+        }
+
+        /// <inheritdoc />
+        public bool Equals(A value)
+        {
+            return IsSuccess && EqualityComparer<A>.Default.Equals(Value, value);
+        }
+
+        /// <inheritdoc />
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            return obj is Result<A, Error> other && Equals(other);
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                if (IsFailed)
+                    return -1;
+
+                int hashCode = (int)State;
+                hashCode = (hashCode * 397) ^ EqualityComparer<A>.Default.GetHashCode(Value);
+                hashCode = (hashCode * 397) ^ EqualityComparer<Error>.Default.GetHashCode(ErrorValue);
+                return hashCode;
+            }
+        }
+
+        #endregion
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return IsSuccess ? $"Result: {State}({Value})" : $"Result: {State}({ErrorValue})";
+        }
     }
 }

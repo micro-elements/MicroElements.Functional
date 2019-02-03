@@ -1,62 +1,17 @@
 using System;
-using System.Linq;
 using FluentAssertions;
+using MicroElements.Functional.Tests.Domain;
 using Xunit;
 using static MicroElements.Functional.Prelude;
 
 namespace MicroElements.Functional.Tests
 {
-    public class SampleParser
-    {
-        public Result<ParsedObject, Exception, string> Parse(string source)
-        {
-            ParsedObject parsedObject = new ParsedObject();
-
-            IMessageList<string> errors = MessageList<string>.Empty;
-            IMessageList<string> messageList = MessageList<string>.Empty;
-            ParseA(source)
-                .MatchSuccess((a, list) => parsedObject.A = a)
-                .MatchError((e, list) => errors = errors.AddRange(list))
-                .MatchMessages(list => messageList = messageList.AddRange(list));
-
-            ParseB(source)
-                .MatchSuccess((b, list) => parsedObject.B = b)
-                .MatchError((e, list) => errors = errors.AddRange(list))
-                .MatchMessages(list => messageList = messageList.AddRange(list));
-
-            return errors.Count == 0
-                ? parsedObject.ToSuccess(messageList) 
-                : Result.FailFromMessages<ParsedObject>(messageList);
-        }
-
-        public Result<int, Exception, string> ParseA(string source)
-        {
-            var src = source.Split(";").FirstOrDefault();
-            return ParseInt(src)
-                .Match(
-                    some: i => i.ToSuccess("A parsed"),
-                    none:() => $"{src} can not be parsed to int");
-        }
-
-        public Result<string, Exception, string> ParseB(string source)
-        {
-            var src = source.Split(";").LastOrDefault();
-            return src.ToSuccess("B parsed");
-        }
-    }
-
-    public class ParsedObject
-    {
-        public int A { get; set; }
-        public string B { get; set; }
-    }
-
-    public class ResultWithMessagesTests
+    public class ResultTests
     {
         [Fact]
         public void SomeGeneratorTestsObject()
         {
-            var parseResult = Result.Success(123);
+            Result<int, Unit, string> parseResult = Result.Success(123);
 
             parseResult.Match(
                 success: (i, list) => (i == 123).Should().BeTrue(),
@@ -108,6 +63,54 @@ namespace MicroElements.Functional.Tests
             parseResult.IsSuccess.Should().BeFalse();
             parseResult.IsFailed.Should().BeTrue();
             parseResult.Messages.Should().BeEquivalentTo("AAA can not be parsed to int", "B parsed");
+        }
+
+        [Fact]
+        public void LinqTest()
+        {
+            Result<int, string> Two = 2;
+            Result<int, string> Four = 4;
+            Result<int, string> Six = 6;
+            Result<int, string> Error = "Error";
+
+            var result =
+                from x in Two
+                from y in Four
+                from z in Six
+                select x + y + z;
+            result.GetValueOrThrow().Should().Be(12);
+
+            result =
+                from x in Two
+                from y in Four
+                from _ in Error
+                from z in Six
+                select x + y + z;
+            result.MatchError(error => error.Should().Be("Error"));
+        }
+
+        [Fact]
+        public void LinqTest2()
+        {
+            Result<int, Exception, string> Two = 2.ToSuccess("Two");
+            Result<int, Exception, string> Four = 4.ToSuccess("Four");
+            Result<int, Exception, string> Six = 6.ToSuccess("Six");
+            Result<int, Exception, string> Error = Result.Fail(new Exception("Error"));
+
+            var result =
+                from x in Two
+                from y in Four
+                from z in Six
+                select x + y + z;
+            result.GetValueOrThrow().Should().Be(12);
+
+            result =
+                from x in Two
+                from y in Four
+                from _ in Error
+                from z in Six
+                select x + y + z;
+            result.MatchError((error, messages) => error.Should().BeEquivalentTo(new Exception("Error")));
         }
     }
 }

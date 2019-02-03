@@ -13,7 +13,7 @@ namespace MicroElements.Functional
     /// Discriminated union type. Can be in one of two states: Some(a) or None.
     /// </summary>
     /// <typeparam name="A">Value type.</typeparam>
-    public struct Option<A> :
+    public readonly struct Option<A> :
         IEnumerable<A>,
         IOptional,
         IEquatable<Option<A>>
@@ -200,7 +200,7 @@ namespace MicroElements.Functional
         /// <param name="none">None match operation.</param>
         /// <returns>Not null Result.</returns>
         public TResult Match<TResult>(Func<A, TResult> some, Func<TResult> none)
-            => OptionOperations.Match(ref this, some, none);
+            => OptionOperations.Match(this, some, none);
 
         /// <summary>
         /// Match the two states of the Option and return a non-null Result.
@@ -210,7 +210,7 @@ namespace MicroElements.Functional
         /// <param name="none">None match operation.</param>
         /// <returns>Not null Result.</returns>
         public TResult Match<TResult>(Func<A, TResult> some, TResult none)
-            => OptionOperations.Match(ref this, some, none);
+            => OptionOperations.Match(this, some, none);
 
         /// <summary>
         /// Match the two states of the Option.
@@ -219,6 +219,6 @@ namespace MicroElements.Functional
         /// <param name="none">None match operation.</param>
         /// <returns>Unit.</returns>
         public Unit Match(Action<A> some, Action none)
-            => OptionOperations.Match(ref this, some, none);
+            => OptionOperations.Match(this, some, none);
     }
 }

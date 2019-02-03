@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
-using System.Collections.Generic;
 using System.Collections;
-using MicroElements.Functional;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 namespace MicroElements.Functional
 {
@@ -10,7 +9,7 @@ namespace MicroElements.Functional
     /// A unit type that represents `Option.None`.  This type can be implicitly
     /// converted to Option or OptionUnsafe.
     /// </summary>
-    public struct OptionNone :
+    public readonly struct OptionNone :
         IOptional,
         IEnumerable<Unit>,
         IEquatable<OptionNone>,
@@ -19,6 +18,7 @@ namespace MicroElements.Functional
         public static OptionNone Default = new OptionNone();
 
         public bool IsSome => false;
+
         public bool IsNone => true;
 
         [Pure]
@@ -86,12 +86,3 @@ namespace MicroElements.Functional
             Option<A>.None;
     }
 }
-//todo: uncomment?
-//public static class OpionNoneExt
-//{
-//    public static Option<C> SelectMany<A, C>(this Option<A> ma, Func<A, OptionNone> bind, Func<A, Unit, C> project)
-//    {
-//        ma.IfSome(x => bind(x));
-//        return Option<C>.None;
-//    }
-//}

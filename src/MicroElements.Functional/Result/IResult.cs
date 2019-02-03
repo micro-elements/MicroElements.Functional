@@ -37,7 +37,7 @@ namespace MicroElements.Functional
         /// <param name="success">Success function: (Value,Messages)->TResult.</param>
         /// <param name="error">Error function: (Messages)->TResult.</param>
         /// <returns>TResult.</returns>
-        Res MatchUntyped<Res>(Func<object, Res> success, Func<Res> error);
+        Res MatchUntyped<Res>(Func<object, Res> success, Func<object, Res> error);
     }
 
     /// <summary>
@@ -54,10 +54,10 @@ namespace MicroElements.Functional
         /// <summary>
         /// Match untyped for base matching.
         /// </summary>
-        /// <typeparam name="TResult">Result type.</typeparam>
+        /// <typeparam name="Res">Result type.</typeparam>
         /// <param name="success">Success function: (Value,Messages)->TResult.</param>
         /// <param name="error">Error function: (Messages)->TResult.</param>
         /// <returns>TResult.</returns>
-        TResult MatchUntyped<TResult>(Func<object, IEnumerable, TResult> success, Func<object, IEnumerable, TResult> error);
+        Res MatchUntyped<Res>(Func<object, IEnumerable, Res> success, Func<object, IEnumerable, Res> error);
     }
 }

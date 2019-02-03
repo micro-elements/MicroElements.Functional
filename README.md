@@ -100,7 +100,7 @@ TODO
 ### Either
 TODO
 
-### ParseResult
+### Result
 TODO
 
 ## Design Notes
