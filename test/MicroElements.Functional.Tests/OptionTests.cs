@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using FluentAssertions;
 using Xunit;
 using static MicroElements.Functional.Prelude;
@@ -55,6 +56,36 @@ namespace MicroElements.Functional.Tests
             expr.Match(
                 some: i => (i == 12).Should().BeTrue(),
                 none: () => throw new InvalidOperationException("Shouldn't get here"));
+        }
+
+        [Fact]
+        public void AssertNotInitialized()
+        {
+            Some<int> some = default;
+            Static.GetValue(() => some.Value).Should().Throw<SomeNotInitializedException>();
+        }
+
+        [Fact]
+        public void OptionalInterface()
+        {
+            var optional = Some("Hello");
+            optional.IsSome.Should().BeTrue();
+            optional.IsNone.Should().BeFalse();
+            optional.GetUnderlyingType().Should().Be<string>();
+            optional.MatchUntyped(
+                value => value+" world",
+                () => throw new InvalidOperationException())
+                .Should().Be("Hello world");
+            optional.AsEnumerable().Should().BeEquivalentTo("Hello");
+            optional.ToList().Should().BeEquivalentTo("Hello");
+            optional.Should().BeEquivalentTo(Some("Hello"));
+            Equals(optional, Some("Hello")).Should().BeTrue();
+            optional.ToString().Should().Be("Some(Hello)");
+            optional.GetHashCode().Should().Be("Hello".GetHashCode());
+
+            var notInitalizedOption = new Option<string>();
+            Static.GetValue(() => (string)notInitalizedOption).Should().Throw<InvalidCastException>();
+            notInitalizedOption.GetHashCode().Should().Be(0);
         }
     }
 }

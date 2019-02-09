@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 
 // ReSharper disable CheckNamespace
 namespace MicroElements.Functional
@@ -12,4 +13,25 @@ namespace MicroElements.Functional
     /// <returns>A value that represents the outcome of the computation, either
     /// Success or Failure</returns>
     public delegate Result<A, Exception> Try<A>();
+
+    public static class TryExtensions
+    {
+        [Pure]
+        public static Result<T, Exception> Try<T>(this Try<T> self)
+        {
+            try
+            {
+                if (self == null)
+                {
+                    throw new ArgumentNullException(nameof(self));
+                }
+                return self();
+            }
+            catch (Exception e)
+            {
+                //TryConfig.ErrorLogger(e);
+                return e;
+            }
+        }
+    }
 }

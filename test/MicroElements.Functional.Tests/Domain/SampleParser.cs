@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MicroElements.Functional.Tests.Domain
 {
@@ -11,6 +12,7 @@ namespace MicroElements.Functional.Tests.Domain
 
             IMessageList<string> errors = MessageList<string>.Empty;
             IMessageList<string> messageList = MessageList<string>.Empty;
+
             ParseA(source)
                 .MatchSuccess((a, list) => parsedObject.A = a)
                 .MatchError((e, list) => errors = errors.AddRange(list))
@@ -22,8 +24,8 @@ namespace MicroElements.Functional.Tests.Domain
                 .MatchMessages(list => messageList = messageList.AddRange(list));
 
             return errors.Count == 0
-                ? parsedObject.ToSuccess(messageList) 
-                : Result.FailFromMessages<ParsedObject>(messageList);
+                ? parsedObject.ToSuccess(messageList)
+                : messageList.ToFail<ParsedObject, Exception, string>();
         }
 
         public Result<int, Exception, string> ParseA(string source)
@@ -39,6 +41,12 @@ namespace MicroElements.Functional.Tests.Domain
         {
             var src = source.Split(";").LastOrDefault();
             return src.ToSuccess("B parsed");
+        }
+
+        public async Task<Result<string, Exception, string>> ParseBAsync(string source)
+        {
+            await Task.Delay(1);
+            return ParseB(source);
         }
     }
 }

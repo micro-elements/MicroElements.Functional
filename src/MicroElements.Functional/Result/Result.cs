@@ -90,5 +90,11 @@ namespace MicroElements.Functional
         [Obsolete("add sugar")]
         public static Result<A, Exception, string> FailFromMessages<A>(IEnumerable<string> messages)
             => new Result<A, Exception, string>(default(Exception), messages.ToMessageList());
+
+        public static ValueWithMessages<A, Message> WithMessages<A, Message>(this in SuccessResult<A> successResult, IMessageList<Message> messages)
+            => new ValueWithMessages<A, Message>(successResult.Value, messages);
+
+        public static ValueWithMessages<Error, Message> WithMessages<Error, Message>(this in FailedResult<Error> successResult, IMessageList<Message> messages)
+            => new ValueWithMessages<Error, Message>(successResult.ErrorValue, messages);
     }
 }

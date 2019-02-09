@@ -95,7 +95,7 @@ namespace MicroElements.Functional
         /// </summary>
         /// <param name="successResult">SuccessResult of type <typeparamref name="A"/>.</param>
         [Pure]
-        public static implicit operator Result<A, Error, Message>(SuccessResult<A> successResult) =>
+        public static implicit operator Result<A, Error, Message>(in SuccessResult<A> successResult) =>
             Result.Success<A, Error, Message>(successResult.Value, MessageList<Message>.Empty);
 
         /// <summary>
@@ -103,8 +103,24 @@ namespace MicroElements.Functional
         /// </summary>
         /// <param name="failedResult">FailedResult of type <typeparamref name="Error"/>.</param>
         [Pure]
-        public static implicit operator Result<A, Error, Message>(FailedResult<Error> failedResult) =>
+        public static implicit operator Result<A, Error, Message>(in FailedResult<Error> failedResult) =>
             Result.Fail<A, Error, Message>(failedResult.ErrorValue, MessageList<Message>.Empty);
+
+        /// <summary>
+        /// Implicit conversion from <see cref="ValueWithMessages{A,Message}"/>.
+        /// </summary>
+        /// <param name="valueWithMessages">Success result data.</param>
+        [Pure]
+        public static implicit operator Result<A, Error, Message>(in ValueWithMessages<A, Message> valueWithMessages) =>
+            Result.Success<A, Error, Message>(valueWithMessages.Value, valueWithMessages.Messages);
+
+        /// <summary>
+        /// Implicit conversion from <see cref="ValueWithMessages{Error,Message}"/>.
+        /// </summary>
+        /// <param name="valueWithMessages">Failed result data.</param>
+        [Pure]
+        public static implicit operator Result<A, Error, Message>(in ValueWithMessages<Error, Message> valueWithMessages) =>
+            Result.Fail<A, Error, Message>(valueWithMessages.Value, valueWithMessages.Messages);
 
         /// <summary>
         /// Implicit conversion operator from <typeparamref name="Error"/> to Failed result.
@@ -246,7 +262,7 @@ namespace MicroElements.Functional
         /// <inheritdoc />
         public override string ToString()
         {
-            return IsSuccess ? $"Result: {State}({Value})" : $"Result: {State}({ErrorValue})";
+            return IsSuccess ? $"{State}({Value})" : $"Result{State}({ErrorValue})";
         }
     }
 }

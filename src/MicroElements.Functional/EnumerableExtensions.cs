@@ -6,7 +6,7 @@ namespace MicroElements.Functional
     /// <summary>
     /// <see cref="IEnumerable{T}"/> extensions.
     /// </summary>
-    public static class EnumerableExt
+    public static class EnumerableExtensions
     {
         /// <summary>
         /// Returns not null <see cref="IEnumerable{T}"/>.
