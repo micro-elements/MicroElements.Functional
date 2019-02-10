@@ -25,6 +25,14 @@ namespace MicroElements.Functional.Tests
         }
 
         [Fact]
+        public void Bind()
+        {
+            Some(3)
+                .Bind(i => Some(i * 2))
+                .GetValueUnsafe().Should().Be(6);
+        }
+
+        [Fact]
         public void NoneGeneratorTestsObject()
         {
             Option<int> optional = None;

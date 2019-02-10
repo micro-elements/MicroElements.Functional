@@ -4,6 +4,8 @@ using static MicroElements.Functional.Prelude;
 
 namespace MicroElements.Functional
 {
+    //TODO: see: https://lostechies.com/jimmybogard/2008/03/26/stop-creating-custom-delegate-types/
+
     /// <summary>
     /// Represents success action.
     /// </summary>

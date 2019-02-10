@@ -1,5 +1,9 @@
-﻿using System;
+﻿// Copyright (c) MicroElements. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Diagnostics.Contracts;
+using static MicroElements.Functional.Prelude;
 
 namespace MicroElements.Functional
 {
@@ -86,6 +90,23 @@ namespace MicroElements.Functional
             else
                 none();
             return Unit.Default;
+        }
+
+        /// <summary>
+        /// Option bind operation.
+        /// </summary>
+        /// <typeparam name="A">Input value type.</typeparam>
+        /// <typeparam name="B">Result value type.</typeparam>
+        /// <param name="option">Source option.</param>
+        /// <param name="bind">Bind func.</param>
+        /// <returns>Option of type <typeparamref name="B"/>.</returns>
+        public static Option<B> Bind<A, B>(
+            this in Option<A> option,
+            Func<A, Option<B>> bind)
+        {
+            bind.AssertArgumentNotNull(nameof(bind));
+
+            return option.Match(value => bind(value), () => None);
         }
     }
 }

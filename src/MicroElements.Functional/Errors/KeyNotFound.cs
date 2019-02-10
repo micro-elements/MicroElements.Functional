@@ -25,7 +25,8 @@
     /// </summary>
     public abstract class KeyNotFound : BaseError
     {
-        protected KeyNotFound(string errorCode, string errorFormat, params object[] args) : base(errorCode, errorFormat, args)
+        protected KeyNotFound(string errorCode, string errorFormat, params object[] args)
+            : base(errorCode, errorFormat, args)
         {
         }
     }

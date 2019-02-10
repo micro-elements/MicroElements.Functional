@@ -146,20 +146,17 @@ namespace MicroElements.Functional
         }
 
         /// <inheritdoc />
-        public override int GetHashCode() =>
-            IsSome
-                ? Value.GetHashCode()
-                : 0;
+        public override int GetHashCode() => IsSome ? Value.GetHashCode() : 0;
 
         /// <summary>
         /// Equality operator.
         /// </summary>
-        public static bool operator ==(Option<A> @this, Option<A> other) => @this.Equals(other);
+        public static bool operator ==(Option<A> self, Option<A> other) => self.Equals(other);
 
         /// <summary>
         /// Non-equality operator.
         /// </summary>
-        public static bool operator !=(Option<A> @this, Option<A> other) => !(@this == other);
+        public static bool operator !=(Option<A> self, Option<A> other) => !(self == other);
 
         /// <inheritdoc />
         public override string ToString() => IsSome ? $"Some({Value})" : "None";

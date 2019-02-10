@@ -12,6 +12,8 @@ namespace MicroElements.Functional
     /// </summary>
     public static class OptionExtensions
     {
+        public static Some<T> ToSome<T>(this T value) => new Some<T>(value);
+
         public static T GetValueUnsafe<T>(this Option<T> option)
             => option.Match((t) => t, () => throw new ValueIsNoneException());
 
@@ -26,9 +28,6 @@ namespace MicroElements.Functional
 
         public static Option<T> OrElse<T>(this Option<T> left, Func<Option<T>> right)
             => left.Match((_) => left, () => right());
-
-        public static Option<Result> Bind<T, Result>(this Option<T> option, Func<T, Option<Result>> f)
-            => option.Match(t => f(t), () => None);
 
         public static Option<R> Map<T, R>(this OptionNone _, Func<T, R> f)
             => None;
@@ -63,6 +62,5 @@ namespace MicroElements.Functional
                     (r) => Some(project(t, r)),
                     () => None),
                 () => None);
-
     }
 }
