@@ -28,11 +28,13 @@ namespace MicroElements.Functional
         /// <typeparam name="T">Argument type.</typeparam>
         /// <param name="arg">The argument.</param>
         /// <param name="name">The argument name.</param>
+        /// <returns>NotNull arg or throws <see cref="ArgumentNullException"/>.</returns>
         /// <exception cref="ArgumentNullException">The argument is null.</exception>
-        internal static void AssertArgumentNotNull<T>(this T arg, string name)
+        internal static T AssertArgumentNotNull<T>(this T arg, string name)
         {
             if (arg.IsNull())
                 throw new ArgumentNullException(name);
+            return arg;
         }
     }
 }

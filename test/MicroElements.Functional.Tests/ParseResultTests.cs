@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using FluentAssertions;
 using MicroElements.Functional.Tests.Domain;
 using Xunit;
@@ -45,6 +46,34 @@ namespace MicroElements.Functional.Tests
         }
 
         [Fact]
+        public async Task MatchAsync()
+        {
+            (await SuccessResult(2, "two")
+                .ToTask()
+                .MatchAsync((value, messages) => "success".ToTask(), (error, messages) => "fail".ToTask()))
+                .Should().Be("success");
+        }
+
+        [Fact]
+        public async Task BindAndMatchAsync()
+        {
+            (await SuccessResult(2, "two")
+                    .ToTask()
+                    .BindAsync(i => SuccessResult(i*2, "doubled").ToTask())
+                    .MatchAsync((value, messages) => value.ToTask(), (error, messages) => 0.ToTask()))
+                .Should().Be(4);
+        }
+
+        [Fact]
+        public async Task BindAsync()
+        {
+            (await SuccessResult(2, "two")
+                    .ToTask()
+                    .BindAsync(i => SuccessResult(i * 2, "doubled").ToTask()))
+                .Should().BeEquivalentTo((Result<int, Exception, string>)Result.Success(4));
+        }
+
+        [Fact]
         public void SampleParserTest()
         {
             var parseResult = new SampleParser().Parse("5;Text");
@@ -63,6 +92,17 @@ namespace MicroElements.Functional.Tests
             parseResult.IsSuccess.Should().BeFalse();
             parseResult.IsFailed.Should().BeTrue();
             parseResult.Messages.Should().BeEquivalentTo("AAA can not be parsed to int", "B parsed");
+        }
+
+        [Fact]
+        public async Task SampleParserAsyncTest()
+        {
+            int result = await new SampleParser()
+                .ParseBAsync("5;Text")
+                .MatchAsync(
+                    (value, messages) => Task.FromResult(1),
+                    (error, messages) => Task.FromResult(2));
+            result.Should().Be(1);
         }
 
         [Fact]

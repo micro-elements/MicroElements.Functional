@@ -9,7 +9,7 @@ namespace MicroElements.Functional
     /// <summary>
     /// ActionExtensions.
     /// </summary>
-    public static class ActionExt
+    public static class ActionExtensions
     {
         /// <summary>
         /// Converts <see cref="Action"/> to <see cref="Func{Unit}"/>.

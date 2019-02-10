@@ -1,3 +1,6 @@
+# 0.6.0
+- Result async support
+
 # 0.5.0
 - Result types
 - Many improvements

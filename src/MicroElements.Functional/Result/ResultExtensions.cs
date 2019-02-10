@@ -7,6 +7,9 @@ using System.Diagnostics.Contracts;
 
 namespace MicroElements.Functional
 {
+    /// <summary>
+    /// Result extension methods.
+    /// </summary>
     public static class ResultExtensions
     {
         /// <summary>
@@ -19,7 +22,7 @@ namespace MicroElements.Functional
         /// <param name="messages">Messages to add.</param>
         /// <returns>New Result with added messages.</returns>
         [Pure]
-        public static Result<A, Error, Message> AddMessages<A, Error, Message>(
+        public static Result<A, Error, Message> WithMessages<A, Error, Message>(
             this in Result<A, Error, Message> source,
             IEnumerable<Message> messages)
         {
@@ -38,12 +41,12 @@ namespace MicroElements.Functional
         /// <param name="messages">Messages to add.</param>
         /// <returns>New Result with added messages.</returns>
         [Pure]
-        public static Result<A, Error, Message> AddMessagesToStart<A, Error, Message>(
+        public static Result<A, Error, Message> WithMessagesAtStart<A, Error, Message>(
             this in Result<A, Error, Message> source,
             IMessageList<Message> messages)
         {
             return source.Match(
-                (value, list) => new Result<A, Error, Message>(value, messages.AddRange(list)),
+                (value, list) => Result.Success(value).WithMessages(messages.AddRange(list)), // new Result<A, Error, Message>(value, messages.AddRange(list)),
                 (error, list) => new Result<A, Error, Message>(error, messages.AddRange(list)));
         }
 
@@ -74,6 +77,10 @@ namespace MicroElements.Functional
         public static Result<A, Exception, Message> ToSuccess<A, Message>(
             this A value, IMessageList<Message> messages)
             => Result.Success<A, Exception, Message>(value, messages);
+
+        public static Result<A, Error, Message> ToFail<A, Error, Message>(
+            this IMessageList<Message> messages)
+            => Result.Fail<A, Error, Message>(default, messages);
 
         public static Result<A, Error> MatchSuccess<A, Error>(
             this Result<A, Error> result,

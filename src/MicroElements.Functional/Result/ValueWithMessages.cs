@@ -1,30 +1,45 @@
-﻿using System;
+﻿// Copyright (c) MicroElements. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace MicroElements.Functional
 {
-    public class ValueWithMessages<TValue, TMessage>
+    /// <summary>
+    /// Represents not null value with message list.
+    /// </summary>
+    /// <typeparam name="A">A value type.</typeparam>
+    /// <typeparam name="Message">Message type.</typeparam>
+    public readonly struct ValueWithMessages<A, Message>
     {
         /// <summary>
         /// Value.
         /// </summary>
-        public TValue Value { get; }
+        public readonly A Value;
 
         /// <summary>
         /// Message list.
         /// </summary>
-        public IMessageList<TMessage> Messages { get; }
+        public readonly IMessageList<Message> Messages;
 
         /// <summary>
         /// Creates value with messages.
         /// </summary>
         /// <param name="value">Value.</param>
         /// <param name="messages">Message list.</param>
-        public ValueWithMessages(TValue value, IMessageList<TMessage> messages = null)
+        public ValueWithMessages(A value, IMessageList<Message> messages)
         {
-            if (value.IsNull())
-                throw new ArgumentNullException(nameof(value), "Cannot use null for ValueWithMessages");
-            Value = value;
-            Messages = messages ?? MessageList<TMessage>.Empty;
+            Value = value.AssertArgumentNotNull(nameof(value));
+            Messages = messages.AssertArgumentNotNull(nameof(messages));
+        }
+
+        /// <summary>
+        /// Deconstructs values.
+        /// </summary>
+        /// <param name="value">Value.</param>
+        /// <param name="messages">Message list.</param>
+        public void Deconstruct(out A value, out IMessageList<Message> messages)
+        {
+            value = Value;
+            messages = Messages;
         }
     }
 }

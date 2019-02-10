@@ -124,9 +124,10 @@ TODO
 - Async interoparability or async version
 
 ## Monadic operations
-- Monad<B> Map(Func<A, B> f);
-- Monad<B> Select(Func<A, B> f);
-- Monad<B> Bind(Func<A, Monad<B>> f)
+- B Match(Func<A, B> map);
+- Monad<B> Map(Func<A, B> map);
+- Monad<B> Select(Func<A, B> select);
+- Monad<B> Bind(Func<A, Monad<B>> bind)
 - Monad<C> SelectMany<B, C>(
             Func<A, Monad<B>> bind,
             Func<A, B, C> project)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
+using System.Threading.Tasks;
 
 namespace MicroElements.Functional
 {
@@ -37,6 +38,31 @@ namespace MicroElements.Functional
             return result.AssertNotNullResult();
         }
 
+        [Pure]
+        public static async Task<B> MatchAsync<A, Error, Message, B>(
+            this Result<A, Error, Message> source,
+            SuccessFunc<A, Message, Task<B>> success,
+            ErrorFunc<Error, Message, Task<B>> error)
+        {
+            success.AssertArgumentNotNull(nameof(success));
+            error.AssertArgumentNotNull(nameof(error));
+
+            var resultBTask = source.IsSuccess
+                ? success(source.Value, source.Messages)
+                : error(source.ErrorValue, source.Messages);
+            return await resultBTask;
+        }
+
+        [Pure]
+        public static async Task<B> MatchAsync<A, Error, Message, B>(
+            this Task<Result<A, Error, Message>> source,
+            SuccessFunc<A, Message, Task<B>> success,
+            ErrorFunc<Error, Message, Task<B>> error)
+        {
+            var sourceResult = await source;
+            return await MatchAsync(sourceResult, success, error);
+        }
+
         /// <summary>
         /// Evaluates a specified function based on the result state.
         /// </summary>
@@ -63,6 +89,38 @@ namespace MicroElements.Functional
                 ? success(source.Value)
                 : error(source.ErrorValue);
             return result.AssertNotNullResult();
+        }
+
+        [Pure]
+        public static async Task<B> MatchAsync<A, Error, B>(
+            this Result<A, Error> source,
+            SuccessFunc<A, Task<B>> success,
+            ErrorFunc<Error, Task<B>> error)
+        {
+            success.AssertArgumentNotNull(nameof(success));
+            error.AssertArgumentNotNull(nameof(error));
+
+            var resultBTask = source.IsSuccess
+                ? success(source.Value)
+                : error(source.ErrorValue);
+            var result = await resultBTask;
+            return result.AssertNotNullResult();
+        }
+
+        [Pure]
+        public static Task<B> MatchAsync2<A, Error, B>(
+            this in Result<A, Error> source,
+            SuccessFunc<A, Task<B>> success,
+            ErrorFunc<Error, Task<B>> error)
+        {
+            success.AssertArgumentNotNull(nameof(success));
+            error.AssertArgumentNotNull(nameof(error));
+
+            var resultBTask = source.IsSuccess
+                ? success(source.Value)
+                : error(source.ErrorValue);
+
+            return resultBTask;
         }
 
         /// <summary>
@@ -128,11 +186,34 @@ namespace MicroElements.Functional
                 (value, list) =>
                 {
                     var resultB = bind(value);
-                    return resultB.Match(
-                        (b, messages) => new Result<B, Error, Message>(b, list.AddRange(resultB.Messages)),
-                        (error, messages) => new Result<B, Error, Message>(error, list.AddRange(resultB.Messages)));
+                    return resultB.WithMessagesAtStart(list);
                 },
                 (error, list) => new Result<B, Error, Message>(error, list));
+        }
+
+        public static async Task<Result<B, Error, Message>> BindAsync<A, Error, Message, B>(
+            this Result<A, Error, Message> source,
+            Func<A, Task<Result<B, Error, Message>>> bindAsync)
+        {
+            bindAsync.AssertArgumentNotNull(nameof(bindAsync));
+
+            return await source.Match(
+                async (value, list) =>
+                {
+                    var resultB = await bindAsync(value);
+                    return resultB.WithMessagesAtStart(list);
+                },
+                (error, list) => new Result<B, Error, Message>(error, list).ToTask());
+        }
+
+        public static async Task<Result<B, Error, Message>> BindAsync<A, Error, Message, B>(
+            this Task<Result<A, Error, Message>> sourceAsync,
+            Func<A, Task<Result<B, Error, Message>>> bindAsync)
+        {
+            bindAsync.AssertArgumentNotNull(nameof(bindAsync));
+
+            var source = await sourceAsync;
+            return await source.BindAsync(bindAsync);
         }
 
         /// <summary>
@@ -168,7 +249,7 @@ namespace MicroElements.Functional
                 error: Result.Fail<C, Error, Message>,
                 success: (a, list) =>
                 {
-                    Result<B, Error, Message> resultB = bind(a).AddMessagesToStart(list);
+                    Result<B, Error, Message> resultB = bind(a).WithMessagesAtStart(list);
                     return resultB.Match(
                         error: Result.Fail<C, Error, Message>,
                         success: (b, list2) => Result.Success<C, Error, Message>(project(a, b), list2));
