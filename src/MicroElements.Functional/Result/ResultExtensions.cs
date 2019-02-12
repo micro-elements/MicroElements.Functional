@@ -135,5 +135,40 @@ namespace MicroElements.Functional
             onMessages(result.Messages);
             return result;
         }
+
+        public static Result<A, Error> Validate<A, Error>(
+            this in Result<A, Error> result,
+            Func<A, Error> validate)
+        {
+            validate.AssertArgumentNotNull(nameof(validate));
+
+            if (result.IsSuccess)
+            {
+                var error = validate(result.Value);
+                if (!error.IsNull())
+                    return error;
+            }
+
+            return result;
+        }
+
+        public static Result<A, Error, Message> Validate<A, Error, Message>(
+            this in Result<A, Error, Message> source,
+            Func<A, IMessageList<Message>, Result<A, Error, Message>> validate)
+        {
+            validate.AssertArgumentNotNull(nameof(validate));
+
+            if (source.IsSuccess)
+            {
+                var result = validate(source.Value, source.Messages);
+                if (result.IsFailed)
+                {
+                    return source.WithMessages(result.Messages);
+                }
+            }
+
+            return source;
+        }
+
     }
 }

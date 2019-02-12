@@ -38,6 +38,20 @@ namespace MicroElements.Functional
             return result.AssertNotNullResult();
         }
 
+        /// <summary>
+        /// Evaluates a specified async function based on the result state.
+        /// </summary>
+        /// <typeparam name="A">Success result type.</typeparam>
+        /// <typeparam name="Error">Error type.</typeparam>
+        /// <typeparam name="Message">Message type.</typeparam>
+        /// <typeparam name="B">Result type.</typeparam>
+        /// <param name="source">Source object.</param>
+        /// <param name="success">Function to evaluate on <see cref="ResultState.Success"/> state.</param>
+        /// <param name="error">Function to evaluate on <see cref="ResultState.Error"/> state.</param>
+        /// <returns>ECompleted task with not null evaluated result.</returns>
+        /// <exception cref="ArgumentNullException">success is null.</exception>
+        /// <exception cref="ArgumentNullException">error is null.</exception>
+        /// <exception cref="ResultIsNullException">result is null.</exception>
         [Pure]
         public static async Task<B> MatchAsync<A, Error, Message, B>(
             this Result<A, Error, Message> source,
@@ -50,15 +64,33 @@ namespace MicroElements.Functional
             var resultBTask = source.IsSuccess
                 ? success(source.Value, source.Messages)
                 : error(source.ErrorValue, source.Messages);
-            return await resultBTask;
+            var resultB = await resultBTask;
+            return resultB.AssertNotNullResult();
         }
 
+        /// <summary>
+        /// Evaluates a specified async function based on the result state.
+        /// </summary>
+        /// <typeparam name="A">Success result type.</typeparam>
+        /// <typeparam name="Error">Error type.</typeparam>
+        /// <typeparam name="Message">Message type.</typeparam>
+        /// <typeparam name="B">Result type.</typeparam>
+        /// <param name="source">Source object.</param>
+        /// <param name="success">Function to evaluate on <see cref="ResultState.Success"/> state.</param>
+        /// <param name="error">Function to evaluate on <see cref="ResultState.Error"/> state.</param>
+        /// <returns>Completed task with not null evaluated result.</returns>
+        /// <exception cref="ArgumentNullException">success is null.</exception>
+        /// <exception cref="ArgumentNullException">error is null.</exception>
+        /// <exception cref="ResultIsNullException">result is null.</exception>
         [Pure]
         public static async Task<B> MatchAsync<A, Error, Message, B>(
             this Task<Result<A, Error, Message>> source,
             SuccessFunc<A, Message, Task<B>> success,
             ErrorFunc<Error, Message, Task<B>> error)
         {
+            success.AssertArgumentNotNull(nameof(success));
+            error.AssertArgumentNotNull(nameof(error));
+
             var sourceResult = await source;
             return await MatchAsync(sourceResult, success, error);
         }
@@ -91,6 +123,19 @@ namespace MicroElements.Functional
             return result.AssertNotNullResult();
         }
 
+        /// <summary>
+        /// Evaluates a specified async function based on the result state.
+        /// </summary>
+        /// <typeparam name="A">Success result type.</typeparam>
+        /// <typeparam name="Error">Error type.</typeparam>
+        /// <typeparam name="B">Result type.</typeparam>
+        /// <param name="source">Source object.</param>
+        /// <param name="success">Function to evaluate on <see cref="ResultState.Success"/> state.</param>
+        /// <param name="error">Function to evaluate on <see cref="ResultState.Error"/> state.</param>
+        /// <returns>Completed task with not null evaluated result.</returns>
+        /// <exception cref="ArgumentNullException">success is null.</exception>
+        /// <exception cref="ArgumentNullException">error is null.</exception>
+        /// <exception cref="ResultIsNullException">result is null.</exception>
         [Pure]
         public static async Task<B> MatchAsync<A, Error, B>(
             this Result<A, Error> source,
@@ -107,20 +152,30 @@ namespace MicroElements.Functional
             return result.AssertNotNullResult();
         }
 
+        /// <summary>
+        /// Evaluates a specified async function based on the result state.
+        /// </summary>
+        /// <typeparam name="A">Success result type.</typeparam>
+        /// <typeparam name="Error">Error type.</typeparam>
+        /// <typeparam name="B">Result type.</typeparam>
+        /// <param name="source">Source object.</param>
+        /// <param name="success">Function to evaluate on <see cref="ResultState.Success"/> state.</param>
+        /// <param name="error">Function to evaluate on <see cref="ResultState.Error"/> state.</param>
+        /// <returns>Completed task with not null evaluated result.</returns>
+        /// <exception cref="ArgumentNullException">success is null.</exception>
+        /// <exception cref="ArgumentNullException">error is null.</exception>
+        /// <exception cref="ResultIsNullException">result is null.</exception>
         [Pure]
-        public static Task<B> MatchAsync2<A, Error, B>(
-            this in Result<A, Error> source,
+        public static async Task<B> MatchAsync<A, Error, B>(
+            this Task<Result<A, Error>> source,
             SuccessFunc<A, Task<B>> success,
             ErrorFunc<Error, Task<B>> error)
         {
             success.AssertArgumentNotNull(nameof(success));
             error.AssertArgumentNotNull(nameof(error));
 
-            var resultBTask = source.IsSuccess
-                ? success(source.Value)
-                : error(source.ErrorValue);
-
-            return resultBTask;
+            var sourceResult = await source;
+            return await MatchAsync(sourceResult, success, error);
         }
 
         /// <summary>
@@ -150,6 +205,27 @@ namespace MicroElements.Functional
         /// </summary>
         /// <typeparam name="A">Success result type.</typeparam>
         /// <typeparam name="Error">Error type.</typeparam>
+        /// <typeparam name="B">Result type.</typeparam>
+        /// <param name="source">Source object.</param>
+        /// <param name="map">Map function.</param>
+        /// <returns>New result of type <typeparamref name="B"/>.</returns>
+        /// <exception cref="ArgumentNullException">success is null.</exception>
+        public static Result<B, Error> Map<A, Error, B>(
+            this in Result<A, Error> source,
+            Func<A, B> map)
+        {
+            map.AssertArgumentNotNull(nameof(map));
+
+            return source.Match(
+                (value) => new Result<B, Error>(map(value)),
+                (error) => new Result<B, Error>(error));
+        }
+
+        /// <summary>
+        /// Linq select operation.
+        /// </summary>
+        /// <typeparam name="A">Success result type.</typeparam>
+        /// <typeparam name="Error">Error type.</typeparam>
         /// <typeparam name="Message">Message type.</typeparam>
         /// <typeparam name="B">Result type.</typeparam>
         /// <param name="source">Source object.</param>
@@ -166,7 +242,28 @@ namespace MicroElements.Functional
         }
 
         /// <summary>
+        /// Linq select operation.
+        /// </summary>
+        /// <typeparam name="A">Success result type.</typeparam>
+        /// <typeparam name="Error">Error type.</typeparam>
+        /// <typeparam name="Message">Message type.</typeparam>
+        /// <typeparam name="B">Result type.</typeparam>
+        /// <param name="source">Source object.</param>
+        /// <param name="selector">Map function.</param>
+        /// <returns>New result of type <typeparamref name="B"/>.</returns>
+        /// <exception cref="ArgumentNullException">selector is null.</exception>
+        public static Result<B, Error> Select<A, Error, B>(
+            this in Result<A, Error> source,
+            Func<A, B> selector)
+        {
+            selector.AssertArgumentNotNull(nameof(selector));
+
+            return source.Map(selector);
+        }
+
+        /// <summary>
         /// Monad bind operation.
+        /// Returns new monad Result of type <typeparamref name="B"/>.
         /// </summary>
         /// <typeparam name="A">Success result type.</typeparam>
         /// <typeparam name="Error">Error type.</typeparam>
@@ -191,6 +288,17 @@ namespace MicroElements.Functional
                 (error, list) => new Result<B, Error, Message>(error, list));
         }
 
+        /// <summary>
+        /// Monad bind operation (async version).
+        /// </summary>
+        /// <typeparam name="A">Success result type.</typeparam>
+        /// <typeparam name="Error">Error type.</typeparam>
+        /// <typeparam name="Message">Message type.</typeparam>
+        /// <typeparam name="B">Result type.</typeparam>
+        /// <param name="source">Source object.</param>
+        /// <param name="bindAsync">Async bind function.</param>
+        /// <returns>Completed task with new result of type B.</returns>
+        /// <exception cref="ArgumentNullException">bind is null.</exception>
         public static async Task<Result<B, Error, Message>> BindAsync<A, Error, Message, B>(
             this Result<A, Error, Message> source,
             Func<A, Task<Result<B, Error, Message>>> bindAsync)
@@ -206,6 +314,17 @@ namespace MicroElements.Functional
                 (error, list) => new Result<B, Error, Message>(error, list).ToTask());
         }
 
+        /// <summary>
+        /// Monad bind operation (async version).
+        /// </summary>
+        /// <typeparam name="A">Success result type.</typeparam>
+        /// <typeparam name="Error">Error type.</typeparam>
+        /// <typeparam name="Message">Message type.</typeparam>
+        /// <typeparam name="B">Result type.</typeparam>
+        /// <param name="sourceAsync">Task for get source object.</param>
+        /// <param name="bindAsync">Async bind function.</param>
+        /// <returns>Completed task with new result of type B.</returns>
+        /// <exception cref="ArgumentNullException">bind is null.</exception>
         public static async Task<Result<B, Error, Message>> BindAsync<A, Error, Message, B>(
             this Task<Result<A, Error, Message>> sourceAsync,
             Func<A, Task<Result<B, Error, Message>>> bindAsync)
@@ -237,6 +356,50 @@ namespace MicroElements.Functional
                 (error) => new Result<B, Error>(error));
         }
 
+        /// <summary>
+        /// Monad bind operation (async version).
+        /// </summary>
+        /// <typeparam name="A">Success result type.</typeparam>
+        /// <typeparam name="Error">Error type.</typeparam>
+        /// <typeparam name="B">Result type.</typeparam>
+        /// <param name="source">Source object.</param>
+        /// <param name="bindAsync">Async bind function.</param>
+        /// <returns>Completed task with new result of type B.</returns>
+        /// <exception cref="ArgumentNullException">bind is null.</exception>
+        public static async Task<Result<B, Error>> BindAsync<A, Error, B>(
+            Result<A, Error> source,
+            Func<A, Task<Result<B, Error>>> bindAsync)
+        {
+            bindAsync.AssertArgumentNotNull(nameof(bindAsync));
+
+            return await source.Match(
+                async (value) => await bindAsync(value),
+                (error) => new Result<B, Error>(error).ToTask());
+        }
+
+        /// <summary>
+        /// Monad bind operation (async version).
+        /// </summary>
+        /// <typeparam name="A">Success result type.</typeparam>
+        /// <typeparam name="Error">Error type.</typeparam>
+        /// <typeparam name="B">Result type.</typeparam>
+        /// <param name="sourceAsync">Task for get source object.</param>
+        /// <param name="bindAsync">Async bind function.</param>
+        /// <returns>Completed task with new result of type B.</returns>
+        /// <exception cref="ArgumentNullException">bind is null.</exception>
+        public static async Task<Result<B, Error>> BindAsync<A, Error, B>(
+            Task<Result<A, Error>> sourceAsync,
+            Func<A, Task<Result<B, Error>>> bindAsync)
+        {
+            bindAsync.AssertArgumentNotNull(nameof(bindAsync));
+
+            var source = await sourceAsync;
+            return await BindAsync(source, bindAsync);
+        }
+
+        /// <summary>
+        /// LINQ SelectMany.
+        /// </summary>
         public static Result<C, Error, Message> SelectMany<A, Error, Message, B, C>(
             this in Result<A, Error, Message> source,
             Func<A, Result<B, Error, Message>> bind,
@@ -256,6 +419,9 @@ namespace MicroElements.Functional
                 });
         }
 
+        /// <summary>
+        /// LINQ SelectMany.
+        /// </summary>
         public static Result<C, Error> SelectMany<A, Error, B, C>(
             this in Result<A, Error> source,
             Func<A, Result<B, Error>> bind,
@@ -271,7 +437,5 @@ namespace MicroElements.Functional
                         error: Result.Fail<C, Error>,
                         success: (b) => Result.Success<C, Error>(project(a, b))));
         }
-
-        //TODO Combine?
     }
 }

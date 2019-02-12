@@ -124,12 +124,14 @@ TODO
 - Async interoparability or async version
 
 ## Monadic operations
+```
 - B Match(Func<A, B> map);
 - Monad<B> Map(Func<A, B> map);
 - Monad<B> Select(Func<A, B> select);
 - Monad<B> Bind(Func<A, Monad<B>> bind)
 - Monad<C> SelectMany<B, C>(
-            Func<A, Monad<B>> bind,
-            Func<A, B, C> project)
+     Func<A, Monad<B>> bind,
+     Func<A, B, C> project)
+```
 
 [LICENSE]: https://raw.githubusercontent.com/micro-elements/MicroElements.Functional/master/LICENSE
