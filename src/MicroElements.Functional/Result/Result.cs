@@ -1,7 +1,6 @@
 ﻿// Copyright (c) MicroElements. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using System.Collections.Generic;
 
 namespace MicroElements.Functional
@@ -86,10 +85,6 @@ namespace MicroElements.Functional
 
         public static Result<A, Error, Message> Fail<A, Error, Message>(Error error, Message message)
             => new Result<A, Error, Message>(error, new MessageList<Message>(message));
-
-        [Obsolete("add sugar")]
-        public static Result<A, Exception, string> FailFromMessages<A>(IEnumerable<string> messages)
-            => new Result<A, Exception, string>(default(Exception), messages.ToMessageList());
 
         public static ValueWithMessages<A, Message> WithMessages<A, Message>(this in SuccessResult<A> successResult, IMessageList<Message> messages)
             => new ValueWithMessages<A, Message>(successResult.Value, messages);

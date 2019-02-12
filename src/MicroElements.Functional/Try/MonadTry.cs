@@ -34,4 +34,43 @@ namespace MicroElements.Functional
             }
         }
     }
+
+    public static partial class Prelude
+    {
+        public static Result<A, Exception> Try<A>(Func<A> func)
+        {
+            try
+            {
+                return Result.Success(func());
+            }
+            catch (Exception exc)
+            {
+                return exc;
+            }
+        }
+
+        public static Result<A, Error> Try<A, Error>(Func<A> func, Func<Exception, Error> mapError)
+        {
+            try
+            {
+                return Result.Success(func());
+            }
+            catch (Exception exc)
+            {
+                return mapError(exc);
+            }
+        }
+
+        public static Result<A, Error> Try<A, Error>(Func<Result<A, Error>> func, Func<Exception, Error> mapError)
+        {
+            try
+            {
+                return func();
+            }
+            catch (Exception exc)
+            {
+                return mapError(exc);
+            }
+        }
+    }
 }

@@ -1,3 +1,7 @@
+# 0.7.0
+- Result Map and async operations
+- First version of validation and try
+
 # 0.6.0
 - Result async support
 
