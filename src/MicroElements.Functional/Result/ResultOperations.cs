@@ -7,7 +7,7 @@ namespace MicroElements.Functional
     /// <summary>
     /// Monadic operations.
     /// </summary>
-    public static class ResultOperations
+    public static partial class ResultOperations
     {
         /// <summary>
         /// Evaluates a specified function based on the result state.
@@ -246,7 +246,6 @@ namespace MicroElements.Functional
         /// </summary>
         /// <typeparam name="A">Success result type.</typeparam>
         /// <typeparam name="Error">Error type.</typeparam>
-        /// <typeparam name="Message">Message type.</typeparam>
         /// <typeparam name="B">Result type.</typeparam>
         /// <param name="source">Source object.</param>
         /// <param name="selector">Map function.</param>
@@ -346,7 +345,7 @@ namespace MicroElements.Functional
         /// <returns>New result of type B.</returns>
         /// <exception cref="ArgumentNullException">bind is null.</exception>
         public static Result<B, Error> Bind<A, Error, B>(
-            in Result<A, Error> source,
+            this in Result<A, Error> source,
             Func<A, Result<B, Error>> bind)
         {
             bind.AssertArgumentNotNull(nameof(bind));
@@ -367,7 +366,7 @@ namespace MicroElements.Functional
         /// <returns>Completed task with new result of type B.</returns>
         /// <exception cref="ArgumentNullException">bind is null.</exception>
         public static async Task<Result<B, Error>> BindAsync<A, Error, B>(
-            Result<A, Error> source,
+            this Result<A, Error> source,
             Func<A, Task<Result<B, Error>>> bindAsync)
         {
             bindAsync.AssertArgumentNotNull(nameof(bindAsync));
@@ -388,7 +387,7 @@ namespace MicroElements.Functional
         /// <returns>Completed task with new result of type B.</returns>
         /// <exception cref="ArgumentNullException">bind is null.</exception>
         public static async Task<Result<B, Error>> BindAsync<A, Error, B>(
-            Task<Result<A, Error>> sourceAsync,
+            this Task<Result<A, Error>> sourceAsync,
             Func<A, Task<Result<B, Error>>> bindAsync)
         {
             bindAsync.AssertArgumentNotNull(nameof(bindAsync));

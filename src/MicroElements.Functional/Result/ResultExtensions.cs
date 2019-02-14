@@ -52,11 +52,11 @@ namespace MicroElements.Functional
 
         [Pure]
         public static A GetValueOrThrow<A, Error, Message>(this in Result<A, Error, Message> source) =>
-            source.Match((a, list) => a, (error, list) => throw new InvalidCastException($"Result in Failed state can not be cast to {nameof(A)}"));
+            source.Match((a, list) => a, (error, list) => throw new InvalidCastException($"Result in Failed state can not be cast to {typeof(A)}"));
 
         [Pure]
         public static A GetValueOrThrow<A, Error>(this in Result<A, Error> source) =>
-            source.Match((a) => a, (error) => throw new InvalidCastException($"Result in Failed state can not be cast to {nameof(A)}"));
+            source.Match((a) => a, (error) => throw new InvalidCastException($"Result in Failed state can not be cast to {typeof(A)}"));
 
         [Pure]
         public static A GetValueOrElse<A, Error, Message>(
