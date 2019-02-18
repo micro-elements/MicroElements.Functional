@@ -31,6 +31,16 @@ namespace MicroElements.Functional
                 (error, list) => new Result<A, Error, Message>(error, list.AddRange(messages)));
         }
 
+        [Pure]
+        public static Result<A, Error, Message> WithMessages<A, Error, Message>(
+            this in Result<A, Error> source,
+            IEnumerable<Message> messages)
+        {
+            return source.Match(
+                (value) => new Result<A, Error, Message>(value, new MessageList<Message>(messages)),
+                (error) => new Result<A, Error, Message>(error, new MessageList<Message>(messages)));
+        }
+
         /// <summary>
         /// Creates new Result with new messages added to in the begin of message list.
         /// </summary>
@@ -168,6 +178,18 @@ namespace MicroElements.Functional
             }
 
             return source;
+        }
+
+
+        public static Result<A, Error, Message> Validate<A, Error, Message>(
+            this Result<A, Error> source,
+            Func<A, IEnumerable<Message>> validate)
+        {
+            validate.AssertArgumentNotNull(nameof(validate));
+
+            return source.Match(
+                value => source.WithMessages(validate(value)),
+                error => Result.Fail<A, Error, Message>(error, new Message[0]));
         }
 
     }

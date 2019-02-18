@@ -73,6 +73,19 @@ namespace MicroElements.Functional
             }
         }
 
+        /// <summary>
+        /// Executes BindAsync operation on <c>try</c> block.
+        /// Uses <paramref name="mapError"/> to convert exception to <typeparamref name="Error"/> type.
+        /// </summary>
+        /// <typeparam name="A">Success result type.</typeparam>
+        /// <typeparam name="Error">Error type.</typeparam>
+        /// <typeparam name="B">Result type.</typeparam>
+        /// <param name="source">Source object.</param>
+        /// <param name="bindAsync">Async Bind function.</param>
+        /// <param name="mapError">Convert <see cref="Exception"/> to result <typeparamref name="Error"/> type.</param>
+        /// <returns>New result of type B.</returns>
+        /// <exception cref="ArgumentNullException">bindAsync is null.</exception>
+        /// <exception cref="ArgumentNullException">mapError is null.</exception>
         public static async Task<Result<B, Error>> TryBindAsync<A, Error, B>(
             this Result<A, Error> source,
             Func<A, Task<B>> bindAsync,
