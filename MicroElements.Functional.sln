@@ -16,6 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		CHANGELOG.md = CHANGELOG.md
 		common.props = common.props
 		README.md = README.md
+		TODO.md = TODO.md
 		version.props = version.props
 	EndProjectSection
 EndProject
@@ -23,7 +24,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{3211
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunctionalSample", "samples\FunctionalSample\FunctionalSample.csproj", "{2D7794F2-6AD2-4407-B0CF-9A3699C67592}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroElements.Functional.Benchmarks", "MicroElements.Functional.Benchmarks\MicroElements.Functional.Benchmarks.csproj", "{53956129-7A24-4FE0-8115-A46FD22DDB46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicroElements.Functional.Benchmarks", "MicroElements.Functional.Benchmarks\MicroElements.Functional.Benchmarks.csproj", "{53956129-7A24-4FE0-8115-A46FD22DDB46}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Linq;
 
 namespace MicroElements.Functional
 {
@@ -31,6 +32,16 @@ namespace MicroElements.Functional
                 (error, list) => new Result<A, Error, Message>(error, list.AddRange(messages)));
         }
 
+        [Pure]
+        public static Result<A, Error, Message> WithMessages<A, Error, Message>(
+            this in Result<A, Error> source,
+            IEnumerable<Message> messages)
+        {
+            return source.Match(
+                (value) => new Result<A, Error, Message>(value, new MessageList<Message>(messages)),
+                (error) => new Result<A, Error, Message>(error, new MessageList<Message>(messages)));
+        }
+
         /// <summary>
         /// Creates new Result with new messages added to in the begin of message list.
         /// </summary>
@@ -52,11 +63,11 @@ namespace MicroElements.Functional
 
         [Pure]
         public static A GetValueOrThrow<A, Error, Message>(this in Result<A, Error, Message> source) =>
-            source.Match((a, list) => a, (error, list) => throw new InvalidCastException($"Result in Failed state can not be cast to {nameof(A)}"));
+            source.Match((a, list) => a, (error, list) => throw new InvalidCastException($"Result in Failed state can not be cast to {typeof(A)}"));
 
         [Pure]
         public static A GetValueOrThrow<A, Error>(this in Result<A, Error> source) =>
-            source.Match((a) => a, (error) => throw new InvalidCastException($"Result in Failed state can not be cast to {nameof(A)}"));
+            source.Match((a) => a, (error) => throw new InvalidCastException($"Result in Failed state can not be cast to {typeof(A)}"));
 
         [Pure]
         public static A GetValueOrElse<A, Error, Message>(
@@ -170,5 +181,32 @@ namespace MicroElements.Functional
             return source;
         }
 
+        public static Result<A, Error, Message> Validate<A, Error, Message>(
+            this Result<A, Error> source,
+            Func<A, IEnumerable<Message>> validate,
+            Func<Message, bool> isError)
+        {
+            validate.AssertArgumentNotNull(nameof(validate));
+            isError.AssertArgumentNotNull(nameof(isError));
+
+            return source.Match(
+                value =>
+                {
+                    var messages = validate(value).ToList();
+                    var hasErrors = messages.Any(isError);
+                    if (hasErrors)
+                        return Result.Fail<A, Error, Message>(default, messages);
+                    return source.WithMessages(messages);
+                },
+                error => Result.Fail<A, Error, Message>(error, Array.Empty<Message>()));
+        }
+
+        public static Result<A, Error, Message> Validate<A, Error, Message>(
+            this Result<A, Error> source,
+            Func<A, IEnumerable<Message>> validate)
+            where Message : ICanBeError
+        {
+            return source.Validate(validate, message => message.IsError);
+        }
     }
 }
