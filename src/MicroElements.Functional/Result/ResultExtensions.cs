@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Linq;
 
 namespace MicroElements.Functional
 {
@@ -180,17 +181,32 @@ namespace MicroElements.Functional
             return source;
         }
 
+        public static Result<A, Error, Message> Validate<A, Error, Message>(
+            this Result<A, Error> source,
+            Func<A, IEnumerable<Message>> validate,
+            Func<Message, bool> isError)
+        {
+            validate.AssertArgumentNotNull(nameof(validate));
+            isError.AssertArgumentNotNull(nameof(isError));
+
+            return source.Match(
+                value =>
+                {
+                    var messages = validate(value).ToList();
+                    var hasErrors = messages.Any(isError);
+                    if (hasErrors)
+                        return Result.Fail<A, Error, Message>(default, messages);
+                    return source.WithMessages(messages);
+                },
+                error => Result.Fail<A, Error, Message>(error, Array.Empty<Message>()));
+        }
 
         public static Result<A, Error, Message> Validate<A, Error, Message>(
             this Result<A, Error> source,
             Func<A, IEnumerable<Message>> validate)
+            where Message : ICanBeError
         {
-            validate.AssertArgumentNotNull(nameof(validate));
-
-            return source.Match(
-                value => source.WithMessages(validate(value)),
-                error => Result.Fail<A, Error, Message>(error, new Message[0]));
+            return source.Validate(validate, message => message.IsError);
         }
-
     }
 }

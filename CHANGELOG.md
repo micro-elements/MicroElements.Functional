@@ -1,3 +1,9 @@
+# 0.8.0
+- Message for logging and validation
+- Validation implementation
+- TryBind and TryBindAsync for Result
+- Try monad
+
 # 0.7.0
 - Result Map and async operations
 - First version of validation and try

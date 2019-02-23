@@ -13,7 +13,10 @@ namespace MicroElements.Functional.Tests.Domain
         {
             ReadFile(fileName)
                 .Bind(TryParseCustomerDto)
-                .Validate(ValidateCustomer);
+                .Validate(ValidateCustomer)
+                .Match(
+                    (value, messages) => Console.WriteLine("Ok"),
+                    (error, messages) => Console.WriteLine("Error"));
         }
 
         public Result<string, string> ReadFile(string fileName)
@@ -31,12 +34,12 @@ namespace MicroElements.Functional.Tests.Domain
             return JsonConvert.DeserializeObject<CustomerDto>(source);
         }
 
-        public IEnumerable<string> ValidateCustomer(CustomerDto customer)
+        public IEnumerable<Message> ValidateCustomer(CustomerDto customer)
         {
             if (String.IsNullOrWhiteSpace(customer.Name))
-                yield return "Customer name is empty";
+                yield return ErrorMessage("Customer name is empty");
             if (String.IsNullOrWhiteSpace(customer.Email))
-                yield return "Customer Email is empty";
+                yield return WarningMessage("Customer Email is empty");
         }
     }
 
