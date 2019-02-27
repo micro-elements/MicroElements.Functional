@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MicroElements.Functional.Errors
 {
@@ -35,10 +36,10 @@ namespace MicroElements.Functional.Errors
         /// <param name="errorCode">Optional error code. If not set that type name uses.</param>
         /// <param name="errorFormat">Error format. Not null.</param>
         /// <param name="args">Optional args.</param>
-        protected BaseError(string errorCode, string errorFormat, params object[] args)
+        protected BaseError(string errorCode = null, string errorFormat = null, params object[] args)
         {
             ErrorCode = errorCode ?? GetType().Name;
-            ErrorFormat = errorFormat.AssertArgumentNotNull(nameof(errorFormat));
+            ErrorFormat = errorFormat ?? $"{ErrorCode} occured";
             _args = args;
         }
 

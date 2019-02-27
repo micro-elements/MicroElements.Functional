@@ -1,3 +1,7 @@
+# 0.9.0
+- MutableMessageList
+- Improvements for ValueWithMessages
+
 # 0.8.0
 - Message for logging and validation
 - Validation implementation

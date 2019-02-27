@@ -137,12 +137,6 @@ namespace MicroElements.Functional
         }
     }
 
-    public static class MessageListExt
-    {
-        public static MessageList<Message> ToMessageList<Message>(this IEnumerable<Message> messages)
-            => MessageList.FromEnumerable(messages);
-    }
-
     public static partial class Prelude
     {
         public static readonly IMessageList<string> EmptyMessageList = MessageList<string>.Empty;

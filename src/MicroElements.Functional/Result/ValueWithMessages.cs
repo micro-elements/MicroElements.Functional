@@ -1,6 +1,8 @@
 ﻿// Copyright (c) MicroElements. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Collections.Generic;
+
 namespace MicroElements.Functional
 {
     /// <summary>
@@ -25,10 +27,21 @@ namespace MicroElements.Functional
         /// </summary>
         /// <param name="value">Value.</param>
         /// <param name="messages">Message list.</param>
-        public ValueWithMessages(A value, IMessageList<Message> messages)
+        public ValueWithMessages(A value, IEnumerable<Message> messages)
         {
             Value = value.AssertArgumentNotNull(nameof(value));
-            Messages = messages.AssertArgumentNotNull(nameof(messages));
+            Messages = messages.AssertArgumentNotNull(nameof(messages)).ToMessageList();
+        }
+
+        /// <summary>
+        /// Creates value with messages.
+        /// </summary>
+        /// <param name="value">Value.</param>
+        /// <param name="message">Single Message.</param>
+        public ValueWithMessages(A value, Message message)
+        {
+            Value = value.AssertArgumentNotNull(nameof(value));
+            Messages = message.AssertArgumentNotNull(nameof(message)).ToMessageList();
         }
 
         /// <summary>
@@ -41,5 +54,19 @@ namespace MicroElements.Functional
             value = Value;
             messages = Messages;
         }
+    }
+
+    public static class ValueWithMessagesExtensions
+    {
+        /// <summary>
+        /// Creates new <see cref="ValueWithMessages{A,Message}"/> by value and messages.
+        /// </summary>
+        /// <typeparam name="A">Value type.</typeparam>
+        /// <typeparam name="Message">Message type.</typeparam>
+        /// <param name="value">Source value.</param>
+        /// <param name="messages">Messages.</param>
+        /// <returns><see cref="ValueWithMessages{A,Message}"/>.</returns>
+        public static ValueWithMessages<A, Message> ValueWithMessages<A, Message>(this A value, params Message[] messages) =>
+            new ValueWithMessages<A, Message>(value, messages);
     }
 }
