@@ -9,6 +9,8 @@ namespace MicroElements.Functional
     /// </summary>
     public sealed class Message : IMessage, ICanBeError
     {
+        private static readonly IReadOnlyDictionary<string, object> EmptyPropertySet = new Dictionary<string, object>();
+
         /// <summary>
         /// Date and time of message created.
         /// </summary>
@@ -59,12 +61,12 @@ namespace MicroElements.Functional
             object state = null,
             IReadOnlyDictionary<string, object> properties = null)
         {
-            Timestamp = timestamp ?? DateTimeOffset.Now;
+            Text = text.AssertArgumentNotNull(nameof(text));
             Severity = severity;
-            Text = text;
+            Timestamp = timestamp ?? DateTimeOffset.Now;
             EventName = eventName;
             State = state;
-            Properties = properties;
+            Properties = properties ?? EmptyPropertySet;
         }
 
         /// <summary>

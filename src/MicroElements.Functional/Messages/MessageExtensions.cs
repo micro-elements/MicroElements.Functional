@@ -95,5 +95,16 @@ namespace MicroElements.Functional
             properties[name] = value;
             return message.WithProperties(properties);
         }
+
+        /// <summary>
+        /// Gets optional property by name.
+        /// </summary>
+        /// <param name="message">Source message.</param>
+        /// <param name="propertyName">Property name.</param>
+        /// <returns>Optional value.</returns>
+        public static Option<object> GetProperty(this IMessage message, string propertyName)
+        {
+            return message.Properties.GetValueAsOption(propertyName);
+        }
     }
 }
