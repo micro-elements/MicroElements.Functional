@@ -9,6 +9,8 @@ namespace MicroElements.Functional
     /// </summary>
     public sealed class Message : IMessage, ICanBeError
     {
+        private static readonly IReadOnlyDictionary<string, object> EmptyPropertySet = new Dictionary<string, object>();
+
         /// <summary>
         /// Date and time of message created.
         /// </summary>
@@ -59,12 +61,12 @@ namespace MicroElements.Functional
             object state = null,
             IReadOnlyDictionary<string, object> properties = null)
         {
-            Timestamp = timestamp ?? DateTimeOffset.Now;
+            Text = text.AssertArgumentNotNull(nameof(text));
             Severity = severity;
-            Text = text;
+            Timestamp = timestamp ?? DateTimeOffset.Now;
             EventName = eventName;
             State = state;
-            Properties = properties;
+            Properties = properties ?? EmptyPropertySet;
         }
 
         /// <summary>
@@ -72,5 +74,8 @@ namespace MicroElements.Functional
         /// </summary>
         /// <param name="text">Text message.</param>
         public static implicit operator Message(string text) => new Message(text);
+
+        /// <inheritdoc />
+        public override string ToString() => $"{Timestamp:yyyy-MM-ddTHH:mm:ss.fff} | {Severity} | {EventName.AddIfNotNull()} {Text}";
     }
 }

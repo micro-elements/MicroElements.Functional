@@ -115,12 +115,28 @@ namespace MicroElements.Functional
             Result.Success<A, Error, Message>(valueWithMessages.Value, valueWithMessages.Messages);
 
         /// <summary>
+        /// Implicit conversion from <see cref="ValueTuple{A,Message}"/>.
+        /// </summary>
+        /// <param name="valueWithMessages">Success result data.</param>
+        [Pure]
+        public static implicit operator Result<A, Error, Message>(in ValueTuple<A, IEnumerable<Message>> valueWithMessages) =>
+            Result.Success<A, Error, Message>(valueWithMessages.Item1, valueWithMessages.Item2);
+
+        /// <summary>
         /// Implicit conversion from <see cref="ValueWithMessages{Error,Message}"/>.
         /// </summary>
         /// <param name="valueWithMessages">Failed result data.</param>
         [Pure]
         public static implicit operator Result<A, Error, Message>(in ValueWithMessages<Error, Message> valueWithMessages) =>
             Result.Fail<A, Error, Message>(valueWithMessages.Value, valueWithMessages.Messages);
+
+        /// <summary>
+        /// Implicit conversion from <see cref="ValueTuple{Error,Message}"/>.
+        /// </summary>
+        /// <param name="valueWithMessages">Failed result data.</param>
+        [Pure]
+        public static implicit operator Result<A, Error, Message>(in ValueTuple<Error, IEnumerable<Message>> valueWithMessages) =>
+            Result.Fail<A, Error, Message>(valueWithMessages.Item1, valueWithMessages.Item2);
 
         /// <summary>
         /// Implicit conversion operator from <typeparamref name="Error"/> to Failed result.
@@ -260,9 +276,6 @@ namespace MicroElements.Functional
         #endregion
 
         /// <inheritdoc />
-        public override string ToString()
-        {
-            return IsSuccess ? $"{State}({Value})" : $"Result{State}({ErrorValue})";
-        }
+        public override string ToString() => IsSuccess ? $"{State}({Value})" : $"Result{State}({ErrorValue})";
     }
 }

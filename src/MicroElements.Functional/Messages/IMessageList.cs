@@ -6,13 +6,8 @@ namespace MicroElements.Functional
     /// Message list.
     /// </summary>
     /// <typeparam name="TMessage">Message type.</typeparam>
-    public interface IMessageList<TMessage> : IEnumerable<TMessage>
+    public interface IMessageList<TMessage> : IReadOnlyCollection<TMessage>
     {
-        /// <summary>
-        /// Gets messages count.
-        /// </summary>
-        int Count { get; }
-
         /// <summary>
         /// Adds message to list.
         /// </summary>
