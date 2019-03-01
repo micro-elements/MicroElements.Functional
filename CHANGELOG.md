@@ -1,3 +1,10 @@
+# 0.10.0
+- IMessageList now is IReadOnlyCollection
+- Message default values
+- Message GetProperty method
+- Message ToString
+- Result conversion from ValueTuple
+
 # 0.9.0
 - MutableMessageList
 - Improvements for ValueWithMessages
