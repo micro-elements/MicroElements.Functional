@@ -74,5 +74,8 @@ namespace MicroElements.Functional
         /// </summary>
         /// <param name="text">Text message.</param>
         public static implicit operator Message(string text) => new Message(text);
+
+        /// <inheritdoc />
+        public override string ToString() => $"{Timestamp:yyyy-MM-ddTHH:mm:ss.fff} | {Severity} | {EventName.AddIfNotNull()} {Text}";
     }
 }
