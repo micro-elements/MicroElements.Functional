@@ -6,9 +6,9 @@ using System;
 namespace MicroElements.Functional
 {
     /// <summary>
-    /// Internal check methods.
+    /// Contract check methods.
     /// </summary>
-    internal static class Check
+    public static class Contracts
     {
         /// <summary>
         /// Checks that result is not null.
@@ -17,7 +17,7 @@ namespace MicroElements.Functional
         /// <param name="result">Result of an operation.</param>
         /// <returns>Result or throws <see cref="ResultIsNullException"/>.</returns>
         /// <exception cref="ResultIsNullException">Result is null.</exception>
-        internal static T AssertNotNullResult<T>(this T result)
+        public static T AssertNotNullResult<T>(this T result)
             => result.IsNull()
                 ? throw new ResultIsNullException()
                 : result;
@@ -30,7 +30,7 @@ namespace MicroElements.Functional
         /// <param name="name">The argument name.</param>
         /// <returns>NotNull arg or throws <see cref="ArgumentNullException"/>.</returns>
         /// <exception cref="ArgumentNullException">The argument is null.</exception>
-        internal static T AssertArgumentNotNull<T>(this T arg, string name)
+        public static T AssertArgumentNotNull<T>(this T arg, string name)
         {
             if (arg.IsNull())
                 throw new ArgumentNullException(name);

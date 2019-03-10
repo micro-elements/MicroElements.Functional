@@ -10,6 +10,20 @@ namespace MicroElements.Functional.Tests
     public class ValueObjectTests
     {
         [Fact]
+        public void ValueObjectToString()
+        {
+            Address address = new Address("USA", "New York", "NY", 10118, "350 5th Ave", null);
+            address.ToString().Should().Be("(USA, NEW YORK, NY, 10118, 350 5TH AVE, null)");
+        }
+
+        [Fact]
+        public void ValueObjectToStringFormattable()
+        {
+            var name = new FormattableName("Bill", "Gates");
+            name.ToString().Should().Be("{FirstName: \"Bill\", LastName: \"Gates\"}");
+        }
+
+        [Fact]
         public void TwoValueObjectsShouldBeEquivalent()
         {
             Address address1 = new Address("USA", "New York", "NY", 10118, "350 5th Ave", null);
@@ -90,6 +104,33 @@ namespace MicroElements.Functional.Tests
             yield return ZipCode;
             yield return StreetLine1?.ToUpperInvariant();
             yield return StreetLine2?.ToUpperInvariant();
+        }
+    }
+
+    public class FormattableName : ValueObject, IFormattableObject
+    {
+        public string FirstName { get; }
+        public string LastName { get; }
+
+        /// <inheritdoc />
+        public FormattableName(string firstName, string lastName)
+        {
+            FirstName = firstName.AssertArgumentNotNull(nameof(firstName));
+            LastName = lastName.AssertArgumentNotNull(nameof(lastName));
+        }
+
+        /// <inheritdoc />
+        public override IEnumerable<object> GetEqualityComponents()
+        {
+            yield return FirstName.ToUpperInvariant();
+            yield return LastName.ToUpperInvariant();
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<(string Name, string Value)> GetNameValuePairs()
+        {
+            yield return ("FirstName", FirstName);
+            yield return ("LastName", LastName);
         }
     }
 }
