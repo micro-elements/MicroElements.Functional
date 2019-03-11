@@ -3,36 +3,36 @@ using System.Collections.Concurrent;
 
 namespace MicroElements.Functional
 {
+    //https://stackoverflow.com/questions/2852161/c-sharp-memoization-of-functions-with-arbitrary-number-of-arguments
     public static partial class Prelude
     {
         /// <summary>
-        /// Returns a Func<A> that wraps func.  The first
-        /// call to the resulting Func<A> will cache the result.
-        /// Subsequent calls return the cached item.
+        /// Returns func that evaluates only once.
+        /// All subsequent calls will return cached result.
         /// </summary>
-        public static Func<A> Memoize<A>(Func<A> func)
+        /// <typeparam name="R">Result type.</typeparam>
+        /// <param name="func">Source func.</param>
+        /// <returns>Memoized func.</returns>
+        public static Func<R> Memoize<R>(Func<R> func)
         {
             var sync = new object();
-            var value = default(A);
-            bool valueSet = false;
+            var result = default(R);
+            bool isResultEvaluated = false;
+
             return () =>
             {
-                if (valueSet)
-                {
-                    return value;
-                }
+                if (isResultEvaluated)
+                    return result;
+
                 lock (sync)
                 {
-                    if (valueSet)
-                    {
-                        return value;
-                    }
-                    else
-                    {
-                        value = func();
-                        valueSet = true;
-                        return value;
-                    }
+                    if (isResultEvaluated)
+                        return result;
+
+                    // Result evaluation.
+                    result = func();
+                    isResultEvaluated = true;
+                    return result;
                 }
             };
         }
