@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Threading;
 
 namespace MicroElements.Functional
 {
@@ -15,23 +16,23 @@ namespace MicroElements.Functional
         /// <returns>Memoized func.</returns>
         public static Func<R> Memoize<R>(Func<R> func)
         {
-            var sync = new object();
+            var hasResult = false;
             var result = default(R);
-            bool isResultEvaluated = false;
+            var sync = new object();
 
             return () =>
             {
-                if (isResultEvaluated)
+                if (hasResult)
                     return result;
 
                 lock (sync)
                 {
-                    if (isResultEvaluated)
+                    if (hasResult)
                         return result;
 
                     // Result evaluation.
                     result = func();
-                    isResultEvaluated = true;
+                    hasResult = true;
                     return result;
                 }
             };
@@ -73,19 +74,44 @@ namespace MicroElements.Functional
         public static Func<A> Memoize<A>(this Func<A> func) => Memoize<A>(func);
     }
 
-    //public interface ICache<TKey, TValue>
-    //{
-    //    TValue GetOrAdd(TKey key, Func<TKey, TValue> factory);
-    //}
+    public class TwoLayerCache<TKey, TValue>
+    {
+        private readonly int _maxItemCount;
+        private ConcurrentDictionary<TKey, TValue> _hotCache = new ConcurrentDictionary<TKey, TValue>();
+        private ConcurrentDictionary<TKey, TValue> _coldCache = new ConcurrentDictionary<TKey, TValue>();
 
-    //public class ConcurrentDictionaryCache<TKey, TValue> : ICache<TKey, TValue>
-    //{
-    //    private ConcurrentDictionary<TKey, TValue> _dictionary = new ConcurrentDictionary<TKey, TValue>();
+        public TwoLayerCache(int maxItemCount)
+        {
+            _maxItemCount = maxItemCount;
+        }
 
-    //    /// <inheritdoc />
-    //    public TValue GetOrAdd(TKey key, Func<TKey, TValue> factory)
-    //    {
-    //        return _dictionary.GetOrAdd(key, factory);
-    //    }
-    //}
+        public void Add(TKey key, TValue value)
+        {
+            _coldCache.TryAdd(key, value);
+        }
+
+        public bool TryGetValue(TKey key, out TValue value)
+        {
+            if (_hotCache.TryGetValue(key, out value))
+            {
+                return true;
+            }
+
+            if (_coldCache.TryGetValue(key, out value))
+            {
+                _hotCache.TryAdd(key, value);
+
+                if (_hotCache.Count > _maxItemCount)
+                {
+                    _coldCache = _hotCache;
+                    _hotCache = new ConcurrentDictionary<TKey, TValue>();
+                }
+
+                return true;
+            }
+
+            value = default;
+            return false;
+        }
+    }
 }

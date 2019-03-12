@@ -109,14 +109,14 @@ namespace MicroElements.Functional
         {
             return Memoize(() =>
             {
-                if (this is IFormattableObject formattableObject2)
+                if (this is IFormattableObject formattableObject)
                 {
-                    var formatComponents2 = formattableObject2.GetNameValuePairs();
-                    return formatComponents2.FormatAsJson(", ", "null");
+                    var formatComponents = formattableObject.GetNameValuePairs();
+                    return formatComponents.FormatAsJson(", ", "null");
                 }
 
-                var components2 = GetEqualityComponents();
-                return components2.FormatAsTuple(", ", "null");
+                var equalityComponents = GetEqualityComponents();
+                return equalityComponents.FormatAsTuple(", ", "null");
             })();
         }
     }
