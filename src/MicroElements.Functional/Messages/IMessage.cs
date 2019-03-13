@@ -7,7 +7,7 @@ namespace MicroElements.Functional
     /// Represents message.
     /// Can be used as simple log message, detailed or structured log message, validation message, diagnostic message.
     /// </summary>
-    public interface IMessage
+    public interface IMessage : IReadOnlyList<KeyValuePair<string, object>>, IReadOnlyDictionary<string, object>
     {
         /// <summary>
         /// Date and time of message created.
@@ -37,6 +37,6 @@ namespace MicroElements.Functional
         /// <summary>
         /// Message properties.
         /// </summary>
-        IReadOnlyDictionary<string, object> Properties { get; }
+        IReadOnlyList<KeyValuePair<string, object>> Properties { get; }
     }
 }

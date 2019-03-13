@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using static MicroElements.Functional.Prelude;
 
 namespace MicroElements.Functional
 {
@@ -7,9 +10,9 @@ namespace MicroElements.Functional
     /// Represents message.
     /// Can be used as simple log message, detailed or structured log message, validation message, diagnostic message.
     /// </summary>
-    public sealed class Message : IMessage, ICanBeError
+    public sealed class Message : IMessage, ICanBeError, IFormattableObject
     {
-        private static readonly IReadOnlyDictionary<string, object> EmptyPropertySet = new Dictionary<string, object>();
+        private static readonly IReadOnlyList<KeyValuePair<string, object>> EmptyPropertyList = new List<KeyValuePair<string, object>>();
 
         /// <summary>
         /// Date and time of message created.
@@ -39,7 +42,7 @@ namespace MicroElements.Functional
         /// <summary>
         /// Message properties.
         /// </summary>
-        public IReadOnlyDictionary<string, object> Properties { get; }
+        public IReadOnlyList<KeyValuePair<string, object>> Properties { get; }
 
         /// <inheritdoc />
         public bool IsError => Severity == MessageSeverity.Error;
@@ -59,14 +62,14 @@ namespace MicroElements.Functional
             DateTimeOffset? timestamp = null,
             string eventName = null,
             object state = null,
-            IReadOnlyDictionary<string, object> properties = null)
+            IReadOnlyList<KeyValuePair<string, object>> properties = null)
         {
             Text = text.AssertArgumentNotNull(nameof(text));
             Severity = severity;
             Timestamp = timestamp ?? DateTimeOffset.Now;
             EventName = eventName;
             State = state;
-            Properties = properties ?? EmptyPropertySet;
+            Properties = properties ?? EmptyPropertyList;
         }
 
         /// <summary>
@@ -77,5 +80,68 @@ namespace MicroElements.Functional
 
         /// <inheritdoc />
         public override string ToString() => $"{Timestamp:yyyy-MM-ddTHH:mm:ss.fff} | {Severity} | {EventName.AddIfNotNull()} {Text}";
+
+        #region IReadOnlyList
+
+        /// <inheritdoc />
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator() => AllPropertiesCached.GetEnumerator();
+
+        /// <inheritdoc />
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        /// <inheritdoc />
+        public int Count => AllPropertiesCached.Count;
+
+        /// <inheritdoc />
+        public KeyValuePair<string, object> this[int index] => new KeyValuePair<string, object>(AllPropertiesCached.Keys[index], AllPropertiesCached.Values[index]);
+
+        #endregion
+
+        #region IReadOnlyDictionary
+
+        private IEnumerable<KeyValuePair<string, object>> GetBaseProperties()
+        {
+            yield return new KeyValuePair<string, object>(nameof(Timestamp), Timestamp);
+            yield return new KeyValuePair<string, object>(nameof(Severity), Severity);
+            yield return new KeyValuePair<string, object>(nameof(Text), Text);
+            yield return new KeyValuePair<string, object>(nameof(EventName), EventName);
+        }
+
+        private SortedList<string, object> GetAllProperties()
+        {
+            var dictionary = GetBaseProperties()
+                .Concat(Properties)
+                .ToDictionary(pair => pair.Key, pair => pair.Value);
+            return new SortedList<string, object>(dictionary, StringComparer.InvariantCultureIgnoreCase);
+        }
+
+        private SortedList<string, object> AllPropertiesCached => Memoize(GetAllProperties)();
+
+        /// <inheritdoc />
+        public bool ContainsKey(string key) => AllPropertiesCached.ContainsKey(key);
+
+        /// <inheritdoc />
+        public bool TryGetValue(string key, out object value) => AllPropertiesCached.TryGetValue(key, out value);
+
+        /// <inheritdoc />
+        public object this[string key] => AllPropertiesCached[key];
+
+        /// <inheritdoc />
+        public IEnumerable<string> Keys => AllPropertiesCached.Keys;
+
+        /// <inheritdoc />
+        public IEnumerable<object> Values => AllPropertiesCached.Values;
+
+        #endregion
+
+        #region IFormattableObject
+
+        /// <inheritdoc />
+        public IEnumerable<(string Name, object Value)> GetNameValuePairs()
+        {
+            return AllPropertiesCached.Select(pair => (pair.Key, pair.Value));
+        }
+
+        #endregion
     }
 }

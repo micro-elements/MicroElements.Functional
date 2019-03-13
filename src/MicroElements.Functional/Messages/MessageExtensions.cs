@@ -19,15 +19,17 @@ namespace MicroElements.Functional
             DateTimeOffset? timestamp = null,
             string eventName = null,
             object state = null,
-            IReadOnlyDictionary<string, object> properties = null)
+            IReadOnlyList<KeyValuePair<string, object>> properties = null,
+            IEnumerable<KeyValuePair<string, object>> propertiesEnumerable = null)
         {
+            var propList = properties ?? propertiesEnumerable?.ToList() ?? message.Properties;
             return new Message(
                 timestamp: timestamp ?? message.Timestamp,
                 severity: severity ?? message.Severity,
                 text: text ?? message.Text,
                 eventName: eventName ?? message.EventName,
                 state: state ?? message.State,
-                properties: properties ?? message.Properties);
+                properties: propList);
         }
 
         /// <summary>
@@ -76,7 +78,15 @@ namespace MicroElements.Functional
         /// <param name="message">Source message.</param>
         /// <param name="properties">New state.</param>
         /// <returns>New instance of <see cref="Message"/> with changed <see cref="IMessage.Properties"/>.</returns>
-        public static Message WithProperties(this IMessage message, IReadOnlyDictionary<string, object> properties) => message.With(properties: properties);
+        public static Message WithProperties(this IMessage message, IReadOnlyList<KeyValuePair<string, object>> properties) => message.With(properties: properties);
+
+        /// <summary>
+        /// Creates new copy of <see cref="Message"/> with required <see cref="IMessage.Properties"/>.
+        /// </summary>
+        /// <param name="message">Source message.</param>
+        /// <param name="properties">New state.</param>
+        /// <returns>New instance of <see cref="Message"/> with changed <see cref="IMessage.Properties"/>.</returns>
+        public static Message WithProperties(this IMessage message, IEnumerable<KeyValuePair<string, object>> properties) => message.With(propertiesEnumerable: properties);
 
         /// <summary>
         /// Creates new copy of <see cref="Message"/> with new property added.
@@ -104,7 +114,7 @@ namespace MicroElements.Functional
         /// <returns>Optional value.</returns>
         public static Option<object> GetProperty(this IMessage message, string propertyName)
         {
-            return message.Properties.GetValueAsOption(propertyName);
+            return message.GetValueAsOption(propertyName);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using static MicroElements.Functional.Prelude;
 
 namespace MicroElements.Functional
 {
@@ -101,6 +102,22 @@ namespace MicroElements.Functional
             }
 
             return 0;
+        }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return Memoize(() =>
+            {
+                if (this is IFormattableObject formattableObject)
+                {
+                    var formatComponents = formattableObject.GetNameValuePairs();
+                    return formatComponents.FormatAsJson(", ", "null");
+                }
+
+                var equalityComponents = GetEqualityComponents();
+                return equalityComponents.FormatAsTuple(", ", "null");
+            })();
         }
     }
 }

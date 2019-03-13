@@ -2,11 +2,11 @@
   <Import Project="version.props" />
   <PropertyGroup>
     <Product>MicroElements.Functional</Product>
-    <Copyright>2018</Copyright>
+    <Copyright>2019</Copyright>
     <Authors>micro-elements</Authors>
-    <Description>C# implementation of functional concepts: Maybe (Option), Either (Result), Try</Description>
+    <Description>C# implementation of functional concepts: Maybe (Option), Either (Result), Try, Memoize</Description>
 
-    <PackageTags>monads functional Maybe Option Either Result Try</PackageTags>
+    <PackageTags>monads functional Maybe Option Either Result Try Memoize MicroElements</PackageTags>
     <PackageProjectUrl>https://github.com/micro-elements/MicroElements.Functional</PackageProjectUrl>
     <PackageLicenseUrl>https://raw.githubusercontent.com/micro-elements/MicroElements.Functional/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
