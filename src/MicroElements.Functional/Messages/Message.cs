@@ -10,7 +10,7 @@ namespace MicroElements.Functional
     /// Represents message.
     /// Can be used as simple log message, detailed or structured log message, validation message, diagnostic message.
     /// </summary>
-    public sealed class Message : IMessage, ICanBeError
+    public sealed class Message : IMessage, ICanBeError, IFormattableObject
     {
         private static readonly IReadOnlyList<KeyValuePair<string, object>> EmptyPropertyList = new List<KeyValuePair<string, object>>();
 
@@ -131,6 +131,16 @@ namespace MicroElements.Functional
 
         /// <inheritdoc />
         public IEnumerable<object> Values => AllPropertiesCached.Values;
+
+        #endregion
+
+        #region IFormattableObject
+
+        /// <inheritdoc />
+        public IEnumerable<(string Name, object Value)> GetNameValuePairs()
+        {
+            return AllPropertiesCached.Select(pair => (pair.Key, pair.Value));
+        }
 
         #endregion
     }

@@ -127,7 +127,7 @@ namespace MicroElements.Functional.Tests
         }
 
         /// <inheritdoc />
-        public IEnumerable<(string Name, string Value)> GetNameValuePairs()
+        public IEnumerable<(string Name, object Value)> GetNameValuePairs()
         {
             yield return ("FirstName", FirstName);
             yield return ("LastName", LastName);

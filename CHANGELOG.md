@@ -1,3 +1,9 @@
+# 0.11.0
+- Initial Memoize implementation
+- Message now is IReadonlyList<KeyValuePair<string,object>> and IReadOnlyDictionary<string,object>
+- ValueObject.ToString and IFormattableObject
+- FormatAsJson and FormatAsTuple for formattable objects
+
 # 0.10.0
 - IMessageList now is IReadOnlyCollection
 - Message default values

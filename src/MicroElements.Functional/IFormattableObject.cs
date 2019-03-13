@@ -8,9 +8,9 @@ namespace MicroElements.Functional
     public interface IFormattableObject
     {
         /// <summary>
-        /// Gets object state as string key-value pairs.
+        /// Gets object state as key-value pairs.
         /// </summary>
         /// <returns>Enumeration of key-value pairs.</returns>
-        IEnumerable<(string Name, string Value)> GetNameValuePairs();
+        IEnumerable<(string Name, object Value)> GetNameValuePairs();
     }
 }
