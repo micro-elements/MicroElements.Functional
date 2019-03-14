@@ -70,13 +70,13 @@ namespace MicroElements.Functional
             source.Match((a) => a, (error) => throw new InvalidCastException($"Result in Failed state can not be cast to {typeof(A)}"));
 
         [Pure]
-        public static A GetValueOrElse<A, Error, Message>(
+        public static A GetValueOrDefault<A, Error, Message>(
             this in Result<A, Error, Message> source,
             Func<Error, IMessageList<Message>, A> factory) =>
             source.Match((a, list) => a, (error, list) => factory(error, list));
 
         [Pure]
-        public static A GetValueOrElse<A, Error>(
+        public static A GetValueOrDefault<A, Error>(
             this in Result<A, Error> source,
             Func<Error, A> factory) =>
             source.Match((a) => a, (error) => factory(error));

@@ -41,6 +41,31 @@ namespace MicroElements.Functional
 
         /// <summary>
         /// Evaluates a specified function based on the option state.
+        /// Can return null result.
+        /// </summary>
+        /// <typeparam name="A">Value type.</typeparam>
+        /// <typeparam name="B">Result type.</typeparam>
+        /// <param name="source">Source option.</param>
+        /// <param name="some">Function to evaluate on <see cref="OptionState.Some"/> state.</param>
+        /// <param name="none">Function to evaluate on <see cref="OptionState.None"/> state.</param>
+        /// <returns>NotNull evaluated result.</returns>
+        /// <exception cref="ArgumentNullException">some is null.</exception>
+        [Pure]
+        public static B MatchUnsafe<A, B>(
+            this in Option<A> source,
+            Func<A, B> some,
+            Func<B> none)
+        {
+            some.AssertArgumentNotNull(nameof(some));
+
+            var res = source.IsSome
+                ? some(source.Value)
+                : none();
+            return res;
+        }
+
+        /// <summary>
+        /// Evaluates a specified function based on the option state.
         /// </summary>
         /// <typeparam name="A">Value type.</typeparam>
         /// <typeparam name="B">Result type.</typeparam>
@@ -64,6 +89,31 @@ namespace MicroElements.Functional
                 ? some(source.Value)
                 : none;
             return res.AssertNotNullResult();
+        }
+
+        /// <summary>
+        /// Evaluates a specified function based on the option state.
+        /// Can return null result.
+        /// </summary>
+        /// <typeparam name="A">Value type.</typeparam>
+        /// <typeparam name="B">Result type.</typeparam>
+        /// <param name="source">Source option.</param>
+        /// <param name="some">Function to evaluate on <see cref="OptionState.Some"/> state.</param>
+        /// <param name="none">Result value in case of <see cref="OptionState.None"/> state.</param>
+        /// <returns>NotNull evaluated result.</returns>
+        /// <exception cref="ArgumentNullException">some is null.</exception>
+        [Pure]
+        public static B MatchUnsafe<A, B>(
+            this in Option<A> source,
+            Func<A, B> some,
+            B none)
+        {
+            some.AssertArgumentNotNull(nameof(some));
+
+            var res = source.IsSome
+                ? some(source.Value)
+                : none;
+            return res;
         }
 
         /// <summary>
