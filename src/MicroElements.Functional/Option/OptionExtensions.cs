@@ -14,14 +14,21 @@ namespace MicroElements.Functional
     {
         public static Some<T> ToSome<T>(this T value) => new Some<T>(value);
 
-        public static T GetValueUnsafe<T>(this Option<T> option)
+        /// <summary>
+        /// Gets value or throws if option is in <see cref="OptionState.None"/> state.
+        /// </summary>
+        /// <typeparam name="T">Option value type.</typeparam>
+        /// <param name="option">Source option.</param>
+        /// <exception cref="ValueIsNoneException">Option is in <see cref="OptionState.None"/> state.</exception>
+        /// <returns>Value.</returns>
+        public static T GetValueOrThrow<T>(this Option<T> option)
             => option.Match((t) => t, () => throw new ValueIsNoneException());
 
-        public static T GetOrElse<T>(this Option<T> opt, T defaultValue)
-            => opt.Match((t) => t, () => defaultValue);
+        public static T GetValueOrDefault<T>(this Option<T> opt, T defaultValue)
+            => opt.MatchUnsafe((t) => t, () => defaultValue);
 
-        public static T GetOrElse<T>(this Option<T> opt, Func<T> fallback)
-            => opt.Match((t) => t, () => fallback());
+        public static T GetValueOrDefault<T>(this Option<T> opt, Func<T> fallback)
+            => opt.MatchUnsafe((t) => t, () => fallback());
 
         public static Option<T> OrElse<T>(this Option<T> left, Option<T> right)
             => left.Match((_) => left, () => right);

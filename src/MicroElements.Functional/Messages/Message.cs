@@ -110,7 +110,7 @@ namespace MicroElements.Functional
         private SortedList<string, object> GetAllProperties()
         {
             var dictionary = GetBaseProperties()
-                .Concat(Properties)
+                .AddWithReplace(Properties)
                 .ToDictionary(pair => pair.Key, pair => pair.Value);
             return new SortedList<string, object>(dictionary, StringComparer.InvariantCultureIgnoreCase);
         }

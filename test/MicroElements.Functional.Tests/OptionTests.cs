@@ -29,7 +29,7 @@ namespace MicroElements.Functional.Tests
         {
             Some(3)
                 .Bind(i => Some(i * 2))
-                .GetValueUnsafe().Should().Be(6);
+                .GetValueOrThrow().Should().Be(6);
         }
 
         [Fact]

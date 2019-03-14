@@ -1,3 +1,8 @@
+# 0.12.0
+- Added PropertyListAddMode for easy message compose
+- Added Option MatchUnsafe
+- Change: GetOrElse remaned to GetOrDefault and can return null value
+
 # 0.11.0
 - Initial Memoize implementation
 - Message now is IReadonlyList<KeyValuePair<string,object>> and IReadOnlyDictionary<string,object>
