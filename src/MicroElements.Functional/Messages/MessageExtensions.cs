@@ -23,7 +23,7 @@ namespace MicroElements.Functional
             IEnumerable<KeyValuePair<string, object>> propertiesEnumerable = null,
             PropertyListAddMode propertyListAddMode = PropertyListAddMode.Set)
         {
-            var propertiesToAdd = properties ?? propertiesEnumerable?.ToList() ?? message.Properties;
+            var propertiesToAdd = properties ?? (IReadOnlyList<KeyValuePair<string, object>>) propertiesEnumerable?.ToList() ?? Array.Empty<KeyValuePair<string, object>>();
             IReadOnlyList<KeyValuePair<string, object>> propList;
             if(propertyListAddMode == PropertyListAddMode.Set)
                 propList = propertiesToAdd;
