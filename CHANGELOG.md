@@ -1,3 +1,6 @@
+# 0.13.0
+- Added TryAsync methods
+
 # 0.12.0
 - Added PropertyListAddMode for easy message compose
 - Added Option MatchUnsafe

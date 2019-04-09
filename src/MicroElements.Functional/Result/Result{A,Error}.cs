@@ -187,7 +187,13 @@ namespace MicroElements.Functional
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
-            return obj is Result<A, Error> other && Equals(other);
+            if (obj is Result<A, Error> other)
+                return Equals(other);
+            if (obj is SuccessResult<A> successResult)
+                return Equals(successResult);
+            if (obj is A a)
+                return Equals(a);
+            return false;
         }
 
         /// <inheritdoc />
