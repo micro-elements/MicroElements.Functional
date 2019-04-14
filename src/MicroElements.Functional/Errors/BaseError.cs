@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) MicroElements. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System.Collections.Generic;
 
 namespace MicroElements.Functional.Errors
@@ -28,7 +30,7 @@ namespace MicroElements.Functional.Errors
         /// <summary>
         /// Gets final formatted error message.
         /// </summary>
-        public string ErrorMessage => Args != null ? string.Format(ErrorFormat, Args) : ErrorFormat;
+        public string ErrorMessage => Args != null ? string.Format(ErrorFormat, (object[])Args) : ErrorFormat;
 
         /// <summary>
         /// Creates new instance of <see cref="BaseError"/>.
@@ -39,7 +41,7 @@ namespace MicroElements.Functional.Errors
         protected BaseError(string errorCode = null, string errorFormat = null, params object[] args)
         {
             ErrorCode = errorCode ?? GetType().Name;
-            ErrorFormat = errorFormat ?? $"{ErrorCode} occured";
+            ErrorFormat = errorFormat ?? $"{ErrorCode} occured.";
             _args = args;
         }
 

@@ -13,6 +13,23 @@ Small subset of functional methodology in C#
 
 [![Gitter](https://img.shields.io/gitter/room/micro-elements/MicroElements.Functional.svg)](https://gitter.im/micro-elements/MicroElements.Functional)
 
+## Summary
+
+MicroElements.Functional is another one try to use functional paradigm in C#. Functional approach can lead error elimination and more explicit logic.
+
+Why I wrote one more lib? I tryed to use many monadic libs: louthy/language-ext, nlkl/Optional, la-yumba/functional-csharp-code, vkhorikov/CSharpFunctionalExtensions but there was some limitations or discomfort. LanguageExt is full featured but but it is very fat, Optional is very verbose and has only Option and Option with error, functional-csharp-code is cool but is a sort of book examples, all libs had not use new performance features of C#. And I decided to replace all functional libs with new... %)
+
+### Main features
+
+- Option
+- Result<A, Error> (Either)
+- Result<A, Error, Message>
+- ValueObject
+- Memoise
+- Try monad
+- Message and MessageList 
+- Extensions for parsing, collections
+
 ## Installation
 
 ### Package Reference:

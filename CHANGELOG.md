@@ -1,3 +1,6 @@
+# 0.13.1
+- Fixed BaseError formatted message
+
 # 0.13.0
 - Added TryAsync methods
 
