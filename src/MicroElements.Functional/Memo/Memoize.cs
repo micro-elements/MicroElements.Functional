@@ -67,6 +67,36 @@ namespace MicroElements.Functional
                 return r;
             };
         }
+
+        public static Func<A, R> Memoize<A, R>(this Func<A, R> func, int cacheLimit)
+        {
+            var cache = new TwoLayerCache<A, R>(cacheLimit);
+            var syncMap = new ConcurrentDictionary<A, object>();
+            return a =>
+            {
+                R r;
+                if (!cache.TryGetValue(a, out r))
+                {
+                    var sync = syncMap.GetOrAdd(a, new object());
+                    lock (sync)
+                    {
+                        if (cache.TryGetValue(a, out var cached))
+                        {
+                            r = cached;
+                        }
+                        else
+                        {
+                            r = func(a);
+                            cache.Add(a, r);
+                        }
+
+                        r = cache.GetOrAdd(a, func);
+                    }
+                    syncMap.TryRemove(a, out sync);
+                }
+                return r;
+            };
+        }
     }
 
     public static class MemoExtensions
@@ -74,6 +104,11 @@ namespace MicroElements.Functional
         public static Func<A> Memoize<A>(this Func<A> func) => Memoize<A>(func);
     }
 
+    /// <summary>
+    /// Represents cache that holds only limited number of items.
+    /// </summary>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
     public class TwoLayerCache<TKey, TValue>
     {
         private readonly int _maxItemCount;
