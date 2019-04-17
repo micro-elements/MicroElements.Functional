@@ -89,8 +89,6 @@ namespace MicroElements.Functional
                             r = func(a);
                             cache.Add(a, r);
                         }
-
-                        r = cache.GetOrAdd(a, func);
                     }
                     syncMap.TryRemove(a, out sync);
                 }
