@@ -74,25 +74,53 @@ namespace MicroElements.Functional
             var syncMap = new ConcurrentDictionary<A, object>();
             return a =>
             {
-                R r;
-                if (!cache.TryGetValue(a, out r))
+                R result;
+                if (!cache.TryGetValue(a, out result))
                 {
                     var sync = syncMap.GetOrAdd(a, new object());
                     lock (sync)
                     {
                         if (cache.TryGetValue(a, out var cached))
                         {
-                            r = cached;
+                            result = cached;
                         }
                         else
                         {
-                            r = func(a);
-                            cache.Add(a, r);
+                            result = func(a);
+                            cache.Add(a, result);
                         }
                     }
                     syncMap.TryRemove(a, out sync);
                 }
-                return r;
+                return result;
+            };
+        }
+
+        public static Func<A, R> MemoizeCustom<A, R>(
+            this Func<A, R> func,
+            Func<A, Option<R>> cacheTryGet,
+            Func<A, Func<A, R>> cacheGetOrAdd)
+        {
+            var syncMap = new ConcurrentDictionary<A, object>();
+            return a =>
+            {
+                R result = default;
+
+                cacheTryGet(a)
+                    .Match(
+                        r => result = r,
+                        () =>
+                        {
+                            object sync = syncMap.GetOrAdd(a, new object());
+                            lock (sync)
+                            {
+                                result = cacheGetOrAdd(a)(a);
+                            }
+
+                            syncMap.TryRemove(a, out sync);
+                        }
+                    );
+                return result;
             };
         }
     }
