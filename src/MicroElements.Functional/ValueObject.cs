@@ -25,6 +25,7 @@ namespace MicroElements.Functional
                 return false;
             if (ReferenceEquals(this, other))
                 return true;
+
             return GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());
         }
 
@@ -35,12 +36,10 @@ namespace MicroElements.Functional
                 return false;
             if (ReferenceEquals(this, obj))
                 return true;
-
             if (GetType() != obj.GetType())
-                throw new ArgumentException($"Invalid comparison of Value Objects of different types: {GetType()} and {obj.GetType()}");
+                return false;
 
-            ValueObject other = (ValueObject)obj;
-
+            var other = (ValueObject)obj;
             return GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());
         }
 
