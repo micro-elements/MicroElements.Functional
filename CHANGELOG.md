@@ -1,3 +1,7 @@
+# 0.14.0
+- Memoize with TwoLayerCache
+- ValueObject Equals doesnot throw Exception
+
 # 0.13.1
 - Fixed BaseError formatted message
 

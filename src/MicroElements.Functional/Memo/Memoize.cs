@@ -67,51 +67,66 @@ namespace MicroElements.Functional
                 return r;
             };
         }
+
+        public static Func<A, R> Memoize<A, R>(this Func<A, R> func, int cacheLimit)
+        {
+            var cache = new TwoLayerCache<A, R>(cacheLimit);
+            var syncMap = new ConcurrentDictionary<A, object>();
+            return a =>
+            {
+                R result;
+                if (!cache.TryGetValue(a, out result))
+                {
+                    var sync = syncMap.GetOrAdd(a, new object());
+                    lock (sync)
+                    {
+                        if (cache.TryGetValue(a, out var cached))
+                        {
+                            result = cached;
+                        }
+                        else
+                        {
+                            result = func(a);
+                            cache.Add(a, result);
+                        }
+                    }
+                    syncMap.TryRemove(a, out sync);
+                }
+                return result;
+            };
+        }
+
+        public static Func<A, R> MemoizeCustom<A, R>(
+            this Func<A, R> func,
+            Func<A, Option<R>> cacheTryGet,
+            Func<A, Func<A, R>> cacheGetOrAdd)
+        {
+            var syncMap = new ConcurrentDictionary<A, object>();
+            return a =>
+            {
+                R result = default;
+
+                cacheTryGet(a)
+                    .Match(
+                        r => result = r,
+                        () =>
+                        {
+                            object sync = syncMap.GetOrAdd(a, new object());
+                            lock (sync)
+                            {
+                                result = cacheGetOrAdd(a)(a);
+                            }
+
+                            syncMap.TryRemove(a, out sync);
+                        }
+                    );
+                return result;
+            };
+        }
     }
 
     public static class MemoExtensions
     {
         public static Func<A> Memoize<A>(this Func<A> func) => Memoize<A>(func);
-    }
-
-    public class TwoLayerCache<TKey, TValue>
-    {
-        private readonly int _maxItemCount;
-        private ConcurrentDictionary<TKey, TValue> _hotCache = new ConcurrentDictionary<TKey, TValue>();
-        private ConcurrentDictionary<TKey, TValue> _coldCache = new ConcurrentDictionary<TKey, TValue>();
-
-        public TwoLayerCache(int maxItemCount)
-        {
-            _maxItemCount = maxItemCount;
-        }
-
-        public void Add(TKey key, TValue value)
-        {
-            _coldCache.TryAdd(key, value);
-        }
-
-        public bool TryGetValue(TKey key, out TValue value)
-        {
-            if (_hotCache.TryGetValue(key, out value))
-            {
-                return true;
-            }
-
-            if (_coldCache.TryGetValue(key, out value))
-            {
-                _hotCache.TryAdd(key, value);
-
-                if (_hotCache.Count > _maxItemCount)
-                {
-                    _coldCache = _hotCache;
-                    _hotCache = new ConcurrentDictionary<TKey, TValue>();
-                }
-
-                return true;
-            }
-
-            value = default;
-            return false;
-        }
     }
 }
