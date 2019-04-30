@@ -1,3 +1,7 @@
+# 0.15.0
+- Added MatchUnsafe for Result types that can return null result.
+- Changes: GetValueOrDefault now can return null result. 
+
 # 0.14.0
 - Memoize with TwoLayerCache
 - ValueObject Equals doesnot throw Exception

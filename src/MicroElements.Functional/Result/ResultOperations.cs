@@ -11,6 +11,7 @@ namespace MicroElements.Functional
     {
         /// <summary>
         /// Evaluates a specified function based on the result state.
+        /// Can not return null result. If null result intended use <see cref="MatchUnsafe{A,Error,Message,B}"/>.
         /// </summary>
         /// <typeparam name="A">Success result type.</typeparam>
         /// <typeparam name="Error">Error type.</typeparam>
@@ -36,6 +37,35 @@ namespace MicroElements.Functional
                 ? success(source.Value, source.Messages)
                 : error(source.ErrorValue, source.Messages);
             return result.AssertNotNullResult();
+        }
+
+        /// <summary>
+        /// Evaluates a specified function based on the result state.
+        /// Can return null result.
+        /// </summary>
+        /// <typeparam name="A">Success result type.</typeparam>
+        /// <typeparam name="Error">Error type.</typeparam>
+        /// <typeparam name="Message">Message type.</typeparam>
+        /// <typeparam name="B">Result type.</typeparam>
+        /// <param name="source">Source object.</param>
+        /// <param name="success">Function to evaluate on <see cref="ResultState.Success"/> state.</param>
+        /// <param name="error">Function to evaluate on <see cref="ResultState.Error"/> state.</param>
+        /// <returns>NotNull evaluated result.</returns>
+        /// <exception cref="ArgumentNullException">success is null.</exception>
+        /// <exception cref="ArgumentNullException">error is null.</exception>
+        [Pure]
+        public static B MatchUnsafe<A, Error, Message, B>(
+            this in Result<A, Error, Message> source,
+            SuccessFunc<A, Message, B> success,
+            ErrorFunc<Error, Message, B> error)
+        {
+            success.AssertArgumentNotNull(nameof(success));
+            error.AssertArgumentNotNull(nameof(error));
+
+            var result = source.IsSuccess
+                ? success(source.Value, source.Messages)
+                : error(source.ErrorValue, source.Messages);
+            return result;
         }
 
         /// <summary>
@@ -97,6 +127,7 @@ namespace MicroElements.Functional
 
         /// <summary>
         /// Evaluates a specified function based on the result state.
+        /// Can not return null result. If null result intended then use <see cref="MatchUnsafe{A,Error,B}"/>.
         /// </summary>
         /// <typeparam name="A">Success result type.</typeparam>
         /// <typeparam name="Error">Error type.</typeparam>
@@ -121,6 +152,34 @@ namespace MicroElements.Functional
                 ? success(source.Value)
                 : error(source.ErrorValue);
             return result.AssertNotNullResult();
+        }
+
+        /// <summary>
+        /// Evaluates a specified function based on the result state.
+        /// Can return null result.
+        /// </summary>
+        /// <typeparam name="A">Success result type.</typeparam>
+        /// <typeparam name="Error">Error type.</typeparam>
+        /// <typeparam name="B">Result type.</typeparam>
+        /// <param name="source">Source object.</param>
+        /// <param name="success">Function to evaluate on <see cref="ResultState.Success"/> state.</param>
+        /// <param name="error">Function to evaluate on <see cref="ResultState.Error"/> state.</param>
+        /// <returns>NotNull evaluated result.</returns>
+        /// <exception cref="ArgumentNullException">success is null.</exception>
+        /// <exception cref="ArgumentNullException">error is null.</exception>
+        [Pure]
+        public static B MatchUnsafe<A, Error, B>(
+            this in Result<A, Error> source,
+            SuccessFunc<A, B> success,
+            ErrorFunc<Error, B> error)
+        {
+            success.AssertArgumentNotNull(nameof(success));
+            error.AssertArgumentNotNull(nameof(error));
+
+            var result = source.IsSuccess
+                ? success(source.Value)
+                : error(source.ErrorValue);
+            return result;
         }
 
         /// <summary>

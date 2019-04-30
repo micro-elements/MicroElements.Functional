@@ -73,13 +73,13 @@ namespace MicroElements.Functional
         public static A GetValueOrDefault<A, Error, Message>(
             this in Result<A, Error, Message> source,
             Func<Error, IMessageList<Message>, A> factory) =>
-            source.Match((a, list) => a, (error, list) => factory(error, list));
+            source.MatchUnsafe((a, list) => a, (error, list) => factory(error, list));
 
         [Pure]
         public static A GetValueOrDefault<A, Error>(
             this in Result<A, Error> source,
             Func<Error, A> factory) =>
-            source.Match((a) => a, (error) => factory(error));
+            source.MatchUnsafe((a) => a, (error) => factory(error));
 
         public static Result<A, Exception, Message> ToSuccess<A, Message>(
             this A value, params Message[] messages)
