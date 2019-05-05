@@ -20,9 +20,9 @@ namespace MicroElements.Functional
         MessageSeverity Severity { get; }
 
         /// <summary>
-        /// Message text.
+        /// Original message.
         /// </summary>
-        string Text { get; }
+        string OriginalMessage { get; }
 
         /// <summary>
         /// Event name.

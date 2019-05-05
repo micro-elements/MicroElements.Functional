@@ -14,7 +14,7 @@ namespace MicroElements.Functional
         /// </summary>
         internal static Message With(
             this IMessage message,
-            string text = null,
+            string originalMessage = null,
             MessageSeverity? severity = null,
             DateTimeOffset? timestamp = null,
             string eventName = null,
@@ -37,19 +37,19 @@ namespace MicroElements.Functional
             return new Message(
                 timestamp: timestamp ?? message.Timestamp,
                 severity: severity ?? message.Severity,
-                text: text ?? message.Text,
+                originalMessage: originalMessage ?? message.OriginalMessage,
                 eventName: eventName ?? message.EventName,
                 state: state ?? message.State,
                 properties: propList);
         }
 
         /// <summary>
-        /// Creates new copy of <see cref="Message"/> with required <see cref="IMessage.Text"/>.
+        /// Creates new copy of <see cref="Message"/> with required <see cref="IMessage.OriginalMessage"/>.
         /// </summary>
         /// <param name="message">Source message.</param>
         /// <param name="text">New text value.</param>
-        /// <returns>New instance of <see cref="Message"/> with changed <see cref="IMessage.Text"/>.</returns>
-        public static Message WithText(this IMessage message, string text) => message.With(text: text);
+        /// <returns>New instance of <see cref="Message"/> with changed <see cref="IMessage.OriginalMessage"/>.</returns>
+        public static Message WithText(this IMessage message, string text) => message.With(originalMessage: text);
 
         /// <summary>
         /// Creates new copy of <see cref="Message"/> with required <see cref="IMessage.State"/>.

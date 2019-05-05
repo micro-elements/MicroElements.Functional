@@ -13,7 +13,7 @@ namespace MicroElements.Functional
         {
             output
                 .WriteJsonObjectStart()
-                .WriteText(message.Text)
+                .WriteText(message.OriginalMessage)
                 .WriteJsonObjectEnd()
                 .WriteNewLine();
         }
