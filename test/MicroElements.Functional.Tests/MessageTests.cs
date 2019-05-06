@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Text;
 using FluentAssertions;
 using Xunit;
 
@@ -36,7 +38,7 @@ namespace MicroElements.Functional.Tests
         public void ParseTemplate(string messageTemplate, object[] args, string expected)
         {
             var template = new MessageTemplateParser().Parse(messageTemplate);
-            string render = template.Render(args);
+            string render = new MessageTemplateRenderer().RenderToString(template, args);
             render.Should().Be(expected);
         }
     }

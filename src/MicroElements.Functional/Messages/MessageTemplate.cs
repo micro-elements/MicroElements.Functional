@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace MicroElements.Functional
@@ -33,61 +35,6 @@ namespace MicroElements.Functional
             OriginalFormat = originalFormat ?? "[null]";
             Tokens = tokens ?? Array.Empty<Token>();
         }
-
-        public string Render(params object[] args)
-        {
-            ReadOnlySpan<char> templateSpan = OriginalFormat.AsSpan();
-            int expectedCapacity = templateSpan.Length * 2;
-            StringBuilder stringBuilder = new StringBuilder(expectedCapacity);
-            int argIndex = 0;
-            foreach (var token in Tokens)
-            {
-                if (token.TokenType == TokenType.Text)
-                {
-                    var slice = templateSpan.Slice(token.StartIndex, token.Length);
-                    for (int i = 0; i < slice.Length; i++)
-                    {
-                        stringBuilder.Append(slice[i]);
-                    }
-                }
-                else
-                {
-                    object arg = args[argIndex];
-                    stringBuilder.AppendFormat("{0}", arg);
-                    argIndex++;
-                }
-            }
-            return stringBuilder.ToString();
-        }
-
-        public string Render(IReadOnlyDictionary<string, object> properties)
-        {
-            ReadOnlySpan<char> templateSpan = OriginalFormat.AsSpan();
-            int expectedCapacity = templateSpan.Length * 2;
-            StringBuilder stringBuilder = new StringBuilder(expectedCapacity);
-            int argIndex = 0;
-            foreach (var token in Tokens)
-            {
-                if (token.TokenType == TokenType.Text)
-                {
-                    var slice = templateSpan.Slice(token.StartIndex, token.Length);
-                    for (int i = 0; i < slice.Length; i++)
-                    {
-                        stringBuilder.Append(slice[i]);
-                    }
-                }
-                else
-                {
-                    var slice = templateSpan.Slice(token.StartIndex, token.Length);
-                    var name = slice.Slice(1, slice.Length - 2);
-                    string propName = name.ToString();//TODO: token.Name or get by token name index and len
-                    object arg = properties[propName];
-                    stringBuilder.AppendFormat("{0}", arg);
-                    argIndex++;
-                }
-            }
-            return stringBuilder.ToString();
-        }
     }
 
     /// <summary>
@@ -101,6 +48,20 @@ namespace MicroElements.Functional
         /// <param name="messageTemplate">Message template string.</param>
         /// <returns>Parsed <seealso cref="MessageTemplate"/>.</returns>
         MessageTemplate Parse(string messageTemplate);
+    }
+
+    /// <summary>
+    /// Renders <seealso cref="MessageTemplate"/> to text writer.
+    /// </summary>
+    public interface IMessageTemplateRenderer
+    {
+        /// <summary>
+        /// Renders <seealso cref="MessageTemplate"/> to text writer.
+        /// </summary>
+        /// <param name="messageTemplate">MessageTemplate.</param>
+        /// <param name="properties">Named properties.</param>
+        /// <param name="output">Output writer.</param>
+        void Render(MessageTemplate messageTemplate, IReadOnlyDictionary<string, object> properties, TextWriter output);
     }
 
     /// <summary>
@@ -128,6 +89,13 @@ namespace MicroElements.Functional
         /// </summary>
         public CaptureType CaptureType { get; }
 
+        // public string Name { get; }
+
+        /// <summary>
+        /// Format applied to the property.
+        /// </summary>
+        public string Format { get; }
+
         /// <summary>
         /// Creates new instance of <seealso cref="Token"/>.
         /// </summary>
@@ -135,10 +103,17 @@ namespace MicroElements.Functional
         /// <param name="length">The length of token in symbols.</param>
         /// <param name="tokenType">Token type.</param>
         /// <param name="captureType">CaptureType.</param>
-        public Token(int startIndex, int length, TokenType tokenType = TokenType.Text, CaptureType captureType = CaptureType.Default)
+        /// <param name="format">Format applied to the property.</param>
+        public Token(
+            int startIndex,
+            int length,
+            TokenType tokenType = TokenType.Text,
+            CaptureType captureType = CaptureType.Default,
+            string format = null)
         {
             StartIndex = startIndex;
             Length = length;
+            Format = format;
             TokenType = tokenType;
             CaptureType = captureType;
         }
@@ -328,10 +303,10 @@ namespace MicroElements.Functional
 
             int length = position - startIndex;
 
-            return new Token(startIndex, length, TokenType.Hole, captureType);
+            return new Token(startIndex, length, TokenType.Hole, captureType, format);
         }
 
-        private Slice ReadUntil(in ReadOnlySpan<char> templateSpan, ref int position, char[] symbols)
+        private ReadOnlySpan<char> ReadUntil(in ReadOnlySpan<char> templateSpan, ref int position, char[] symbols)
         {
             int startIndex = position;
             int stopIndex = 0;
@@ -351,7 +326,7 @@ namespace MicroElements.Functional
 
             if (stopIndex > 0)
             {
-                return new Slice(startIndex, stopIndex - startIndex);
+                return templateSpan.Slice(startIndex, stopIndex - startIndex);
             }
 
             // TODO: Error.
@@ -390,10 +365,9 @@ namespace MicroElements.Functional
             }
         }
 
-        private Slice ParseNameOrIndex(in ReadOnlySpan<char> templateSpan, ref int position)
+        private ReadOnlySpan<char> ParseNameOrIndex(in ReadOnlySpan<char> templateSpan, ref int position)
         {
-            var name = ReadUntil(templateSpan, ref position, HoleDelimiters);
-            return name;
+            return ReadUntil(templateSpan, ref position, HoleDelimiters);
         }
 
         private Option<int> ParseAlignment(in ReadOnlySpan<char> templateSpan, ref int position)
@@ -430,9 +404,9 @@ namespace MicroElements.Functional
             return result;
         }
 
-        private Option<string> ParseFormat(in ReadOnlySpan<char> templateSpan, ref int position)
+        private string ParseFormat(in ReadOnlySpan<char> templateSpan, ref int position)
         {
-            string format = string.Empty;
+            string format = null;
             char currentChar = templateSpan[position];
             if (currentChar == ':')
             {
@@ -453,6 +427,54 @@ namespace MicroElements.Functional
         }
     }
 
+    public class MessageTemplateRenderer : IMessageTemplateRenderer
+    {
+        /// <summary>
+        /// Global static instance.
+        /// </summary>
+        public static readonly MessageTemplateRenderer Instance = new MessageTemplateRenderer();
+
+        /// <inheritdoc />
+        public void Render(MessageTemplate messageTemplate, IReadOnlyDictionary<string, object> properties, TextWriter output)
+        {
+            ReadOnlySpan<char> templateSpan = messageTemplate.OriginalFormat.AsSpan();
+
+            foreach (var token in messageTemplate.Tokens)
+            {
+                if (token.TokenType == TokenType.Text)
+                {
+                    WriteTextToken(output, templateSpan, token);
+                }
+                else
+                {
+                    var slice = templateSpan.Slice(token.StartIndex, token.Length);
+                    var name = slice.Slice(1, slice.Length - 2);
+                    string propName = name.ToString();//TODO: token.Name or get by token name index and len
+                    object propValue;
+                    if (!properties.TryGetValue(propName, out propValue))
+                    {
+                        WriteTextToken(output, templateSpan, token);
+                        continue;
+                    }
+
+                    if (token.Format != null)
+                        output.Write($"{0}:{token.Format}", propValue);
+                    else
+                        output.Write("{0}", propValue);
+                }
+            }
+        }
+
+        private static void WriteTextToken(TextWriter output, ReadOnlySpan<char> templateSpan, Token token)
+        {
+            var slice = templateSpan.Slice(token.StartIndex, token.Length);
+            for (int i = 0; i < slice.Length; i++)
+            {
+                output.Write(slice[i]);
+            }
+        }
+    }
+
     public static class MessageTemplateParserExtensions
     {
         public static MessageTemplate TryParse(this IMessageTemplateParser messageTemplateParser, string messageTemplate)
@@ -465,6 +487,53 @@ namespace MicroElements.Functional
             {
                 return new MessageTemplate(messageTemplate, null);
             }
+        }
+    }
+
+    public static class MessageTemplateRendererExtensions
+    {
+        public static void Render(
+            this IMessageTemplateRenderer renderer,
+            MessageTemplate messageTemplate,
+            object[] args,
+            TextWriter output)
+        {
+            Dictionary<string, object> properties = ArgsToDictionary(args);
+            renderer.Render(messageTemplate, properties, output);
+        }
+
+        private static Dictionary<string, object> ArgsToDictionary(object[] args)
+        {
+            var properties = args
+                .Select((arg, index) => (arg, index))
+                .ToDictionary(tuple => tuple.index.ToString(), tuple => tuple.arg);
+            return properties;
+        }
+
+        public static string RenderToString(
+            this IMessageTemplateRenderer renderer,
+            MessageTemplate messageTemplate,
+            IReadOnlyDictionary<string, object> properties)
+        {
+            var stringWriter = new StringWriter();
+            renderer.Render(messageTemplate, properties, stringWriter);
+            return stringWriter.ToString();
+        }
+
+        public static string RenderToString(
+            this IMessageTemplateRenderer renderer,
+            MessageTemplate messageTemplate,
+            object[] args)
+        {
+            var stringWriter = new StringWriter();
+
+            Dictionary<string, object> properties = messageTemplate.Tokens.Where(token => token.TokenType == TokenType.Hole)
+                .Select(token => messageTemplate.OriginalFormat.Substring(token.StartIndex, token.Length))
+                .Zip(args, (s, o) => (s, o))
+                .ToDictionary(tuple => tuple.s, tuple => tuple.o);
+
+            renderer.Render(messageTemplate, properties, stringWriter);
+            return stringWriter.ToString();
         }
     }
 

@@ -56,12 +56,12 @@ namespace MicroElements.Functional
         /// <summary>
         /// <seealso cref="Functional.MessageTemplate"/> parsed from <seealso cref="OriginalMessage"/>.
         /// </summary>
-        private MessageTemplate MessageTemplate { get; }
+        public Lazy<MessageTemplate> MessageTemplate { get; }
 
         /// <summary>
         /// Formatted message. This is a result of MessageTemplate rendered with <seealso cref="Properties"/>.
         /// </summary>
-        public string FormattedMessage => TryRender();
+        public string FormattedMessage => TryRenderMessageTemplate();
 
         /// <summary>
         /// Creates new instance of <see cref="Message"/>.
@@ -87,7 +87,7 @@ namespace MicroElements.Functional
             State = state;
             Properties = properties ?? EmptyPropertyList;
 
-            MessageTemplate = TryParse();
+            MessageTemplate = new Lazy<MessageTemplate>(TryParseMessageTemplate);
         }
 
         /// <summary>
@@ -164,16 +164,16 @@ namespace MicroElements.Functional
 
         #region MessageTemplate
 
-        private MessageTemplate TryParse()
+        private MessageTemplate TryParseMessageTemplate()
         {
             return MessageTemplateParser.Instance.TryParse(OriginalMessage);
         }
 
-        private string TryRender()
+        private string TryRenderMessageTemplate()
         {
             try
             {
-                return MessageTemplate.Render(AllPropertiesCached);
+                return MessageTemplateRenderer.Instance.RenderToString(MessageTemplate.Value, AllPropertiesCached);
             }
             catch
             {
