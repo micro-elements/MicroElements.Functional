@@ -30,11 +30,6 @@ namespace MicroElements.Functional
         string EventName { get; }
 
         /// <summary>
-        /// Optional state.
-        /// </summary>
-        object State { get; }
-
-        /// <summary>
         /// Message properties.
         /// </summary>
         IReadOnlyList<KeyValuePair<string, object>> Properties { get; }

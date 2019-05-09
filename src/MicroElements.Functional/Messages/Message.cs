@@ -39,11 +39,6 @@ namespace MicroElements.Functional
         public string EventName { get; }
 
         /// <summary>
-        /// Optional state.
-        /// </summary>
-        public object State { get; }
-
-        /// <summary>
         /// Message properties.
         /// </summary>
         public IReadOnlyList<KeyValuePair<string, object>> Properties { get; }
@@ -70,21 +65,18 @@ namespace MicroElements.Functional
         /// <param name="severity">Message severity.</param>
         /// <param name="timestamp">Optional timestamp. Evaluates as <see cref="DateTimeOffset.Now"/> if not set.</param>
         /// <param name="eventName">Optional Event Name.</param>
-        /// <param name="state">Optional state.</param>
         /// <param name="properties">Optional properties.</param>
         public Message(
             string originalMessage,
             MessageSeverity severity = MessageSeverity.Information,
             DateTimeOffset? timestamp = null,
             string eventName = null,
-            object state = null,
             IReadOnlyList<KeyValuePair<string, object>> properties = null)
         {
             OriginalMessage = originalMessage.AssertArgumentNotNull(nameof(originalMessage));
             Severity = severity;
             Timestamp = timestamp ?? DateTimeOffset.Now;
             EventName = eventName;
-            State = state;
             Properties = properties ?? EmptyPropertyList;
 
             MessageTemplate = new Lazy<MessageTemplate>(TryParseMessageTemplate);

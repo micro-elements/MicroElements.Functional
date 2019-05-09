@@ -39,7 +39,6 @@ namespace MicroElements.Functional
                 severity: severity ?? message.Severity,
                 originalMessage: originalMessage ?? message.OriginalMessage,
                 eventName: eventName ?? message.EventName,
-                state: state ?? message.State,
                 properties: propList);
         }
 
