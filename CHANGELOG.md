@@ -1,3 +1,6 @@
+# 0.16.0
+- MessageTemplate
+
 # 0.15.0
 - Added MatchUnsafe for Result types that can return null result.
 - Changes: GetValueOrDefault now can return null result. 

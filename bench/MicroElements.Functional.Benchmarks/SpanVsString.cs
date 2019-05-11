@@ -7,7 +7,7 @@ namespace MicroElements.Functional.Benchmarks
     [MemoryDiagnoser]
     [Config(typeof(CustomConfig))]
     [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-    public class SpanVsStringOperations
+    public class SpanVsString
     {
         [Benchmark]
         public int IterateString()

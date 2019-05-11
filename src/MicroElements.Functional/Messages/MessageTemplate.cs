@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-//using TextSpan = System.ReadOnlySpan<char>; //todo: remove after performance tests
+//using TextSpan = System.ReadOnlySpan<char>; //todo: remove after performance tests (span has no perf win...)
 using TextSpan = System.String;
 
 namespace MicroElements.Functional
@@ -119,7 +119,7 @@ namespace MicroElements.Functional
         /// <param name="format">Format applied to the property.</param>
         public Token(
             int startIndex,
-            int length, 
+            int length,
             TokenType tokenType = TokenType.Text,
             CaptureType captureType = CaptureType.Default,
             TextSlice nameSlice = default,
@@ -334,6 +334,7 @@ namespace MicroElements.Functional
         private int ParseAlignment(TextSpan templateSpan, ref int position)
         {
             int result = 0;
+            int sign = 1;
             char currentChar = templateSpan[position];
             if (currentChar == ',')
             {
@@ -344,7 +345,12 @@ namespace MicroElements.Functional
                     currentChar = templateSpan[position];
                     if (currentChar == ' ')
                         continue;
-                    if (currentChar == '}')
+                    if (currentChar == '-')
+                    {
+                        sign = -1;
+                        continue;
+                    }
+                    if (currentChar == ':' || currentChar == '}')
                         break;
                     if (currentChar >= '0' && currentChar <= '9')
                     {
@@ -362,7 +368,7 @@ namespace MicroElements.Functional
                 return 0;
             }
 
-            return result;
+            return result * sign;
         }
 
         private string ParseFormat(TextSpan templateSpan, ref int position)
@@ -372,7 +378,8 @@ namespace MicroElements.Functional
             if (currentChar == ':')
             {
                 position++;
-                //read digits, skip spaces, until }
+
+                // read digits, skip spaces, until }
                 for (; position < templateSpan.Length; position++)
                 {
                     currentChar = templateSpan[position];
@@ -456,66 +463,76 @@ namespace MicroElements.Functional
                         WriteTextToken(output, templateSpan, token);
                         continue;
                     }
-                    //TODO: Alignment
-                    if (token.Format != null && token.Alignment != 0)
-                        output.Write($"{{0,{token.Alignment}:{token.Format}}}", propValue);
-                    else if (token.Format != null)
-                    {
-                        var formats = ParseFormats(token.Format);
-                        foreach (var format in formats)
-                        {
-                            IValueRenderer renderer = _valueRendererProvider.Get(format.Format, format.Args);
-                            if (renderer != null)
-                                propValue = renderer.Render(propValue);
-                            else
-                            {
-                                if (propValue is IFormattable formattable)
-                                {
-                                    propValue = formattable.ToString(format.Format, null);
-                                }
-                                else
-                                {
-                                    propValue = propValue.ToString();
-                                }
-                            }
-                        }
 
-                        if (propValue is string text)
-                        {
-                            output.WriteText(text);
-                        }
-                        else
-                        {
-                            output.Write("{0}", propValue);
-                        }
+                    string textValue = token.Format != null ?
+                        RenderValueWithFormat(token, propValue) :
+                        RenderToString(propValue);
+
+                    if (token.Alignment != 0)
+                    {
+                        output.Write($"{{0,{token.Alignment}}}", textValue);
                     }
-                    else if (token.Alignment != 0)
-                        output.Write($"{{0,{token.Alignment}}}", propValue);
-                    else //TODO: scalar, stringify, deconstruct
-                        output.Write("{0}", propValue);
+                    else
+                    {
+                        output.WriteText(textValue);
+                    }
                 }
             }
         }
 
-        readonly struct FormatWithArgs
+        private string RenderValueWithFormat(Token token, object propValue)
         {
-            public readonly string Format;
+            var formats = ParseFormats(token.Format);
+            foreach (var format in formats)
+            {
+                var renderer = _valueRendererProvider.Get(format.Name, format.Args);
+                propValue = renderer != null ? renderer.Render(propValue) : RenderToString(propValue, format.Name);
+            }
+
+            return RenderToString(propValue);
+        }
+
+        private static string RenderToString(object propValue, string format = null)
+        {
+            if (propValue is string textValue)
+            {
+                return textValue;
+            }
+
+            if (format != null && propValue is IFormattable formattable)
+            {
+                textValue = formattable.ToString(format, null);
+            }
+            else
+            {
+                textValue = propValue.ToString();
+            }
+
+            return textValue;
+        }
+
+        /// <summary>
+        /// One of the format part.
+        /// </summary>
+        private readonly struct Format
+        {
+            public readonly string Name;
             public readonly string Args;
 
-            public FormatWithArgs(string format, string args)
+            public Format(string name, string args)
             {
-                Format = format;
+                Name = name;
                 Args = args;
             }
         }
 
-        private IEnumerable<FormatWithArgs> ParseFormats(string format)
+        private IEnumerable<Format> ParseFormats(string format)
         {
             if (string.IsNullOrEmpty(format))
                 yield break;
 
             int argsStart1 = format.IndexOf('(');
-            int argsEnd1 = argsStart1 > 0? format.IndexOf(')', argsStart1) : -1;
+            int argsEnd1 = argsStart1 > 0 ? format.IndexOf(')', argsStart1) : -1;
             if (argsStart1 > 0 && argsEnd1 > 0)
             {
                 string[] formats = format.Split(new []{':', ' '}, StringSplitOptions.RemoveEmptyEntries);
@@ -547,23 +564,22 @@ namespace MicroElements.Functional
                         if (argsEnd - argsStart > 1)
                         {
                             string argsText = form.Substring(argsStart + 1, argsEnd - argsStart - 1);
-                            //string[] args = argsText.Split(',');
-                            yield return new FormatWithArgs(formatName, argsText);
+                            yield return new Format(formatName, argsText);
                         }
                         else
                         {
-                            yield return new FormatWithArgs(formatName, null);
+                            yield return new Format(formatName, null);
                         }
                     }
                 }
             }
             else
             {
-                yield return new FormatWithArgs(format, null);
+                yield return new Format(format, null);
             }
         }
 
-        private static void WriteTextToken(TextWriter output, TextSpan templateSpan, Token token)
+        private static void WriteTextToken(TextWriter output, TextSpan templateSpan, in Token token)
         {
             for (int i = token.StartIndex; i < token.StartIndex + token.Length; i++)
             {
