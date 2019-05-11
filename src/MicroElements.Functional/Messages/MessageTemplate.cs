@@ -7,6 +7,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
+//using TextSpan = System.ReadOnlySpan<char>; //todo: remove after performance tests
+using TextSpan = System.String;
+
 namespace MicroElements.Functional
 {
     /// <summary>
@@ -192,7 +195,7 @@ namespace MicroElements.Functional
         /// <inheritdoc />
         public MessageTemplate Parse(string messageTemplate)
         {
-            var templateSpan = messageTemplate.AsSpan();
+            var templateSpan = messageTemplate;//.AsSpan();
 
             int expectedHoles = 0;
             for (int i = 0; i < templateSpan.Length; i++)
@@ -216,7 +219,7 @@ namespace MicroElements.Functional
             while (position < templateSpan.Length)
             {
                 char currentChar = templateSpan[position];
-                char nextChar = position < templateSpan.Length - 1? templateSpan[position + 1] : char.MinValue;
+                char nextChar = position < templateSpan.Length - 1 ? templateSpan[position + 1] : char.MinValue;
                 if (currentChar == '{' && nextChar != '{')
                 {
                     var hole = ParseHole(templateSpan, ref position);
@@ -236,7 +239,7 @@ namespace MicroElements.Functional
             return new MessageTemplate(messageTemplate, tokens);
         }
 
-        private Token ParseText(in ReadOnlySpan<char> templateSpan, ref int position)
+        private Token ParseText(TextSpan templateSpan, ref int position)
         {
             int startIndex = position;
             int tokenLength = 0;
@@ -256,7 +259,7 @@ namespace MicroElements.Functional
             return new Token(startIndex, tokenLength, TokenType.Text);
         }
 
-        private Token ParseHole(in ReadOnlySpan<char> templateSpan, ref int position)
+        private Token ParseHole(TextSpan templateSpan, ref int position)
         {
             char currentChar = templateSpan[position];
             int startIndex = position;
@@ -296,7 +299,7 @@ namespace MicroElements.Functional
             return new Token(startIndex, length, TokenType.Hole, captureType, name, alignment, format);
         }
 
-        private TextSlice ReadUntil(in ReadOnlySpan<char> templateSpan, ref int position, char[] symbols)
+        private TextSlice ReadUntil(TextSpan templateSpan, ref int position, char[] symbols)
         {
             int startIndex = position;
             int stopIndex = 0;
@@ -323,44 +326,12 @@ namespace MicroElements.Functional
             return default;
         }
 
-        private void ReadUntil(in ReadOnlySpan<char> templateSpan, ref int position, char symbol, Action<char> onChar)
-        {
-            for (; position < templateSpan.Length; position++)
-            {
-                char c = templateSpan[position];
-                if (c == ' ')
-                    continue;
-                if (c == symbol)
-                    break;
-                onChar(c);
-            }
-        }
-
-        private void ReadUntil(
-            in ReadOnlySpan<char> templateSpan,
-            ref int position,
-            Func<char, bool> until,
-            Func<char, bool> verify,
-            Action<char> onChar)
-        {
-            for (; position < templateSpan.Length; position++)
-            {
-                char c = templateSpan[position];
-                if (c == ' ')
-                    continue;
-                if (until(c))
-                    break;
-                if (verify(c))
-                    onChar(c);
-            }
-        }
-
-        private TextSlice ParseNameOrIndex(in ReadOnlySpan<char> templateSpan, ref int position)
+        private TextSlice ParseNameOrIndex(TextSpan templateSpan, ref int position)
         {
             return ReadUntil(templateSpan, ref position, HoleDelimiters);
         }
 
-        private int ParseAlignment(in ReadOnlySpan<char> templateSpan, ref int position)
+        private int ParseAlignment(TextSpan templateSpan, ref int position)
         {
             int result = 0;
             char currentChar = templateSpan[position];
@@ -394,7 +365,7 @@ namespace MicroElements.Functional
             return result;
         }
 
-        private string ParseFormat(in ReadOnlySpan<char> templateSpan, ref int position)
+        private string ParseFormat(TextSpan templateSpan, ref int position)
         {
             string format = null;
             char currentChar = templateSpan[position];
@@ -468,7 +439,7 @@ namespace MicroElements.Functional
         /// <inheritdoc />
         public void Render(MessageTemplate messageTemplate, IReadOnlyDictionary<string, object> properties, TextWriter output)
         {
-            ReadOnlySpan<char> templateSpan = messageTemplate.OriginalFormat.AsSpan();
+            var templateSpan = messageTemplate.OriginalFormat;//.AsSpan();
 
             foreach (var token in messageTemplate.Tokens)
             {
@@ -478,13 +449,14 @@ namespace MicroElements.Functional
                 }
                 else
                 {
-                    var propName = templateSpan.Slice(token.NameSlice.StartIndex, token.NameSlice.Length).ToString();
+                    //var propName = templateSpan.Slice(token.NameSlice.StartIndex, token.NameSlice.Length).ToString();
+                    var propName = templateSpan.Substring(token.NameSlice.StartIndex, token.NameSlice.Length);
                     if (!properties.TryGetValue(propName, out object propValue))
                     {
                         WriteTextToken(output, templateSpan, token);
                         continue;
                     }
-
+                    //TODO: Alignment
                     if (token.Format != null && token.Alignment != 0)
                         output.Write($"{{0,{token.Alignment}:{token.Format}}}", propValue);
                     else if (token.Format != null)
@@ -505,7 +477,6 @@ namespace MicroElements.Functional
                                 {
                                     propValue = propValue.ToString();
                                 }
-                                
                             }
                         }
 
@@ -592,12 +563,11 @@ namespace MicroElements.Functional
             }
         }
 
-        private static void WriteTextToken(TextWriter output, ReadOnlySpan<char> templateSpan, Token token)
+        private static void WriteTextToken(TextWriter output, TextSpan templateSpan, Token token)
         {
-            var slice = templateSpan.Slice(token.StartIndex, token.Length);
-            for (int i = 0; i < slice.Length; i++)
+            for (int i = token.StartIndex; i < token.StartIndex + token.Length; i++)
             {
-                output.Write(slice[i]);
+                output.Write(templateSpan[i]);
             }
         }
     }

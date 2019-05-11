@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Order;
 
 namespace MicroElements.Functional.Benchmarks
@@ -28,13 +26,5 @@ namespace MicroElements.Functional.Benchmarks
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         public int SumMethodImpl(int a, int b) => a + b;
-    }
-
-    class CustomConfig : ManualConfig
-    {
-        public CustomConfig()
-        {
-            Add(MemoryDiagnoser.Default);
-        }
     }
 }

@@ -6,7 +6,7 @@ namespace MicroElements.Functional.Benchmarks
     {
         public static void Main(string[] args)
         {
-            var summary = BenchmarkRunner.Run<DelegateVsFunc>();
+            var summary = BenchmarkRunner.Run<SpanVsStringOperations>();
         }
     }
 }
