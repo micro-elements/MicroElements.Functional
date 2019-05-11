@@ -32,6 +32,6 @@ namespace MicroElements.Functional
         /// <summary>
         /// Message properties.
         /// </summary>
-        IReadOnlyList<KeyValuePair<string, object>> Properties { get; }
+        IReadOnlyCollection<KeyValuePair<string, object>> Properties { get; }
     }
 }

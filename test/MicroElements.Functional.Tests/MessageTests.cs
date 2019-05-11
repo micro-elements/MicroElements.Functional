@@ -1,6 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Text;
 using FluentAssertions;
 using Xunit;
 
@@ -28,18 +26,18 @@ namespace MicroElements.Functional.Tests
             message.GetProperty("Name").GetValueOrThrow().Should().Be("Alex");
             message.GetProperty("Elapsed").GetValueOrThrow().Should().Be(145);
         }
-    }
 
-    public class MessageTemplateTests
-    {
-        [Theory]
-        [InlineData("User {Name} created in {Elapsed} ms.", new object[]{ "Alex", 5 }, "User Alex created in 5 ms.")]
-        [InlineData("User {Name, 5} created in {Elapsed:000} ms.", new object[] { "Alex", 5 }, "User Alex created in 005 ms.")]
-        public void ParseTemplate(string messageTemplate, object[] args, string expected)
+
+        [Fact]
+        public void Test3()
         {
-            var template = new MessageTemplateParser().Parse(messageTemplate);
-            string render = new MessageTemplateRenderer().RenderToString(template, args);
-            render.Should().Be(expected);
+            var timestamp = new DateTimeOffset(2019, 05, 09, 10, 40, 55, TimeSpan.Zero);
+            var message = new Message("{Timestamp:yyyy-MM-ddTHH:mm:ss.fff} | {Severity:upper():trim(4)} | User {Name} created in {Elapsed} ms.", MessageSeverity.Warning, timestamp)
+                .WithProperty("Name", "Alex")
+                .WithProperty("Elapsed", 145);
+
+            message.FormattedMessage.Should().Be("2019-05-09T10:40:55.000 | WARN | User Alex created in 145 ms.");
+
         }
     }
 }

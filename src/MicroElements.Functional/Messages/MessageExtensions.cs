@@ -18,28 +18,42 @@ namespace MicroElements.Functional
             MessageSeverity? severity = null,
             DateTimeOffset? timestamp = null,
             string eventName = null,
-            object state = null,
-            IReadOnlyList<KeyValuePair<string, object>> properties = null,
+            IReadOnlyCollection<KeyValuePair<string, object>> properties = null,
             IEnumerable<KeyValuePair<string, object>> propertiesEnumerable = null,
             PropertyListAddMode propertyListAddMode = PropertyListAddMode.Set)
         {
-            var propertiesToAdd = properties ?? (IReadOnlyList<KeyValuePair<string, object>>) propertiesEnumerable?.ToList() ?? Array.Empty<KeyValuePair<string, object>>();
-            IReadOnlyList<KeyValuePair<string, object>> propList;
-            if(propertyListAddMode == PropertyListAddMode.Set)
-                propList = propertiesToAdd;
-            else if (propertyListAddMode == PropertyListAddMode.Merge)
-                propList = message.Properties.AddWithReplace(propertiesToAdd);
-            else if (propertyListAddMode == PropertyListAddMode.AddIfNotExists)
-                propList = message.Properties.AddIfNotExists(propertiesToAdd);
-            else
-                propList = Array.Empty<KeyValuePair<string, object>>();
+            var resultPropertyList = GetResultPropertyList(message, properties, propertiesEnumerable, propertyListAddMode);
 
             return new Message(
                 timestamp: timestamp ?? message.Timestamp,
                 severity: severity ?? message.Severity,
                 originalMessage: originalMessage ?? message.OriginalMessage,
                 eventName: eventName ?? message.EventName,
-                properties: propList);
+                properties: resultPropertyList);
+        }
+
+        private static IReadOnlyCollection<KeyValuePair<string, object>> GetResultPropertyList(
+            IMessage message,
+            IReadOnlyCollection<KeyValuePair<string, object>> properties,
+            IEnumerable<KeyValuePair<string, object>> propertiesEnumerable,
+            PropertyListAddMode propertyListAddMode)
+        {
+            IReadOnlyCollection<KeyValuePair<string, object>> resultPropertyList;
+
+            var propertiesToAdd = properties
+                                  ?? (IReadOnlyCollection<KeyValuePair<string, object>>) propertiesEnumerable?.ToList()
+                                  ?? Array.Empty<KeyValuePair<string, object>>();
+            
+            if (propertyListAddMode == PropertyListAddMode.Set)
+                resultPropertyList = propertiesToAdd;
+            else if (propertyListAddMode == PropertyListAddMode.Merge)
+                resultPropertyList = message.Properties.AddWithReplace(propertiesToAdd);
+            else if (propertyListAddMode == PropertyListAddMode.AddIfNotExists)
+                resultPropertyList = message.Properties.AddIfNotExists(propertiesToAdd);
+            else
+                resultPropertyList = Array.Empty<KeyValuePair<string, object>>();
+
+            return resultPropertyList;
         }
 
         /// <summary>
@@ -49,14 +63,6 @@ namespace MicroElements.Functional
         /// <param name="text">New text value.</param>
         /// <returns>New instance of <see cref="Message"/> with changed <see cref="IMessage.OriginalMessage"/>.</returns>
         public static Message WithText(this IMessage message, string text) => message.With(originalMessage: text);
-
-        /// <summary>
-        /// Creates new copy of <see cref="Message"/> with required <see cref="IMessage.State"/>.
-        /// </summary>
-        /// <param name="message">Source message.</param>
-        /// <param name="state">New state.</param>
-        /// <returns>New instance of <see cref="Message"/> with changed <see cref="IMessage.State"/>.</returns>
-        public static Message WithState(this IMessage message, object state) => message.With(state: state);
 
         /// <summary>
         /// Creates new copy of <see cref="Message"/> with required <see cref="IMessage.Severity"/>.
@@ -127,6 +133,18 @@ namespace MicroElements.Functional
         }
 
         /// <summary>
+        /// Creates new copy of <see cref="Message"/> and adds captured properties from MessageTemplate.
+        /// </summary>
+        /// <param name="message">Source message.</param>
+        /// <param name="args">MessageTemplate args.</param>
+        /// <returns>New instance of <see cref="Message"/> with added properties.</returns>
+        public static Message WithArgs(this Message message, params object[] args)
+        {
+            var capturedProps = message.MessageTemplate.Value.ArgsToDictionary(args);
+            return message.With(properties: capturedProps, propertyListAddMode: PropertyListAddMode.Merge);
+        }
+
+        /// <summary>
         /// Gets optional property by name.
         /// </summary>
         /// <param name="message">Source message.</param>
@@ -181,6 +199,29 @@ namespace MicroElements.Functional
                 dict.Add(valuePair.Key, valuePair.Value);
             }
             return dict.ToList();
+        }
+
+        /// <summary>
+        /// Gets Exception property.
+        /// </summary>
+        /// <param name="message">Source message.</param>
+        /// <returns>Exception or null.</returns>
+        public static Exception GetException(this IMessage message)
+        {
+            return (Exception)message.GetProperty("Exception").GetValueOrDefault(null);
+        }
+
+        /// <summary>
+        /// Creates new copy of <see cref="Message"/> with Exception property set.
+        /// </summary>
+        /// <param name="message">Source message.</param>
+        /// <param name="exception">Exception.</param>
+        /// <returns>New instance of <see cref="Message"/> with Exception property set.</returns>
+        public static Message WithException(this IMessage message, Exception exception)
+        {
+            exception.AssertArgumentNotNull(nameof(exception));
+
+            return message.WithProperty("Exception", exception);
         }
     }
 }

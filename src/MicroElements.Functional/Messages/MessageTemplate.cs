@@ -2,10 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace MicroElements.Functional
 {
@@ -89,12 +89,20 @@ namespace MicroElements.Functional
         /// </summary>
         public CaptureType CaptureType { get; }
 
-        // public string Name { get; }
+        /// <summary>
+        /// Name slice.
+        /// </summary>
+        public TextSlice NameSlice { get; }
 
         /// <summary>
         /// Format applied to the property.
         /// </summary>
         public string Format { get; }
+
+        /// <summary>
+        /// Text alignment. Positive is right aligned, negative is left aligned.
+        /// </summary>
+        public int Alignment { get; }
 
         /// <summary>
         /// Creates new instance of <seealso cref="Token"/>.
@@ -103,19 +111,28 @@ namespace MicroElements.Functional
         /// <param name="length">The length of token in symbols.</param>
         /// <param name="tokenType">Token type.</param>
         /// <param name="captureType">CaptureType.</param>
+        /// <param name="nameSlice">Text slice for name.</param>
+        /// <param name="alignment">Text alignment.</param>
         /// <param name="format">Format applied to the property.</param>
         public Token(
             int startIndex,
-            int length,
+            int length, 
             TokenType tokenType = TokenType.Text,
             CaptureType captureType = CaptureType.Default,
+            TextSlice nameSlice = default,
+            int alignment = 0,
             string format = null)
         {
             StartIndex = startIndex;
             Length = length;
-            Format = format;
+            Alignment = alignment;
+
             TokenType = tokenType;
             CaptureType = captureType;
+
+            NameSlice = nameSlice;
+            Alignment = alignment;
+            Format = format;
         }
     }
 
@@ -159,7 +176,7 @@ namespace MicroElements.Functional
 
     /// <summary>
     /// Default implementation of <seealso cref="IMessageTemplateParser"/>.
-    /// Now implements only basic behavior of MessageTemplates.
+    /// WARNING: Implements only basic behavior of MessageTemplates.
     /// </summary>
     public class MessageTemplateParser : IMessageTemplateParser
     {
@@ -168,33 +185,6 @@ namespace MicroElements.Functional
         /// </summary>
         public static readonly MessageTemplateParser Instance = new MessageTemplateParser();
 
-        /// <summary>
-        /// Text slice.
-        /// </summary>
-        public readonly struct Slice
-        {
-            /// <summary>
-            /// Start index in text.
-            /// </summary>
-            public readonly int StartIndex;
-
-            /// <summary>
-            /// The length of slice.
-            /// </summary>
-            public readonly int Length;
-
-            /// <summary>
-            /// Creates new slice.
-            /// </summary>
-            /// <param name="startIndex">Start index.</param>
-            /// <param name="length">Length.</param>
-            public Slice(int startIndex, int length)
-            {
-                StartIndex = startIndex;
-                Length = length;
-            }
-        }
-
         private static readonly char[] TextDelimiters = { '{', '}' };
         private static readonly char[] HoleDelimiters = { '}', ':', ',' };
         private static readonly IReadOnlyList<Token> NoTokens = Array.Empty<Token>();
@@ -202,7 +192,7 @@ namespace MicroElements.Functional
         /// <inheritdoc />
         public MessageTemplate Parse(string messageTemplate)
         {
-            ReadOnlySpan<char> templateSpan = messageTemplate.AsSpan();
+            var templateSpan = messageTemplate.AsSpan();
 
             int expectedHoles = 0;
             for (int i = 0; i < templateSpan.Length; i++)
@@ -226,7 +216,7 @@ namespace MicroElements.Functional
             while (position < templateSpan.Length)
             {
                 char currentChar = templateSpan[position];
-                char nextChar = templateSpan[position + 1];
+                char nextChar = position < templateSpan.Length - 1? templateSpan[position + 1] : char.MinValue;
                 if (currentChar == '{' && nextChar != '{')
                 {
                     var hole = ParseHole(templateSpan, ref position);
@@ -235,7 +225,7 @@ namespace MicroElements.Functional
                 else if (currentChar == '}')
                 {
                     position++;
-                    //error
+                    //todo: error
                 }
                 else
                 {
@@ -263,7 +253,7 @@ namespace MicroElements.Functional
                     break;
                 }
             }
-            return new Token(startIndex, tokenLength, TokenType.Text, CaptureType.Default);
+            return new Token(startIndex, tokenLength, TokenType.Text);
         }
 
         private Token ParseHole(in ReadOnlySpan<char> templateSpan, ref int position)
@@ -303,10 +293,10 @@ namespace MicroElements.Functional
 
             int length = position - startIndex;
 
-            return new Token(startIndex, length, TokenType.Hole, captureType, format);
+            return new Token(startIndex, length, TokenType.Hole, captureType, name, alignment, format);
         }
 
-        private ReadOnlySpan<char> ReadUntil(in ReadOnlySpan<char> templateSpan, ref int position, char[] symbols)
+        private TextSlice ReadUntil(in ReadOnlySpan<char> templateSpan, ref int position, char[] symbols)
         {
             int startIndex = position;
             int stopIndex = 0;
@@ -326,7 +316,7 @@ namespace MicroElements.Functional
 
             if (stopIndex > 0)
             {
-                return templateSpan.Slice(startIndex, stopIndex - startIndex);
+                return new TextSlice(startIndex, stopIndex - startIndex);
             }
 
             // TODO: Error.
@@ -365,12 +355,12 @@ namespace MicroElements.Functional
             }
         }
 
-        private ReadOnlySpan<char> ParseNameOrIndex(in ReadOnlySpan<char> templateSpan, ref int position)
+        private TextSlice ParseNameOrIndex(in ReadOnlySpan<char> templateSpan, ref int position)
         {
             return ReadUntil(templateSpan, ref position, HoleDelimiters);
         }
 
-        private Option<int> ParseAlignment(in ReadOnlySpan<char> templateSpan, ref int position)
+        private int ParseAlignment(in ReadOnlySpan<char> templateSpan, ref int position)
         {
             int result = 0;
             char currentChar = templateSpan[position];
@@ -398,7 +388,7 @@ namespace MicroElements.Functional
             }
             else
             {
-                return Option<int>.None;
+                return 0;
             }
 
             return result;
@@ -427,12 +417,53 @@ namespace MicroElements.Functional
         }
     }
 
+    /// <summary>
+    /// Text slice.
+    /// </summary>
+    public readonly struct TextSlice
+    {
+        /// <summary>
+        /// Start index in text.
+        /// </summary>
+        public readonly int StartIndex;
+
+        /// <summary>
+        /// The length of slice.
+        /// </summary>
+        public readonly int Length;
+
+        /// <summary>
+        /// Creates new slice.
+        /// </summary>
+        /// <param name="startIndex">Start index.</param>
+        /// <param name="length">Length.</param>
+        public TextSlice(int startIndex, int length)
+        {
+            StartIndex = startIndex;
+            Length = length;
+        }
+    }
+
+    /// <summary>
+    /// Default implementation of <see cref="IMessageTemplateRenderer"/>.
+    /// </summary>
     public class MessageTemplateRenderer : IMessageTemplateRenderer
     {
         /// <summary>
         /// Global static instance.
         /// </summary>
         public static readonly MessageTemplateRenderer Instance = new MessageTemplateRenderer();
+
+        /// <summary>
+        /// Renderer provide.
+        /// </summary>
+        private readonly IValueRendererProvider _valueRendererProvider;
+
+        /// <inheritdoc />
+        public MessageTemplateRenderer(IValueRendererProvider valueRendererProvider = null)
+        {
+            _valueRendererProvider = valueRendererProvider ?? DefaultValueRendererProvider.Instance;
+        }
 
         /// <inheritdoc />
         public void Render(MessageTemplate messageTemplate, IReadOnlyDictionary<string, object> properties, TextWriter output)
@@ -447,21 +478,117 @@ namespace MicroElements.Functional
                 }
                 else
                 {
-                    var slice = templateSpan.Slice(token.StartIndex, token.Length);
-                    var name = slice.Slice(1, slice.Length - 2);
-                    string propName = name.ToString();//TODO: token.Name or get by token name index and len
-                    object propValue;
-                    if (!properties.TryGetValue(propName, out propValue))
+                    var propName = templateSpan.Slice(token.NameSlice.StartIndex, token.NameSlice.Length).ToString();
+                    if (!properties.TryGetValue(propName, out object propValue))
                     {
                         WriteTextToken(output, templateSpan, token);
                         continue;
                     }
 
-                    if (token.Format != null)
-                        output.Write($"{0}:{token.Format}", propValue);
-                    else
+                    if (token.Format != null && token.Alignment != 0)
+                        output.Write($"{{0,{token.Alignment}:{token.Format}}}", propValue);
+                    else if (token.Format != null)
+                    {
+                        var formats = ParseFormats(token.Format);
+                        foreach (var format in formats)
+                        {
+                            IValueRenderer renderer = _valueRendererProvider.Get(format.Format, format.Args);
+                            if (renderer != null)
+                                propValue = renderer.Render(propValue);
+                            else
+                            {
+                                if (propValue is IFormattable formattable)
+                                {
+                                    propValue = formattable.ToString(format.Format, null);
+                                }
+                                else
+                                {
+                                    propValue = propValue.ToString();
+                                }
+                                
+                            }
+                        }
+
+                        if (propValue is string text)
+                        {
+                            output.WriteText(text);
+                        }
+                        else
+                        {
+                            output.Write("{0}", propValue);
+                        }
+                    }
+                    else if (token.Alignment != 0)
+                        output.Write($"{{0,{token.Alignment}}}", propValue);
+                    else //TODO: scalar, stringify, deconstruct
                         output.Write("{0}", propValue);
                 }
+            }
+        }
+
+        readonly struct FormatWithArgs
+        {
+            public readonly string Format;
+            public readonly string Args;
+
+            public FormatWithArgs(string format, string args)
+            {
+                Format = format;
+                Args = args;
+            }
+        }
+
+        private IEnumerable<FormatWithArgs> ParseFormats(string format)
+        {
+            if (string.IsNullOrEmpty(format))
+                yield break;
+
+            int argsStart1 = format.IndexOf('(');
+            int argsEnd1 = argsStart1 > 0? format.IndexOf(')', argsStart1) : -1;
+            if (argsStart1 > 0 && argsEnd1 > 0)
+            {
+                string[] formats = format.Split(new []{':', ' '}, StringSplitOptions.RemoveEmptyEntries);
+
+                for (int i = 0; i < formats.Length; i++)
+                {
+                    var form = formats[i];
+
+                    int argsStart, argsEnd = -1;
+
+                    if (i == 0)
+                    {
+                        argsStart = argsStart1;
+                        argsEnd = argsEnd1;
+                    }
+                    else
+                    {
+                        argsStart = form.IndexOf('(');
+                        if (argsStart > 0)
+                        {
+                            argsEnd = form.IndexOf(')', argsStart);
+                        }
+                    }
+
+                    if (argsStart > 0 && argsEnd > 0)
+                    {
+                        string formatName = form.Substring(0, argsStart);
+
+                        if (argsEnd - argsStart > 1)
+                        {
+                            string argsText = form.Substring(argsStart + 1, argsEnd - argsStart - 1);
+                            //string[] args = argsText.Split(',');
+                            yield return new FormatWithArgs(formatName, argsText);
+                        }
+                        else
+                        {
+                            yield return new FormatWithArgs(formatName, null);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                yield return new FormatWithArgs(format, null);
             }
         }
 
@@ -472,6 +599,162 @@ namespace MicroElements.Functional
             {
                 output.Write(slice[i]);
             }
+        }
+    }
+
+    /// <summary>
+    /// ValueRendererProvider provides <see cref="IValueRenderer"/> by name.
+    /// </summary>
+    public interface IValueRendererProvider
+    {
+        /// <summary>
+        /// Gets <see cref="IValueRenderer"/> by name.
+        /// </summary>
+        /// <param name="name">Renderer name.</param>
+        /// <param name="args">Renderer optional args.</param>
+        /// <returns>Renderer or null if not found.</returns>
+        IValueRenderer Get(string name, string args);
+    }
+
+    /// <summary>
+    /// Default providers registers renderers: upper, trim(len).
+    /// </summary>
+    public class DefaultValueRendererProvider : IValueRendererProvider
+    {
+        /// <summary>
+        /// Default global renderer provider.
+        /// </summary>
+        public static readonly IValueRendererProvider Instance = new DefaultValueRendererProvider();
+
+        private readonly IValueRendererProvider _rendererProvider = new CachedValueRendererProvider(new Dictionary<string, Type>
+        {
+            { "upper", typeof(UpperRenderer) },
+            { "trim", typeof(TrimRenderer) }
+        });
+
+        /// <inheritdoc />
+        public IValueRenderer Get(string name, string args) => _rendererProvider.Get(name, args);
+    }
+
+    /// <summary>
+    /// Cached provider caches renderer for each pair: (name, arg).
+    /// </summary>
+    public class CachedValueRendererProvider : IValueRendererProvider
+    {
+        private readonly ConcurrentDictionary<string, Type> _rendererTypes = new ConcurrentDictionary<string, Type>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<(string name, string args), IValueRenderer> _rendererCache = new ConcurrentDictionary<(string name, string args), IValueRenderer>();
+
+        /// <inheritdoc />
+        public CachedValueRendererProvider(IDictionary<string, Type> rendererTypes)
+        {
+            foreach (var rendererType in rendererTypes)
+            {
+                _rendererTypes.TryAdd(rendererType.Key, rendererType.Value);
+            }
+        }
+
+        /// <inheritdoc />
+        public IValueRenderer Get(string name, string args)
+        {
+            if (_rendererCache.TryGetValue((name, args), out IValueRenderer renderer))
+            {
+                return renderer;
+            }
+
+            if (_rendererTypes.TryGetValue(name, out Type rendererType))
+            {
+                var constructorWithArgs = rendererType.GetConstructor(new Type[] { typeof(string) });
+                object[] ctorArgs = constructorWithArgs != null ? new object[] { args } : null;
+                renderer = (IValueRenderer)Activator.CreateInstance(rendererType, ctorArgs);
+                _rendererCache.TryAdd((name, args), renderer);
+            }
+
+            return renderer;
+        }
+    }
+
+    /// <summary>
+    /// Value renderer renders value to string.
+    /// Also it can generate new value or transform input value.
+    /// </summary>
+    public interface IValueRenderer
+    {
+        /// <summary>
+        /// Renders value to string.
+        /// Can generate new value or transform input value.
+        /// </summary>
+        /// <param name="value">Input value.</param>
+        /// <returns></returns>
+        object Render(object value);
+    }
+
+    /// <summary>
+    /// Renderer that treats input value as string and renders result as string.
+    /// </summary>
+    public abstract class StringRenderer : IValueRenderer
+    {
+        /// <summary>
+        /// Renders string value to string result.
+        /// </summary>
+        /// <param name="textValue">Input value.</param>
+        /// <returns>Result value.</returns>
+        protected abstract string RenderString(string textValue);
+
+        /// <inheritdoc />
+        public object Render(object value)
+        {
+            string text = ValueToString(value);
+            return RenderString(text);
+        }
+
+        private static string ValueToString(object value)
+        {
+            if (value == null)
+                return string.Empty;
+
+            string text;
+            if (value is string str)
+                text = str;
+            else
+                text = value.ToString();
+            return text;
+        }
+    }
+
+    /// <summary>
+    /// Renders string value as UPPERCASE string.
+    /// </summary>
+    public sealed class UpperRenderer : StringRenderer
+    {
+        /// <inheritdoc />
+        protected override string RenderString(string textValue) => textValue.ToUpperInvariant();
+    }
+
+    /// <summary>
+    /// Trims first N symbols.
+    /// </summary>
+    public sealed class TrimRenderer : StringRenderer
+    {
+        private readonly int _length;
+
+        public TrimRenderer(string args)
+        {
+            if (!int.TryParse(args, out _length))
+            {
+                _length = -1;
+            }
+        }
+
+        /// <inheritdoc />
+        protected override string RenderString(string textValue)
+        {
+            if (_length > 0 && _length <= textValue.Length)
+            {
+                string result = textValue.Substring(0, _length);
+                return result;
+            }
+
+            return textValue;
         }
     }
 
@@ -498,16 +781,8 @@ namespace MicroElements.Functional
             object[] args,
             TextWriter output)
         {
-            Dictionary<string, object> properties = ArgsToDictionary(args);
+            var properties = ArgsToDictionary(messageTemplate, args);
             renderer.Render(messageTemplate, properties, output);
-        }
-
-        private static Dictionary<string, object> ArgsToDictionary(object[] args)
-        {
-            var properties = args
-                .Select((arg, index) => (arg, index))
-                .ToDictionary(tuple => tuple.index.ToString(), tuple => tuple.arg);
-            return properties;
         }
 
         public static string RenderToString(
@@ -526,37 +801,27 @@ namespace MicroElements.Functional
             object[] args)
         {
             var stringWriter = new StringWriter();
-
-            Dictionary<string, object> properties = messageTemplate.Tokens.Where(token => token.TokenType == TokenType.Hole)
-                .Select(token => messageTemplate.OriginalFormat.Substring(token.StartIndex, token.Length))
-                .Zip(args, (s, o) => (s, o))
-                .ToDictionary(tuple => tuple.s, tuple => tuple.o);
-
+            var properties = ArgsToDictionary(messageTemplate, args);
             renderer.Render(messageTemplate, properties, stringWriter);
             return stringWriter.ToString();
         }
-    }
 
-    public class SafeMessageTemplateParser : IMessageTemplateParser
-    {
-        private readonly IMessageTemplateParser _messageTemplateParser;
-
-        public SafeMessageTemplateParser(IMessageTemplateParser messageTemplateParser)
+        /// <summary>
+        /// Tries to capture message properties from <see cref="MessageTemplate"/> and args list.
+        /// </summary>
+        /// <param name="messageTemplate">Parsed <see cref="MessageTemplate"/>.</param>
+        /// <param name="args">Template args.</param>
+        /// <returns></returns>
+        public static IReadOnlyDictionary<string, object> ArgsToDictionary(this MessageTemplate messageTemplate, params object[] args)
         {
-            _messageTemplateParser = messageTemplateParser;
-        }
+            args.AssertArgumentNotNull(nameof(args));
 
-        /// <inheritdoc />
-        public MessageTemplate Parse(string messageTemplate)
-        {
-            try
-            {
-                return _messageTemplateParser.Parse(messageTemplate);
-            }
-            catch (Exception e)
-            {
-                return new MessageTemplate(messageTemplate, null);
-            }
+            Dictionary<string, object> properties = messageTemplate.Tokens
+                .Where(token => token.TokenType == TokenType.Hole)
+                .Select(token => messageTemplate.OriginalFormat.Substring(token.NameSlice.StartIndex, token.NameSlice.Length))
+                .Zip(args, (name, arg) => (name, arg))
+                .ToDictionary(tuple => tuple.name, tuple => tuple.arg);
+            return properties;
         }
     }
 }

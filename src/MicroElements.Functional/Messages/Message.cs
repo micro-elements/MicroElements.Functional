@@ -41,7 +41,7 @@ namespace MicroElements.Functional
         /// <summary>
         /// Message properties.
         /// </summary>
-        public IReadOnlyList<KeyValuePair<string, object>> Properties { get; }
+        public IReadOnlyCollection<KeyValuePair<string, object>> Properties { get; }
 
         /// <summary>
         /// Object is Error.
@@ -71,7 +71,7 @@ namespace MicroElements.Functional
             MessageSeverity severity = MessageSeverity.Information,
             DateTimeOffset? timestamp = null,
             string eventName = null,
-            IReadOnlyList<KeyValuePair<string, object>> properties = null)
+            IReadOnlyCollection<KeyValuePair<string, object>> properties = null)
         {
             OriginalMessage = originalMessage.AssertArgumentNotNull(nameof(originalMessage));
             Severity = severity;
@@ -156,10 +156,7 @@ namespace MicroElements.Functional
 
         #region MessageTemplate
 
-        private MessageTemplate TryParseMessageTemplate()
-        {
-            return MessageTemplateParser.Instance.TryParse(OriginalMessage);
-        }
+        private MessageTemplate TryParseMessageTemplate() => MessageTemplateParser.Instance.TryParse(OriginalMessage);
 
         private string TryRenderMessageTemplate()
         {
@@ -167,7 +164,7 @@ namespace MicroElements.Functional
             {
                 return MessageTemplateRenderer.Instance.RenderToString(MessageTemplate.Value, AllPropertiesCached);
             }
-            catch
+            catch (Exception e)
             {
                 return OriginalMessage;
             }
