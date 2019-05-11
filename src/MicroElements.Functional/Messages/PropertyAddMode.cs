@@ -3,7 +3,7 @@
     /// <summary>
     /// Mode for adding list of properties to <see cref="Message"/>.
     /// </summary>
-    public enum PropertyListAddMode
+    public enum PropertyAddMode
     {
         /// <summary>
         /// Sets new property list (replaces old list).

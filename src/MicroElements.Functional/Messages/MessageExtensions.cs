@@ -20,9 +20,9 @@ namespace MicroElements.Functional
             string eventName = null,
             IReadOnlyCollection<KeyValuePair<string, object>> properties = null,
             IEnumerable<KeyValuePair<string, object>> propertiesEnumerable = null,
-            PropertyListAddMode propertyListAddMode = PropertyListAddMode.Set)
+            PropertyAddMode propertyAddMode = PropertyAddMode.Set)
         {
-            var resultPropertyList = GetResultPropertyList(message, properties, propertiesEnumerable, propertyListAddMode);
+            var resultPropertyList = GetResultPropertyList(message, properties, propertiesEnumerable, propertyAddMode);
 
             return new Message(
                 timestamp: timestamp ?? message.Timestamp,
@@ -36,7 +36,7 @@ namespace MicroElements.Functional
             IMessage message,
             IReadOnlyCollection<KeyValuePair<string, object>> properties,
             IEnumerable<KeyValuePair<string, object>> propertiesEnumerable,
-            PropertyListAddMode propertyListAddMode)
+            PropertyAddMode propertyAddMode)
         {
             IReadOnlyCollection<KeyValuePair<string, object>> resultPropertyList;
 
@@ -44,11 +44,11 @@ namespace MicroElements.Functional
                                   ?? (IReadOnlyCollection<KeyValuePair<string, object>>) propertiesEnumerable?.ToList()
                                   ?? Array.Empty<KeyValuePair<string, object>>();
             
-            if (propertyListAddMode == PropertyListAddMode.Set)
+            if (propertyAddMode == PropertyAddMode.Set)
                 resultPropertyList = propertiesToAdd;
-            else if (propertyListAddMode == PropertyListAddMode.Merge)
+            else if (propertyAddMode == PropertyAddMode.Merge)
                 resultPropertyList = message.Properties.AddWithReplace(propertiesToAdd);
-            else if (propertyListAddMode == PropertyListAddMode.AddIfNotExists)
+            else if (propertyAddMode == PropertyAddMode.AddIfNotExists)
                 resultPropertyList = message.Properties.AddIfNotExists(propertiesToAdd);
             else
                 resultPropertyList = Array.Empty<KeyValuePair<string, object>>();
@@ -93,26 +93,26 @@ namespace MicroElements.Functional
         /// </summary>
         /// <param name="message">Source message.</param>
         /// <param name="properties">New state.</param>
-        /// <param name="propertyListAddMode">Property list add mode.</param>
+        /// <param name="propertyAddMode">Property list add mode.</param>
         /// <returns>New instance of <see cref="Message"/> with changed <see cref="IMessage.Properties"/>.</returns>
         public static Message WithProperties(
             this IMessage message,
             IReadOnlyList<KeyValuePair<string, object>> properties,
-            PropertyListAddMode propertyListAddMode = PropertyListAddMode.Set) 
-            => message.With(properties: properties, propertyListAddMode: propertyListAddMode);
+            PropertyAddMode propertyAddMode = PropertyAddMode.Set) 
+            => message.With(properties: properties, propertyAddMode: propertyAddMode);
 
         /// <summary>
         /// Creates new copy of <see cref="Message"/> with required <see cref="IMessage.Properties"/>.
         /// </summary>
         /// <param name="message">Source message.</param>
         /// <param name="properties">New state.</param>
-        /// <param name="propertyListAddMode">Property list add mode.</param>
+        /// <param name="propertyAddMode">Property list add mode.</param>
         /// <returns>New instance of <see cref="Message"/> with changed <see cref="IMessage.Properties"/>.</returns>
         public static Message WithProperties(
             this IMessage message,
             IEnumerable<KeyValuePair<string, object>> properties,
-            PropertyListAddMode propertyListAddMode = PropertyListAddMode.Set)
-            => message.With(propertiesEnumerable: properties, propertyListAddMode: propertyListAddMode);
+            PropertyAddMode propertyAddMode = PropertyAddMode.Set)
+            => message.With(propertiesEnumerable: properties, propertyAddMode: propertyAddMode);
 
         /// <summary>
         /// Creates new copy of <see cref="Message"/> with new property added.
@@ -141,7 +141,7 @@ namespace MicroElements.Functional
         public static Message WithArgs(this Message message, params object[] args)
         {
             var capturedProps = message.MessageTemplate.Value.ArgsToDictionary(args);
-            return message.With(properties: capturedProps, propertyListAddMode: PropertyListAddMode.Merge);
+            return message.With(properties: capturedProps, propertyAddMode: PropertyAddMode.Merge);
         }
 
         /// <summary>
