@@ -24,9 +24,23 @@ namespace MicroElements.Functional
         public static T GetValueOrThrow<T>(this Option<T> option)
             => option.Match((t) => t, () => throw new ValueIsNoneException());
 
-        public static T GetValueOrDefault<T>(this Option<T> opt, T defaultValue)
+        /// <summary>
+        /// Gets value or returns default value.
+        /// </summary>
+        /// <typeparam name="T">Option type.</typeparam>
+        /// <param name="opt">Source option.</param>
+        /// <param name="defaultValue">Default value.</param>
+        /// <returns>Option value or default value.</returns>
+        public static T GetValueOrDefault<T>(this Option<T> opt, T defaultValue = default)
             => opt.MatchUnsafe((t) => t, () => defaultValue);
 
+        /// <summary>
+        /// Gets value or returns default value.
+        /// </summary>
+        /// <typeparam name="T">Option type.</typeparam>
+        /// <param name="opt">Source option.</param>
+        /// <param name="fallback">Function that returns default value.</param>
+        /// <returns>Option value or default value.</returns>
         public static T GetValueOrDefault<T>(this Option<T> opt, Func<T> fallback)
             => opt.MatchUnsafe((t) => t, () => fallback());
 
