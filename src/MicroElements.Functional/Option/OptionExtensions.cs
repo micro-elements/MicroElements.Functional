@@ -12,7 +12,22 @@ namespace MicroElements.Functional
     /// </summary>
     public static class OptionExtensions
     {
+        /// <summary>
+        /// Converts value to Some(value).
+        /// Throws if value is null.
+        /// </summary>
+        /// <typeparam name="T">Value type.</typeparam>
+        /// <param name="value">Not null value.</param>
+        /// <returns>Option in Some state.</returns>
         public static Some<T> ToSome<T>(this T value) => new Some<T>(value);
+
+        /// <summary>
+        /// Converts value to optional value (Some or None).
+        /// </summary>
+        /// <typeparam name="T">Value type.</typeparam>
+        /// <param name="value">Value or null.</param>
+        /// <returns>Option.</returns>
+        public static Option<T> ToOption<T>(this T value) => value;
 
         /// <summary>
         /// Gets value or throws if option is in <see cref="OptionState.None"/> state.
@@ -28,21 +43,21 @@ namespace MicroElements.Functional
         /// Gets value or returns default value.
         /// </summary>
         /// <typeparam name="T">Option type.</typeparam>
-        /// <param name="opt">Source option.</param>
+        /// <param name="source">Source option.</param>
         /// <param name="defaultValue">Default value.</param>
         /// <returns>Option value or default value.</returns>
-        public static T GetValueOrDefault<T>(this Option<T> opt, T defaultValue = default)
-            => opt.MatchUnsafe((t) => t, () => defaultValue);
+        public static T GetValueOrDefault<T>(this Option<T> source, T defaultValue = default)
+            => source.MatchUnsafe((t) => t, () => defaultValue);
 
         /// <summary>
         /// Gets value or returns default value.
         /// </summary>
         /// <typeparam name="T">Option type.</typeparam>
-        /// <param name="opt">Source option.</param>
+        /// <param name="source">Source option.</param>
         /// <param name="fallback">Function that returns default value.</param>
         /// <returns>Option value or default value.</returns>
-        public static T GetValueOrDefault<T>(this Option<T> opt, Func<T> fallback)
-            => opt.MatchUnsafe((t) => t, () => fallback());
+        public static T GetValueOrDefault<T>(this Option<T> source, Func<T> fallback)
+            => source.MatchUnsafe((t) => t, fallback);
 
         public static Option<T> OrElse<T>(this Option<T> left, Option<T> right)
             => left.Match((_) => left, () => right);

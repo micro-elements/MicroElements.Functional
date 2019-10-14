@@ -781,6 +781,24 @@ namespace MicroElements.Functional
             return stringWriter.ToString();
         }
 
+        public static string TryRenderToString(
+            this IMessageTemplateRenderer renderer,
+            MessageTemplate messageTemplate,
+            IReadOnlyDictionary<string, object> properties,
+            string originalMessage)
+        {
+            try
+            {
+                var stringWriter = new StringWriter();
+                renderer.Render(messageTemplate, properties, stringWriter);
+                return stringWriter.ToString();
+            }
+            catch
+            {
+                return originalMessage;
+            }
+        }
+
         public static string RenderToString(
             this IMessageTemplateRenderer renderer,
             MessageTemplate messageTemplate,

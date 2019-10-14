@@ -29,7 +29,8 @@ namespace MicroElements.Functional
         public MessageSeverity Severity { get; }
 
         /// <summary>
-        /// Original message. Can be in form of MessageTemplates.org.
+        /// Original message.
+        /// Can be in form of MessageTemplates.org.
         /// </summary>
         public string OriginalMessage { get; }
 
@@ -47,6 +48,10 @@ namespace MicroElements.Functional
         /// Object is Error.
         /// </summary>
         public bool IsError => Severity == MessageSeverity.Error;
+
+        private IMessageTemplateParser MessageTemplateParser { get; }
+        private IMessageTemplateRenderer MessageTemplateRenderer { get; }
+        private Func<string> TryRenderMessageTemplate { get; }
 
         /// <summary>
         /// <seealso cref="Functional.MessageTemplate"/> parsed from <seealso cref="OriginalMessage"/>.
@@ -71,7 +76,9 @@ namespace MicroElements.Functional
             MessageSeverity severity = MessageSeverity.Information,
             DateTimeOffset? timestamp = null,
             string eventName = null,
-            IReadOnlyCollection<KeyValuePair<string, object>> properties = null)
+            IReadOnlyCollection<KeyValuePair<string, object>> properties = null,
+            IMessageTemplateParser messageTemplateParser = null,
+            IMessageTemplateRenderer messageTemplateRenderer = null)
         {
             OriginalMessage = originalMessage.AssertArgumentNotNull(nameof(originalMessage));
             Severity = severity;
@@ -79,7 +86,10 @@ namespace MicroElements.Functional
             EventName = eventName;
             Properties = properties ?? EmptyPropertyList;
 
-            MessageTemplate = new Lazy<MessageTemplate>(TryParseMessageTemplate);
+            MessageTemplateParser = messageTemplateParser ?? Functional.MessageTemplateParser.Instance;
+            MessageTemplateRenderer = messageTemplateRenderer ?? Functional.MessageTemplateRenderer.Instance;
+            MessageTemplate = new Lazy<MessageTemplate>(() => MessageTemplateParser.TryParse(OriginalMessage));
+            TryRenderMessageTemplate = () => MessageTemplateRenderer.TryRenderToString(MessageTemplate.Value, AllPropertiesCached, OriginalMessage);
         }
 
         /// <summary>
@@ -150,24 +160,6 @@ namespace MicroElements.Functional
         public IEnumerable<(string Name, object Value)> GetNameValuePairs()
         {
             return AllPropertiesCached.Select(pair => (pair.Key, pair.Value));
-        }
-
-        #endregion
-
-        #region MessageTemplate
-
-        private MessageTemplate TryParseMessageTemplate() => MessageTemplateParser.Instance.TryParse(OriginalMessage);
-
-        private string TryRenderMessageTemplate()
-        {
-            try
-            {
-                return MessageTemplateRenderer.Instance.RenderToString(MessageTemplate.Value, AllPropertiesCached);
-            }
-            catch (Exception e)
-            {
-                return OriginalMessage;
-            }
         }
 
         #endregion
