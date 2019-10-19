@@ -59,7 +59,7 @@ then
     cat > "$CAKE_PROPS_PATH" <<EOL
 <Project Sdk="Microsoft.NET.Sdk">
 <PropertyGroup>
-  <TargetFramework>netcoreapp2.1</TargetFramework>
+  <TargetFramework>netstandard2.0</TargetFramework>
 </PropertyGroup>
 <ItemGroup>
   <PackageReference Include="MicroElements.DevOps" Version="$DEVOPS_VERSION" />
@@ -71,7 +71,9 @@ EOL
 fi
 
 # Restore Cake and Packages
+echo "restoring MicroElements.DevOps"
 dotnet restore $CAKE_PROPS_PATH --packages $TOOLS_DIR --source "$NUGET_URL"
+echo "restoring global tools"
 dotnet tool restore
 
 # Start Cake
