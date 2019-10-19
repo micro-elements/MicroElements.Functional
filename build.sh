@@ -75,7 +75,8 @@ echo "restoring MicroElements.DevOps"
 dotnet restore $CAKE_PROPS_PATH --packages $TOOLS_DIR --source "$NUGET_URL"
 echo "restoring global tools"
 #dotnet tool restore
-dotnet tool install --global --tool-path $TOOLS_DIR Cake.Tool --version 0.35.0
+#dotnet tool install --global --tool-path $TOOLS_DIR Cake.Tool --version 0.35.0
+dotnet tool install --global Cake.Tool --version 0.35.0
 
 # Start Cake
 echo "Running build script..."
