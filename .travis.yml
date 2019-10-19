@@ -1,7 +1,7 @@
 dist: xenial
 language: csharp
 mono: none
-dotnet: 3.0.100
+dotnet: 2.1.300
 os:
   - linux
 before_script:
