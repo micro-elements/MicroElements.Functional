@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -45,7 +46,7 @@ namespace MicroElements.Functional
         /// <param name="formatValue">Func to format object value to string representation.</param>
         /// <returns>Formatted string.</returns>
         public static string FormatAsTuple(
-            this IEnumerable<object> values,
+            this IEnumerable values,
             string fieldSeparator = ", ",
             string nullPlaceholder = "null",
             Func<object, string> formatValue = null)
@@ -57,7 +58,10 @@ namespace MicroElements.Functional
             var stringBuilder = new StringBuilder();
             stringBuilder.Append("(");
             foreach (var value in values)
-                stringBuilder.Append($"{value ?? nullPlaceholder}{fieldSeparator}");
+            {
+                string text = value != null ? formatValue != null ? formatValue(value) : value.ToString() : nullPlaceholder;
+                stringBuilder.Append($"{text}{fieldSeparator}");
+            }
             if (stringBuilder.Length > fieldSeparator.Length)
                 stringBuilder.Length -= fieldSeparator.Length;
             stringBuilder.Append(")");
