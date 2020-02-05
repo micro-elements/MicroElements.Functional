@@ -99,7 +99,7 @@ namespace MicroElements.Functional
         public static implicit operator Message(string text) => new Message(text);
 
         /// <inheritdoc />
-        public override string ToString() => $"{Timestamp:yyyy-MM-ddTHH:mm:ss.fff} | {Severity} | {EventName.AddIfNotNull()} {FormattedMessage}";
+        public override string ToString() => $"{Timestamp:yyyy-MM-ddTHH:mm:ss.fff} | {Severity} | {EventName.AddIfNotNull(" |")} {FormattedMessage}";
 
         #region IReadOnlyList
 

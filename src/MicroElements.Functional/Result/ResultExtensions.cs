@@ -94,7 +94,7 @@ namespace MicroElements.Functional
             => Result.Fail<A, Error, Message>(default, messages);
 
         public static Result<A, Error> MatchSuccess<A, Error>(
-            this Result<A, Error> result,
+            this in Result<A, Error> result,
             SuccessAction<A> success)
         {
             success.AssertArgumentNotNull(nameof(success));
