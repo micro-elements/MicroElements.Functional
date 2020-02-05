@@ -13,7 +13,7 @@ namespace MicroElements.Functional
     public static class OptionOperations
     {
         /// <summary>
-        /// Evaluates a specified function based on the option state.
+        /// Evaluates a specified function based on the option state and returns not null result.
         /// </summary>
         /// <typeparam name="A">Value type.</typeparam>
         /// <typeparam name="B">Result type.</typeparam>
@@ -26,17 +26,12 @@ namespace MicroElements.Functional
         /// <exception cref="ResultIsNullException">result is null.</exception>
         [Pure]
         public static B Match<A, B>(
-            in Option<A> source,
+            this in Option<A> source,
             Func<A, B> some,
             Func<B> none)
         {
-            some.AssertArgumentNotNull(nameof(some));
-            none.AssertArgumentNotNull(nameof(none));
-
-            var res = source.IsSome
-                ? some(source.Value)
-                : none();
-            return res.AssertNotNullResult();
+            return MatchUnsafe(source, some, none)
+                .AssertNotNullResult();
         }
 
         /// <summary>
@@ -50,6 +45,7 @@ namespace MicroElements.Functional
         /// <param name="none">Function to evaluate on <see cref="OptionState.None"/> state.</param>
         /// <returns>NotNull evaluated result.</returns>
         /// <exception cref="ArgumentNullException">some is null.</exception>
+        /// <exception cref="ArgumentNullException">none is null.</exception>
         [Pure]
         public static B MatchUnsafe<A, B>(
             this in Option<A> source,
@@ -57,11 +53,11 @@ namespace MicroElements.Functional
             Func<B> none)
         {
             some.AssertArgumentNotNull(nameof(some));
+            none.AssertArgumentNotNull(nameof(none));
 
-            var res = source.IsSome
+            return source.IsSome
                 ? some(source.Value)
                 : none();
-            return res;
         }
 
         /// <summary>
@@ -85,10 +81,8 @@ namespace MicroElements.Functional
             some.AssertArgumentNotNull(nameof(some));
             none.AssertArgumentNotNull(nameof(none));
 
-            var res = source.IsSome
-                ? some(source.Value)
-                : none;
-            return res.AssertNotNullResult();
+            return MatchUnsafe(source, some, none)
+                .AssertNotNullResult();
         }
 
         /// <summary>
@@ -110,10 +104,9 @@ namespace MicroElements.Functional
         {
             some.AssertArgumentNotNull(nameof(some));
 
-            var res = source.IsSome
+            return source.IsSome
                 ? some(source.Value)
                 : none;
-            return res;
         }
 
         /// <summary>
@@ -143,6 +136,25 @@ namespace MicroElements.Functional
         }
 
         /// <summary>
+        /// Executes <paramref name="some"/> action if <paramref name="source"/> is in <see cref="OptionState.Some"/> state.
+        /// </summary>
+        /// <typeparam name="A">Option type.</typeparam>
+        /// <param name="source">Source option.</param>
+        /// <param name="some">Action to evaluate on <see cref="OptionState.Some"/> state.</param>
+        /// <returns>Source option unchanged.</returns>
+        public static Option<A> MatchSome<A>(
+            this in Option<A> source,
+            Action<A> some)
+        {
+            some.AssertArgumentNotNull(nameof(some));
+
+            if (source.IsSome)
+                some(source.Value);
+
+            return source;
+        }
+
+        /// <summary>
         /// Option bind operation.
         /// </summary>
         /// <typeparam name="A">Input value type.</typeparam>
@@ -156,7 +168,7 @@ namespace MicroElements.Functional
         {
             bind.AssertArgumentNotNull(nameof(bind));
 
-            return option.Match(value => bind(value), () => None);
+            return option.Match(bind, None);
         }
     }
 }

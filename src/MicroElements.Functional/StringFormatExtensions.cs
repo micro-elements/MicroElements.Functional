@@ -101,5 +101,7 @@ namespace MicroElements.Functional
             stringBuilder.Append("}");
             return stringBuilder.ToString();
         }
+
+        public static string AddIfNotNull(this string text, string separator) => text != null ? $"{text}{separator}" : string.Empty;
     }
 }
