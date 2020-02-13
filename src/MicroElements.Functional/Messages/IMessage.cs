@@ -20,9 +20,16 @@ namespace MicroElements.Functional
         MessageSeverity Severity { get; }
 
         /// <summary>
-        /// Message text.
+        /// Original message.
+        /// Can be in form of MessageTemplates.org.
         /// </summary>
-        string Text { get; }
+        string OriginalMessage { get; }
+
+        /// <summary>
+        /// Formatted message.
+        /// It's a result of MessageTemplate rendered with <seealso cref="Properties"/>.
+        /// </summary>
+        string FormattedMessage { get; }
 
         /// <summary>
         /// Event name.
@@ -30,13 +37,31 @@ namespace MicroElements.Functional
         string EventName { get; }
 
         /// <summary>
-        /// Optional state.
-        /// </summary>
-        object State { get; }
-
-        /// <summary>
         /// Message properties.
         /// </summary>
-        IReadOnlyList<KeyValuePair<string, object>> Properties { get; }
+        IReadOnlyCollection<KeyValuePair<string, object>> Properties { get; }
     }
+
+    public interface ITemplatedMessage
+    {
+        /// <summary>
+        /// Original message.
+        /// Can be in form of MessageTemplates.org.
+        /// </summary>
+        string OriginalMessage { get; }
+
+        /// <summary>
+        /// Formatted message.
+        /// It's a result of MessageTemplate rendered with <seealso cref="Properties"/>.
+        /// </summary>
+        string FormattedMessage { get; }
+    }
+
+    //public static class MessageExtensions
+    //{
+    //    public static string Text(this IMessage message)
+    //    {
+    //        return message.
+    //    }
+    //}
 }

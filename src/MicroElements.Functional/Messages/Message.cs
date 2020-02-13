@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) MicroElements. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +11,8 @@ namespace MicroElements.Functional
 {
     /// <summary>
     /// Represents message.
-    /// Can be used as simple log message, detailed or structured log message, validation message, diagnostic message.
+    /// Can be used as simple log message, detailed or structured log message, validation message, diagnostic message or error object.
+    /// It violates some SOLID principles but is very useful infrastructure layer citizen.
     /// </summary>
     public sealed class Message : IMessage, ICanBeError, IFormattableObject
     {
@@ -25,9 +29,10 @@ namespace MicroElements.Functional
         public MessageSeverity Severity { get; }
 
         /// <summary>
-        /// Message text.
+        /// Original message.
+        /// Can be in form of MessageTemplates.org.
         /// </summary>
-        public string Text { get; }
+        public string OriginalMessage { get; }
 
         /// <summary>
         /// Event name.
@@ -35,41 +40,56 @@ namespace MicroElements.Functional
         public string EventName { get; }
 
         /// <summary>
-        /// Optional state.
-        /// </summary>
-        public object State { get; }
-
-        /// <summary>
         /// Message properties.
         /// </summary>
-        public IReadOnlyList<KeyValuePair<string, object>> Properties { get; }
+        public IReadOnlyCollection<KeyValuePair<string, object>> Properties { get; }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Object is Error.
+        /// </summary>
         public bool IsError => Severity == MessageSeverity.Error;
+
+        private IMessageTemplateParser MessageTemplateParser { get; }
+        private IMessageTemplateRenderer MessageTemplateRenderer { get; }
+        private Func<string> TryRenderMessageTemplate { get; }
+
+        /// <summary>
+        /// <seealso cref="Functional.MessageTemplate"/> parsed from <seealso cref="OriginalMessage"/>.
+        /// </summary>
+        public Lazy<MessageTemplate> MessageTemplate { get; }
+
+        /// <summary>
+        /// Formatted message. This is a result of MessageTemplate rendered with <seealso cref="Properties"/>.
+        /// </summary>
+        public string FormattedMessage => TryRenderMessageTemplate();
 
         /// <summary>
         /// Creates new instance of <see cref="Message"/>.
         /// </summary>
-        /// <param name="text">Message.</param>
+        /// <param name="originalMessage">Original message. Can be in form of MessageTemplates.org.</param>
         /// <param name="severity">Message severity.</param>
         /// <param name="timestamp">Optional timestamp. Evaluates as <see cref="DateTimeOffset.Now"/> if not set.</param>
         /// <param name="eventName">Optional Event Name.</param>
-        /// <param name="state">Optional state.</param>
         /// <param name="properties">Optional properties.</param>
         public Message(
-            string text,
+            string originalMessage,
             MessageSeverity severity = MessageSeverity.Information,
             DateTimeOffset? timestamp = null,
             string eventName = null,
-            object state = null,
-            IReadOnlyList<KeyValuePair<string, object>> properties = null)
+            IReadOnlyCollection<KeyValuePair<string, object>> properties = null,
+            IMessageTemplateParser messageTemplateParser = null,
+            IMessageTemplateRenderer messageTemplateRenderer = null)
         {
-            Text = text.AssertArgumentNotNull(nameof(text));
+            OriginalMessage = originalMessage.AssertArgumentNotNull(nameof(originalMessage));
             Severity = severity;
             Timestamp = timestamp ?? DateTimeOffset.Now;
             EventName = eventName;
-            State = state;
             Properties = properties ?? EmptyPropertyList;
+
+            MessageTemplateParser = messageTemplateParser ?? Functional.MessageTemplateParser.Instance;
+            MessageTemplateRenderer = messageTemplateRenderer ?? Functional.MessageTemplateRenderer.Instance;
+            MessageTemplate = new Lazy<MessageTemplate>(() => MessageTemplateParser.TryParse(OriginalMessage));
+            TryRenderMessageTemplate = () => MessageTemplateRenderer.TryRenderToString(MessageTemplate.Value, AllPropertiesCached, OriginalMessage);
         }
 
         /// <summary>
@@ -79,7 +99,7 @@ namespace MicroElements.Functional
         public static implicit operator Message(string text) => new Message(text);
 
         /// <inheritdoc />
-        public override string ToString() => $"{Timestamp:yyyy-MM-ddTHH:mm:ss.fff} | {Severity} | {EventName.AddIfNotNull()} {Text}";
+        public override string ToString() => $"{Timestamp:yyyy-MM-ddTHH:mm:ss.fff} | {Severity} | {EventName.AddIfNotNull(" |")} {FormattedMessage}";
 
         #region IReadOnlyList
 
@@ -103,7 +123,7 @@ namespace MicroElements.Functional
         {
             yield return new KeyValuePair<string, object>(nameof(Timestamp), Timestamp);
             yield return new KeyValuePair<string, object>(nameof(Severity), Severity);
-            yield return new KeyValuePair<string, object>(nameof(Text), Text);
+            yield return new KeyValuePair<string, object>(nameof(OriginalMessage), OriginalMessage);
             yield return new KeyValuePair<string, object>(nameof(EventName), EventName);
         }
 
