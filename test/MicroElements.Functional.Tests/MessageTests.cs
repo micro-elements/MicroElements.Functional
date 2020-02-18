@@ -27,6 +27,16 @@ namespace MicroElements.Functional.Tests
             message.GetProperty("Elapsed").GetValueOrThrow().Should().Be(145);
         }
 
+        [Fact]
+        public void formatted_message_should_be_equal_to_original()
+        {
+            var message = new Message("User Alex created.")
+                .WithProperty("Name", "Alex")
+                .WithProperty("Elapsed", 145);
+
+            message.FormattedMessage.Should().Be("User Alex created.");
+        }
+
 
         [Fact]
         public void Test3()

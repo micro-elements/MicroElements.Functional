@@ -38,6 +38,9 @@ namespace MicroElements.Functional
             OriginalFormat = originalFormat ?? "[null]";
             Tokens = tokens ?? Array.Empty<Token>();
         }
+
+        /// <inheritdoc />
+        public override string ToString() => $"Format='{OriginalFormat}', Tokens={Tokens.Count}";
     }
 
     /// <summary>
@@ -789,6 +792,9 @@ namespace MicroElements.Functional
         {
             try
             {
+                if (messageTemplate.Tokens.Count == 0)
+                    return originalMessage;
+
                 var stringWriter = new StringWriter();
                 renderer.Render(messageTemplate, properties, stringWriter);
                 return stringWriter.ToString();
