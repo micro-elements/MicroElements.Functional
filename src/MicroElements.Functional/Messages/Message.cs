@@ -49,10 +49,6 @@ namespace MicroElements.Functional
         /// </summary>
         public bool IsError => Severity == MessageSeverity.Error;
 
-        private IMessageTemplateParser MessageTemplateParser { get; }
-        private IMessageTemplateRenderer MessageTemplateRenderer { get; }
-        private Func<string> TryRenderMessageTemplate { get; }
-
         /// <summary>
         /// <seealso cref="Functional.MessageTemplate"/> parsed from <seealso cref="OriginalMessage"/>.
         /// </summary>
@@ -61,7 +57,23 @@ namespace MicroElements.Functional
         /// <summary>
         /// Formatted message. This is a result of MessageTemplate rendered with <seealso cref="Properties"/>.
         /// </summary>
-        public string FormattedMessage => TryRenderMessageTemplate();
+        public string FormattedMessage => MessageTemplateRenderer.TryRenderToString(MessageTemplate.Value, AllPropertiesCached, OriginalMessage);
+
+        /// <summary>
+        /// Message text. For backward compatibility returns <see cref="OriginalMessage"/>.
+        /// Use <see cref="FormattedMessage"/> for rendered message.
+        /// </summary>
+        public string Text => OriginalMessage;
+
+        /// <summary>
+        /// MessageTemplateParser.
+        /// </summary>
+        private IMessageTemplateParser MessageTemplateParser { get; }
+
+        /// <summary>
+        /// MessageTemplateRenderer.
+        /// </summary>
+        private IMessageTemplateRenderer MessageTemplateRenderer { get; }
 
         /// <summary>
         /// Creates new instance of <see cref="Message"/>.
@@ -71,6 +83,8 @@ namespace MicroElements.Functional
         /// <param name="timestamp">Optional timestamp. Evaluates as <see cref="DateTimeOffset.Now"/> if not set.</param>
         /// <param name="eventName">Optional Event Name.</param>
         /// <param name="properties">Optional properties.</param>
+        /// <param name="messageTemplateParser">Optional MessageTemplateParser.</param>
+        /// <param name="messageTemplateRenderer">Optional MessageTemplateRenderer.</param>
         public Message(
             string originalMessage,
             MessageSeverity severity = MessageSeverity.Information,
@@ -89,7 +103,6 @@ namespace MicroElements.Functional
             MessageTemplateParser = messageTemplateParser ?? Functional.MessageTemplateParser.Instance;
             MessageTemplateRenderer = messageTemplateRenderer ?? Functional.MessageTemplateRenderer.Instance;
             MessageTemplate = new Lazy<MessageTemplate>(() => MessageTemplateParser.TryParse(OriginalMessage));
-            TryRenderMessageTemplate = () => MessageTemplateRenderer.TryRenderToString(MessageTemplate.Value, AllPropertiesCached, OriginalMessage);
         }
 
         /// <summary>
