@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using JetBrains.Annotations;
 
 namespace MicroElements.Functional
 {
@@ -30,7 +31,7 @@ namespace MicroElements.Functional
         /// <param name="name">The argument name.</param>
         /// <returns>NotNull arg or throws <see cref="ArgumentNullException"/>.</returns>
         /// <exception cref="ArgumentNullException">The argument is null.</exception>
-        public static T AssertArgumentNotNull<T>(this T arg, string name)
+        public static T AssertArgumentNotNull<T>([NoEnumeration] this T arg, string name)
         {
             if (arg.IsNull())
                 throw new ArgumentNullException(name);

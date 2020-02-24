@@ -53,7 +53,23 @@ namespace MicroElements.Functional
         /// <param name="source">An <see cref="T:System.Collections.Generic.IEnumerable`1" /> to return an element from.</param>
         /// <param name="predicate">A function to test each element for a condition.</param>
         /// <returns>First element that satisfies <paramref name="predicate"/> or None.</returns>
-        public static Option<T> FirstOrNone<T>(this IEnumerable<T> source, Func<T, bool> predicate) =>
-            source.FirstOrDefault(predicate);
+        public static Option<T> FirstOrNone<T>(this IEnumerable<T> source, Func<T, bool> predicate)
+        {
+            source.AssertArgumentNotNull(nameof(source));
+            predicate.AssertArgumentNotNull(nameof(predicate));
+
+            if (TypeCheck<T>.IsReferenceType)
+                return source.FirstOrDefault(predicate);
+
+            foreach (T element in source)
+            {
+                if (predicate(element))
+                {
+                    return element;
+                }
+            }
+
+            return Option<T>.None;
+        }
     }
 }

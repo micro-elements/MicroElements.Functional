@@ -24,7 +24,7 @@ namespace MicroElements.Functional
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsDefault<T>(this T value) =>
-            Check<T>.IsDefault(value);
+            TypeCheck<T>.IsDefault(value);
 
         /// <summary>
         /// Returns true if the value is null, and does so without
@@ -44,30 +44,30 @@ namespace MicroElements.Functional
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNull<T>(this T value) =>
-            Check<T>.IsNull(value);
+            TypeCheck<T>.IsNull(value);
+    }
 
-        private static class Check<T>
+    internal static class TypeCheck<T>
+    {
+        internal static readonly bool IsReferenceType;
+        internal static readonly bool IsNullable;
+        internal static readonly EqualityComparer<T> DefaultEqualityComparer;
+
+        static TypeCheck()
         {
-            static readonly bool IsReferenceType;
-            static readonly bool IsNullable;
-            static readonly EqualityComparer<T> DefaultEqualityComparer;
-
-            static Check()
-            {
-                IsNullable = Nullable.GetUnderlyingType(typeof(T)) != null;
-                IsReferenceType = !typeof(T).GetTypeInfo().IsValueType;
-                DefaultEqualityComparer = EqualityComparer<T>.Default;
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            internal static bool IsDefault(T value) =>
-                DefaultEqualityComparer.Equals(value, default(T));
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            internal static bool IsNull(T value) =>
-                IsNullable
-                    ? value.Equals(default(T))
-                    : IsReferenceType && DefaultEqualityComparer.Equals(value, default(T));
+            IsNullable = Nullable.GetUnderlyingType(typeof(T)) != null;
+            IsReferenceType = !typeof(T).GetTypeInfo().IsValueType;
+            DefaultEqualityComparer = EqualityComparer<T>.Default;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool IsDefault(T value) =>
+            DefaultEqualityComparer.Equals(value, default(T));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool IsNull(T value) =>
+            IsNullable
+                ? value.Equals(default(T))
+                : IsReferenceType && DefaultEqualityComparer.Equals(value, default(T));
     }
 }

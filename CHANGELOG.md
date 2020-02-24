@@ -1,3 +1,6 @@
+# 0.16.0
+- FirstOrNone fix for value types.
+
 # 0.16.0-rc.1
 - MessageTemplate
 - Many extensions
