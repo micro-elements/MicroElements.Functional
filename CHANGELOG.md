@@ -1,3 +1,11 @@
+# 0.17.0
+- Message marked as serializable
+- Message: all temporary context and caches moved to MessageContext that marked as NonSerialized
+- Message: Fixed With methods (default property add mode is merge now)
+- Message: some optimizations
+- Removed memoize in ValueObject
+- Memoize extensions fixed (recursion)
+
 # 0.16.0
 - FirstOrNone fix for value types.
 

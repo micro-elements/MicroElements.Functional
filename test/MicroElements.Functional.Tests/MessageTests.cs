@@ -1,4 +1,7 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using FluentAssertions;
 using Xunit;
 
@@ -37,7 +40,6 @@ namespace MicroElements.Functional.Tests
             message.FormattedMessage.Should().Be("User Alex created.");
         }
 
-
         [Fact]
         public void Test3()
         {
@@ -47,7 +49,38 @@ namespace MicroElements.Functional.Tests
                 .WithProperty("Elapsed", 145);
 
             message.FormattedMessage.Should().Be("2019-05-09T10:40:55.000 | WARN | User Alex created in 145 ms.");
+        }
 
+        [Fact]
+        public void message_should_be_serialized()
+        {
+            var message = new Message("User {Name} created.")
+                .WithProperty("Name", "Alex");
+
+            var memoryStream = new MemoryStream();
+            new BinaryFormatter().Serialize(memoryStream, message);
+            memoryStream.Position = 0;
+
+            var messageRestored = (Message)new BinaryFormatter().Deserialize(memoryStream);
+            messageRestored.OriginalMessage.Should().Be(message.OriginalMessage);
+            messageRestored.FormattedMessage.Should().Be(message.FormattedMessage);
+
+            ((object)message).Should().BeBinarySerializable();
+            //((object)message).Should().BeDataContractSerializable();
+            //((object)message).Should().BeXmlSerializable();
+        }
+
+        [Fact]
+        public void message_memoization()
+        {
+            var message = new Message("User {Name} created.")
+                .WithProperty("Name", "Alex");
+
+            var keys = message.Keys.ToArray();
+            var values = message.Values.ToArray();
+            keys.Length.Should().Be(5);
+
+            message.GetMessageTemplate().Should().BeSameAs(message.GetMessageTemplate());
         }
     }
 }

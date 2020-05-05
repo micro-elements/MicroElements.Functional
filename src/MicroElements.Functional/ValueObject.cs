@@ -1,7 +1,9 @@
-﻿using System;
+﻿// Copyright (c) MicroElements. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using static MicroElements.Functional.Prelude;
 
 namespace MicroElements.Functional
 {
@@ -106,17 +108,14 @@ namespace MicroElements.Functional
         /// <inheritdoc />
         public override string ToString()
         {
-            return Memoize(() =>
+            if (this is IFormattableObject formattableObject)
             {
-                if (this is IFormattableObject formattableObject)
-                {
-                    var formatComponents = formattableObject.GetNameValuePairs();
-                    return formatComponents.FormatAsJson(", ", "null");
-                }
+                var formatComponents = formattableObject.GetNameValuePairs();
+                return formatComponents.FormatAsJson(", ", "null");
+            }
 
-                var equalityComponents = GetEqualityComponents();
-                return equalityComponents.FormatAsTuple(", ", "null");
-            })();
+            var equalityComponents = GetEqualityComponents();
+            return equalityComponents.FormatAsTuple(", ", "null");
         }
     }
 }

@@ -1,6 +1,8 @@
-﻿using System;
+﻿// Copyright (c) MicroElements. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Concurrent;
-using System.Threading;
 
 namespace MicroElements.Functional
 {
@@ -127,6 +129,6 @@ namespace MicroElements.Functional
 
     public static class MemoExtensions
     {
-        public static Func<A> Memoize<A>(this Func<A> func) => Memoize<A>(func);
+        public static Func<A> Memoize<A>(this Func<A> func) => Prelude.Memoize<A>(func);
     }
 }

@@ -19,10 +19,9 @@ namespace MicroElements.Functional
             DateTimeOffset? timestamp = null,
             string eventName = null,
             IReadOnlyCollection<KeyValuePair<string, object>> properties = null,
-            IEnumerable<KeyValuePair<string, object>> propertiesEnumerable = null,
-            PropertyAddMode propertyAddMode = PropertyAddMode.Set)
+            PropertyAddMode propertyAddMode = PropertyAddMode.Merge)
         {
-            var resultPropertyList = GetResultPropertyList(message, properties, propertiesEnumerable, propertyAddMode);
+            var resultPropertyList = GetResultPropertyList(message, properties, propertyAddMode);
 
             return new Message(
                 timestamp: timestamp ?? message.Timestamp,
@@ -35,15 +34,12 @@ namespace MicroElements.Functional
         private static IReadOnlyCollection<KeyValuePair<string, object>> GetResultPropertyList(
             IMessage message,
             IReadOnlyCollection<KeyValuePair<string, object>> properties,
-            IEnumerable<KeyValuePair<string, object>> propertiesEnumerable,
             PropertyAddMode propertyAddMode)
         {
             IReadOnlyCollection<KeyValuePair<string, object>> resultPropertyList;
 
-            var propertiesToAdd = properties
-                                  ?? (IReadOnlyCollection<KeyValuePair<string, object>>) propertiesEnumerable?.ToList()
-                                  ?? Array.Empty<KeyValuePair<string, object>>();
-            
+            var propertiesToAdd = properties ?? Array.Empty<KeyValuePair<string, object>>();
+
             if (propertyAddMode == PropertyAddMode.Set)
                 resultPropertyList = propertiesToAdd;
             else if (propertyAddMode == PropertyAddMode.Merge)
@@ -98,7 +94,7 @@ namespace MicroElements.Functional
         public static Message WithProperties(
             this IMessage message,
             IReadOnlyList<KeyValuePair<string, object>> properties,
-            PropertyAddMode propertyAddMode = PropertyAddMode.Set) 
+            PropertyAddMode propertyAddMode = PropertyAddMode.Set)
             => message.With(properties: properties, propertyAddMode: propertyAddMode);
 
         /// <summary>
@@ -112,7 +108,7 @@ namespace MicroElements.Functional
             this IMessage message,
             IEnumerable<KeyValuePair<string, object>> properties,
             PropertyAddMode propertyAddMode = PropertyAddMode.Set)
-            => message.With(propertiesEnumerable: properties, propertyAddMode: propertyAddMode);
+            => message.With(properties: properties.ToList(), propertyAddMode: propertyAddMode);
 
         /// <summary>
         /// Creates new copy of <see cref="Message"/> with new property added.
@@ -124,9 +120,6 @@ namespace MicroElements.Functional
         /// <returns>New instance of <see cref="Message"/> with changed <see cref="IMessage.Properties"/>.</returns>
         public static Message WithProperty(this IMessage message, string name, object value)
         {
-            if (message.Properties == null)
-                return message.WithProperties(new Dictionary<string, object> { { name, value } });
-
             var properties = message.Properties.ToDictionary(pair => pair.Key, pair => pair.Value);
             properties[name] = value;
             return message.WithProperties(properties);
@@ -140,7 +133,7 @@ namespace MicroElements.Functional
         /// <returns>New instance of <see cref="Message"/> with added properties.</returns>
         public static Message WithArgs(this Message message, params object[] args)
         {
-            var capturedProps = message.MessageTemplate.Value.ArgsToDictionary(args);
+            var capturedProps = message.GetMessageTemplate().ArgsToDictionary(args);
             return message.With(properties: capturedProps, propertyAddMode: PropertyAddMode.Merge);
         }
 
@@ -162,11 +155,14 @@ namespace MicroElements.Functional
         /// <param name="keyValuePairs">Items to add.</param>
         /// <param name="keyEqualityComparer">Key comparer. If not set <see cref="StringComparer.InvariantCultureIgnoreCase"/> will be used.</param>
         /// <returns>New list with added values.</returns>
-        public static IReadOnlyList<KeyValuePair<string, object>> AddWithReplace(
-            this IEnumerable<KeyValuePair<string, object>> source,
-            IEnumerable<KeyValuePair<string, object>> keyValuePairs,
+        public static IReadOnlyCollection<KeyValuePair<string, object>> AddWithReplace(
+            this IReadOnlyCollection<KeyValuePair<string, object>> source,
+            IReadOnlyCollection<KeyValuePair<string, object>> keyValuePairs,
             IEqualityComparer<string> keyEqualityComparer = null)
         {
+            if (keyValuePairs.Count == 0)
+                return source;
+
             keyEqualityComparer = keyEqualityComparer ?? StringComparer.InvariantCultureIgnoreCase;
             var dict = source.ToDictionary(pair => pair.Key, pair => pair.Value, keyEqualityComparer);
             foreach (var valuePair in keyValuePairs)
@@ -184,11 +180,14 @@ namespace MicroElements.Functional
         /// <param name="keyValuePairs">Items to add.</param>
         /// <param name="keyEqualityComparer">Key comparer. If not set <see cref="StringComparer.InvariantCultureIgnoreCase"/> will be used.</param>
         /// <returns>New list with added values.</returns>
-        public static IReadOnlyList<KeyValuePair<string, object>> AddIfNotExists(
-            this IEnumerable<KeyValuePair<string, object>> source,
-            IEnumerable<KeyValuePair<string, object>> keyValuePairs,
+        public static IReadOnlyCollection<KeyValuePair<string, object>> AddIfNotExists(
+            this IReadOnlyCollection<KeyValuePair<string, object>> source,
+            IReadOnlyCollection<KeyValuePair<string, object>> keyValuePairs,
             IEqualityComparer<string> keyEqualityComparer = null)
         {
+            if (keyValuePairs.Count == 0)
+                return source;
+
             keyEqualityComparer = keyEqualityComparer ?? StringComparer.InvariantCultureIgnoreCase;
             var dict = source.ToDictionary(pair => pair.Key, pair => pair.Value, keyEqualityComparer);
             foreach (var valuePair in keyValuePairs)

@@ -2,7 +2,7 @@
   <Import Project="version.props" />
   <PropertyGroup>
     <Product>MicroElements.Functional</Product>
-    <Copyright>2019</Copyright>
+    <Copyright>2020</Copyright>
     <Authors>micro-elements</Authors>
     <Description>C# implementation of functional concepts: Maybe (Option), Either (Result), Try, Memoize</Description>
 

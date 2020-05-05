@@ -5,7 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using static MicroElements.Functional.Prelude;
 
 namespace MicroElements.Functional
 {
@@ -14,6 +13,7 @@ namespace MicroElements.Functional
     /// Can be used as simple log message, detailed or structured log message, validation message, diagnostic message or error object.
     /// It violates some SOLID principles but is very useful infrastructure layer citizen.
     /// </summary>
+    [Serializable]
     public sealed class Message : IMessage, ICanBeError, IFormattableObject
     {
         private static readonly IReadOnlyList<KeyValuePair<string, object>> EmptyPropertyList = new List<KeyValuePair<string, object>>();
@@ -45,19 +45,17 @@ namespace MicroElements.Functional
         public IReadOnlyCollection<KeyValuePair<string, object>> Properties { get; }
 
         /// <summary>
-        /// Object is Error.
-        /// </summary>
-        public bool IsError => Severity == MessageSeverity.Error;
-
-        /// <summary>
-        /// <seealso cref="Functional.MessageTemplate"/> parsed from <seealso cref="OriginalMessage"/>.
-        /// </summary>
-        public Lazy<MessageTemplate> MessageTemplate { get; }
-
-        /// <summary>
         /// Formatted message. This is a result of MessageTemplate rendered with <seealso cref="Properties"/>.
         /// </summary>
-        public string FormattedMessage => MessageTemplateRenderer.TryRenderToString(MessageTemplate.Value, AllPropertiesCached, OriginalMessage);
+        public string FormattedMessage
+        {
+            get
+            {
+                var messageTemplate = GetLazyContext().MessageTemplate;
+                var messageTemplateRenderer = GetLazyContext().MessageTemplateRenderer;
+                return messageTemplateRenderer.TryRenderToString(messageTemplate, GetLazyContext().AllProperties, OriginalMessage);
+            }
+        }
 
         /// <summary>
         /// Message text. For backward compatibility returns <see cref="OriginalMessage"/>.
@@ -66,14 +64,9 @@ namespace MicroElements.Functional
         public string Text => OriginalMessage;
 
         /// <summary>
-        /// MessageTemplateParser.
+        /// Object is Error.
         /// </summary>
-        private IMessageTemplateParser MessageTemplateParser { get; }
-
-        /// <summary>
-        /// MessageTemplateRenderer.
-        /// </summary>
-        private IMessageTemplateRenderer MessageTemplateRenderer { get; }
+        bool ICanBeError.IsError => Severity == MessageSeverity.Error;
 
         /// <summary>
         /// Creates new instance of <see cref="Message"/>.
@@ -94,16 +87,24 @@ namespace MicroElements.Functional
             IMessageTemplateParser messageTemplateParser = null,
             IMessageTemplateRenderer messageTemplateRenderer = null)
         {
+            // Required
             OriginalMessage = originalMessage.AssertArgumentNotNull(nameof(originalMessage));
+
+            // Optional
             Severity = severity;
             Timestamp = timestamp ?? DateTimeOffset.Now;
             EventName = eventName;
             Properties = properties ?? EmptyPropertyList;
 
-            MessageTemplateParser = messageTemplateParser ?? Functional.MessageTemplateParser.Instance;
-            MessageTemplateRenderer = messageTemplateRenderer ?? Functional.MessageTemplateRenderer.Instance;
-            MessageTemplate = new Lazy<MessageTemplate>(() => MessageTemplateParser.TryParse(OriginalMessage));
+            // Optional temporary context
+            _lazyContext = new Lazy<MessageContext>(() => new MessageContext(this, messageTemplateParser, messageTemplateRenderer));
         }
+
+        /// <summary>
+        /// Gets <see cref="MessageTemplate"/> parsed from <see cref="OriginalMessage"/>.
+        /// </summary>
+        /// <returns><see cref="MessageTemplate"/>.</returns>
+        public MessageTemplate GetMessageTemplate() => GetLazyContext().MessageTemplate;
 
         /// <summary>
         /// Implicit conversion from string.
@@ -132,12 +133,15 @@ namespace MicroElements.Functional
 
         #region IReadOnlyDictionary
 
-        private IEnumerable<KeyValuePair<string, object>> GetBaseProperties()
+        private KeyValuePair<string, object>[] GetBaseProperties()
         {
-            yield return new KeyValuePair<string, object>(nameof(Timestamp), Timestamp);
-            yield return new KeyValuePair<string, object>(nameof(Severity), Severity);
-            yield return new KeyValuePair<string, object>(nameof(OriginalMessage), OriginalMessage);
-            yield return new KeyValuePair<string, object>(nameof(EventName), EventName);
+            return new[]
+            {
+                new KeyValuePair<string, object>(nameof(Timestamp), Timestamp),
+                new KeyValuePair<string, object>(nameof(Severity), Severity),
+                new KeyValuePair<string, object>(nameof(OriginalMessage), OriginalMessage),
+                new KeyValuePair<string, object>(nameof(EventName), EventName),
+            };
         }
 
         private SortedList<string, object> GetAllProperties()
@@ -148,7 +152,7 @@ namespace MicroElements.Functional
             return new SortedList<string, object>(dictionary, StringComparer.InvariantCultureIgnoreCase);
         }
 
-        private SortedList<string, object> AllPropertiesCached => Memoize(GetAllProperties)();
+        private SortedList<string, object> AllPropertiesCached => GetLazyContext().AllProperties;
 
         /// <inheritdoc />
         public bool ContainsKey(string key) => AllPropertiesCached.ContainsKey(key);
@@ -173,6 +177,60 @@ namespace MicroElements.Functional
         public IEnumerable<(string Name, object Value)> GetNameValuePairs()
         {
             return AllPropertiesCached.Select(pair => (pair.Key, pair.Value));
+        }
+
+        #endregion
+
+        #region MessageContext
+
+        /// <summary>
+        /// Optional temporary context.
+        /// </summary>
+        [NonSerialized]
+        private Lazy<MessageContext> _lazyContext;
+
+        private MessageContext GetLazyContext()
+        {
+            // After deserialization context will be lost
+            if (_lazyContext == null)
+                _lazyContext = new Lazy<MessageContext>(() => new MessageContext(this, null, null));
+            return _lazyContext.Value;
+        }
+
+        /// <summary>
+        /// Optional temporary context for caches.
+        /// </summary>
+        class MessageContext
+        {
+            private readonly Message _message;
+            private readonly IMessageTemplateParser _messageTemplateParser;
+            private readonly IMessageTemplateRenderer _messageTemplateRenderer;
+
+            private readonly Lazy<MessageTemplate> _lazyMessageTemplate;
+            private readonly Lazy<SortedList<string, object>> _lazyAllProperties;
+
+            public IMessageTemplateParser MessageTemplateParser => _messageTemplateParser ?? Functional.MessageTemplateParser.Instance;
+
+            public IMessageTemplateRenderer MessageTemplateRenderer => _messageTemplateRenderer ?? Functional.MessageTemplateRenderer.Instance;
+
+            public MessageTemplate MessageTemplate => _lazyMessageTemplate.Value;
+
+            public SortedList<string, object> AllProperties => _lazyAllProperties.Value;
+
+            public MessageContext(
+                Message message,
+                IMessageTemplateParser messageTemplateParser,
+                IMessageTemplateRenderer messageTemplateRenderer)
+            {
+                _message = message;
+                _messageTemplateParser = messageTemplateParser;
+                _messageTemplateRenderer = messageTemplateRenderer;
+
+                _lazyMessageTemplate = new Lazy<MessageTemplate>(GetMessageTemplate);
+                _lazyAllProperties = new Lazy<SortedList<string, object>>(message.GetAllProperties);
+            }
+
+            private MessageTemplate GetMessageTemplate() => MessageTemplateParser.TryParse(_message.OriginalMessage);
         }
 
         #endregion
