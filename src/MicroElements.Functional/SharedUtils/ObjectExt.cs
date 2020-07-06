@@ -1,6 +1,7 @@
 ﻿// Copyright (c) MicroElements. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
@@ -18,10 +19,12 @@ namespace MicroElements.Functional
         ///     0.IsDefault() == true
         ///     1.IsDefault() == false
         /// </example>
+        /// <typeparam name="T">Value type.</typeparam>
+        /// <param name="value">Value to check.</param>
         /// <returns>True if the value is equal to this type's default value.</returns>
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsDefault<T>(this T value) =>
+        public static bool IsDefault<T>([AllowNull] this T value) =>
             TypeCheck<T>.IsDefault(value);
 
         /// <summary>
@@ -36,12 +39,14 @@ namespace MicroElements.Functional
         ///     x.IsNull()  // false
         ///     y.IsNull()  // true
         /// </example>
+        /// <typeparam name="T">Value type.</typeparam>
+        /// <param name="value">Value to check.</param>
         /// <returns>True if the value is null, and does so without
         /// boxing of any value-types.  Value-types will always
         /// return false.</returns>
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsNull<T>(this T value) =>
+        public static bool IsNull<T>([AllowNull] this T value) =>
             TypeCheck<T>.IsNull(value);
     }
 }

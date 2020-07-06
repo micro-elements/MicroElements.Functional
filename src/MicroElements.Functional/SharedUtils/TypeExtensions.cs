@@ -7,12 +7,12 @@ namespace MicroElements.Functional
 {
     public static class TypeExtensions
     {
-        public static object GetDefaultValue(this Type type)
+        public static object? GetDefaultValue(this Type type)
         {
             return type.IsNullableStruct() ? Activator.CreateInstance(type) : null;
         }
 
-        public static object GetDefaultValueCompiled(this Type type)
+        public static object? GetDefaultValueCompiled(this Type type)
         {
             Func<Unit, object> func = CodeCompiler.CachedCompiledFunc<Unit, object>(type, GetDefaultValueInternal<CodeCompiler.GenericType>);
             return func(Unit.Default);

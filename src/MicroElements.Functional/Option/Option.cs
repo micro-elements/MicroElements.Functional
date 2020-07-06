@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
@@ -54,7 +55,7 @@ namespace MicroElements.Functional
             if (first.Length == 0)
             {
                 _optionState = OptionState.None;
-                _value = default(A);
+                _value = default;
             }
             else
             {
@@ -177,7 +178,7 @@ namespace MicroElements.Functional
         /// Implicit conversion of value to Option.
         /// </summary>
         /// <param name="value">Value.</param>
-        public static implicit operator Option<A>(A value) => value.IsNull() ? None : Prelude.Some(value);
+        public static implicit operator Option<A>([AllowNull] A value) => value.IsNull() ? None : Prelude.Some(value);
 
         /// <summary>
         /// Explicit conversion to underlying type.

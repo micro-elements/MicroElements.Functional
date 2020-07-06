@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using static MicroElements.Functional.Prelude;
 
 namespace MicroElements.Functional
@@ -19,7 +20,7 @@ namespace MicroElements.Functional
         /// <typeparam name="T">Value type.</typeparam>
         /// <param name="value">Not null value.</param>
         /// <returns>Option in Some state.</returns>
-        public static Some<T> ToSome<T>(this T value) => new Some<T>(value);
+        public static Some<T> ToSome<T>([DisallowNull]this T value) => new Some<T>(value);
 
         /// <summary>
         /// Converts value to optional value (Some or None).
@@ -27,7 +28,7 @@ namespace MicroElements.Functional
         /// <typeparam name="T">Value type.</typeparam>
         /// <param name="value">Value or null.</param>
         /// <returns>Option.</returns>
-        public static Option<T> ToOption<T>(this T value) => value;
+        public static Option<T> ToOption<T>([AllowNull]this T value) => value;
 
         /// <summary>
         /// Gets value or throws if option is in <see cref="OptionState.None"/> state.

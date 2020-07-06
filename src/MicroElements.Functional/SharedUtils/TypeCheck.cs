@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -19,10 +20,10 @@ namespace MicroElements.Functional
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool IsDefault(T value) => DefaultEqualityComparer.Equals(value, default(T));
+        internal static bool IsDefault([AllowNull] T value) => DefaultEqualityComparer.Equals(value, default(T));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool IsNull(T value) => IsNullableStruct ? value.Equals(default(T)) : IsReferenceType && DefaultEqualityComparer.Equals(value, default(T));
+        internal static bool IsNull([AllowNull] T value) => IsNullableStruct ? value.Equals(default(T)) : IsReferenceType && DefaultEqualityComparer.Equals(value, default(T));
     }
 
     public static class TypeCheck
@@ -34,7 +35,7 @@ namespace MicroElements.Functional
 
         public static bool IsNullableStruct(this Type type)
         {
-            return type.GetTypeInfo().IsValueType && Nullable.GetUnderlyingType(type) == null;
+            return type.GetTypeInfo().IsValueType && Nullable.GetUnderlyingType(type) != null;
         }
     }
 }
