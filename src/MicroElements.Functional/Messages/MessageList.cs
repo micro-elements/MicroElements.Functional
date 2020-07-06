@@ -125,15 +125,15 @@ namespace MicroElements.Functional
 
     public static class MessageList
     {
-        public static MessageList<Message> Empty<Message>() => MessageList<Message>.Empty;
+        public static MessageList<TMessage> Empty<TMessage>() => MessageList<TMessage>.Empty;
 
-        public static MessageList<Message> FromEnumerable<Message>(IEnumerable<Message> messages)
+        public static MessageList<TMessage> FromEnumerable<TMessage>(IEnumerable<TMessage>? messages)
         {
-            return messages is MessageList<Message> list
+            return messages is MessageList<TMessage> list
                 ? list
                 : messages != null
-                    ? new MessageList<Message>(messages)
-                    : Empty<Message>();
+                    ? new MessageList<TMessage>(messages)
+                    : Empty<TMessage>();
         }
     }
 

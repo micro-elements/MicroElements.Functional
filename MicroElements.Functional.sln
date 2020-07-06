@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E98929FA-7AE9-4690-9ECD-CE9DD8BCAA00}"
 EndProject
@@ -15,6 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		CHANGELOG.md = CHANGELOG.md
 		common.props = common.props
+		src\Directory.Build.props = src\Directory.Build.props
 		README.md = README.md
 		TODO.md = TODO.md
 		version.props = version.props
@@ -24,7 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{3211
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunctionalSample", "samples\FunctionalSample\FunctionalSample.csproj", "{2D7794F2-6AD2-4407-B0CF-9A3699C67592}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroElements.Functional.Samples", "samples\MicroElements.Functional.Samples\MicroElements.Functional.Samples.csproj", "{1398BB15-2648-4E89-A6C7-60FACF01A2B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicroElements.Functional.Samples", "samples\MicroElements.Functional.Samples\MicroElements.Functional.Samples.csproj", "{1398BB15-2648-4E89-A6C7-60FACF01A2B1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "bench", "bench", "{6899E1B8-960B-46BC-AA2F-BE1115898F0D}"
 EndProject

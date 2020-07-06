@@ -1,3 +1,10 @@
+# 1.0.0-beta.1
+- Breaking: netstandard2.1
+- Breaking: Nullable flag enabled for project
+- Some extensions methods annotated with nullable notation
+- Added TypeExtensions.GetDefaultValue
+- Added minimal optimization for structs (readonly, in modifiers)
+
 # 0.17.0
 - Message marked as serializable
 - Message: all temporary context and caches moved to MessageContext that marked as NonSerialized

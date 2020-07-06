@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) MicroElements. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,7 +18,7 @@ namespace MicroElements.Functional
         /// <typeparam name="T">Item type.</typeparam>
         /// <param name="items"><see cref="IEnumerable{T}"/> or null.</param>
         /// <returns>The same items or empty enumeration.</returns>
-        public static IEnumerable<T> NotNull<T>(this IEnumerable<T> items) =>
+        public static IEnumerable<T> NotNull<T>(this IEnumerable<T>? items) =>
             items ?? Array.Empty<T>();
 
         /// <summary>
@@ -24,7 +27,7 @@ namespace MicroElements.Functional
         /// <typeparam name="T">Item type.</typeparam>
         /// <param name="items"><see cref="IReadOnlyCollection{T}"/> or null.</param>
         /// <returns>The same items or empty collection.</returns>
-        public static IReadOnlyCollection<T> NotNull<T>(IReadOnlyCollection<T> items) =>
+        public static IReadOnlyCollection<T> NotNull<T>(IReadOnlyCollection<T>? items) =>
             items ?? Array.Empty<T>();
 
         /// <summary>
@@ -33,7 +36,7 @@ namespace MicroElements.Functional
         /// <typeparam name="T">Item type.</typeparam>
         /// <param name="items"><see cref="IReadOnlyList{T}"/> or null.</param>
         /// <returns>The same items or empty list.</returns>
-        public static IReadOnlyList<T> NotNull<T>(IReadOnlyList<T> items) =>
+        public static IReadOnlyList<T> NotNull<T>(IReadOnlyList<T>? items) =>
             items ?? Array.Empty<T>();
 
         /// <summary>
@@ -42,7 +45,7 @@ namespace MicroElements.Functional
         /// <typeparam name="T">Item type.</typeparam>
         /// <param name="items">array or null.</param>
         /// <returns>The same items or empty array.</returns>
-        public static T[] NotNull<T>(T[] items) =>
+        public static T[] NotNull<T>(T[]? items) =>
             items ?? Array.Empty<T>();
 
         /// <summary>
