@@ -7,7 +7,7 @@ namespace MicroElements.Functional
     /// A unit type is a type that allows only one value (and thus can hold no information)
     /// </summary>
     [Serializable]
-    public struct Unit : IEquatable<Unit>, IComparable<Unit>
+    public readonly struct Unit : IEquatable<Unit>, IComparable<Unit>
     {
         public static readonly Unit Default = default(Unit);
 

@@ -66,16 +66,14 @@ namespace MicroElements.Functional
         public static Option<T> OrElse<T>(this Option<T> left, Func<Option<T>> right)
             => left.Match((_) => left, () => right());
 
-        public static Option<R> Map<T, R>(this OptionNone _, Func<T, R> f)
+        public static Option<B> Map<A, B>(this OptionNone _, Func<A, B> map)
             => None;
 
-        public static Option<R> Map<T, R>(this Some<T> some, Func<T, R> f)
-            => Some(f(some.Value));
+        public static Option<B> Map<A, B>(this in Some<A> some, Func<A, B> map)
+            => Some(map(some.Value));
 
-        public static Option<R> Map<T, R>(this in Option<T> option, Func<T, R> f)
-            => option.Match(
-                (t) => Some(f(t)),
-                () => None);
+        public static Option<B> Map<A, B>(this in Option<A> option, Func<A, B> map)
+            => option.Match(a => Some(map(a)), None);
 
         public static Option<Func<T2, R>> Map<T1, T2, R>(this in Option<T1> option, Func<T1, T2, R> func)
             => option.Map(func.Curry());
@@ -99,5 +97,21 @@ namespace MicroElements.Functional
                     (r) => Some(project(t, r)),
                     () => None),
                 () => None);
+
+        public static Option<B> TryMap<A, B>(this in Option<A> option, Func<A, B> map)
+            => option.Match(
+                some: a =>
+                {
+                    try
+                    {
+                        B b = map(a);
+                        return Some(b);
+                    }
+                    catch
+                    {
+                        return None;
+                    }
+                },
+                none: None);
     }
 }
