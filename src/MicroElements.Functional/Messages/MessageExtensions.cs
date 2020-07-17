@@ -122,7 +122,7 @@ namespace MicroElements.Functional
         {
             var properties = message.Properties.ToDictionary(pair => pair.Key, pair => pair.Value);
             properties[name] = value;
-            return message.WithProperties(properties);
+            return message.WithProperties(properties, PropertyAddMode.Merge);
         }
 
         /// <summary>

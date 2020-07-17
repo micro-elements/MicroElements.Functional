@@ -1,9 +1,10 @@
-# 1.0.0-beta.1
+# 1.0.0-beta.3
 - Breaking: netstandard2.1
 - Breaking: Nullable flag enabled for project
 - Some extensions methods annotated with nullable notation
 - Added TypeExtensions.GetDefaultValue
 - Added minimal optimization for structs (readonly, in modifiers)
+- Message.WithProperty fixed. Now replaces only property, not deleting existing properties
 
 # 0.17.0
 - Message marked as serializable
