@@ -188,7 +188,7 @@ namespace MicroElements.Functional
             if (keyValuePairs.Count == 0)
                 return source;
 
-            keyEqualityComparer = keyEqualityComparer ?? StringComparer.InvariantCultureIgnoreCase;
+            keyEqualityComparer ??= StringComparer.InvariantCultureIgnoreCase;
             var dict = source.ToDictionary(pair => pair.Key, pair => pair.Value, keyEqualityComparer);
             foreach (var valuePair in keyValuePairs)
             {
@@ -205,9 +205,9 @@ namespace MicroElements.Functional
         /// </summary>
         /// <param name="message">Source message.</param>
         /// <returns>Exception or null.</returns>
-        public static Exception GetException(this IMessage message)
+        public static Exception? GetException(this IMessage message)
         {
-            return (Exception)message.GetProperty("Exception").GetValueOrDefault(null);
+            return (Exception?)message.GetProperty("Exception").GetValueOrDefault();
         }
 
         /// <summary>
