@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) MicroElements. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Collections.Generic;
 
 namespace MicroElements.Functional
 {
     /// <summary>
-    /// Message list.
+    /// ReadOnly message list.
     /// </summary>
     /// <typeparam name="TMessage">Message type.</typeparam>
     public interface IMessageList<TMessage> : IReadOnlyCollection<TMessage>
