@@ -19,7 +19,7 @@ namespace MicroElements.Functional
         /// <returns>Result or throws <see cref="ResultIsNullException"/>.</returns>
         /// <exception cref="ResultIsNullException">Result is null.</exception>
         [return: NotNull]
-        public static T AssertNotNullResult<T>([DisallowNull] this T result)
+        public static T AssertNotNullResult<T>([AllowNull] this T result)
             => result.IsNull()
                 ? throw new ResultIsNullException()
                 : result;
@@ -33,7 +33,7 @@ namespace MicroElements.Functional
         /// <returns>NotNull arg or throws <see cref="ArgumentNullException"/>.</returns>
         /// <exception cref="ArgumentNullException">The argument is null.</exception>
         [return: NotNull]
-        public static T AssertArgumentNotNull<T>([DisallowNull] this T arg, string name)
+        public static T AssertArgumentNotNull<T>([AllowNull] this T arg, string name)
         {
             if (arg.IsNull())
                 throw new ArgumentNullException(name);

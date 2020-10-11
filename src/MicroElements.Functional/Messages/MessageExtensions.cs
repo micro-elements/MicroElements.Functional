@@ -186,7 +186,7 @@ namespace MicroElements.Functional
         public static IReadOnlyCollection<KeyValuePair<string, object>> AddIfNotExists(
             this IReadOnlyCollection<KeyValuePair<string, object>> source,
             IReadOnlyCollection<KeyValuePair<string, object>> keyValuePairs,
-            IEqualityComparer<string> keyEqualityComparer = null)
+            IEqualityComparer<string>? keyEqualityComparer = null)
         {
             if (keyValuePairs.Count == 0)
                 return source;
@@ -207,10 +207,11 @@ namespace MicroElements.Functional
         /// Gets Exception property.
         /// </summary>
         /// <param name="message">Source message.</param>
+        /// <param name="exceptionKey">Exception key in message properties.</param>
         /// <returns>Exception or null.</returns>
-        public static Exception? GetException(this IMessage message)
+        public static Exception? GetException(this IMessage message, string exceptionKey = "Exception")
         {
-            return (Exception?)message.GetProperty("Exception").GetValueOrDefault();
+            return (Exception?)message.GetProperty(exceptionKey).GetValueOrDefault(defaultValue: null);
         }
 
         /// <summary>
@@ -218,12 +219,13 @@ namespace MicroElements.Functional
         /// </summary>
         /// <param name="message">Source message.</param>
         /// <param name="exception">Exception.</param>
+        /// <param name="exceptionKey">Exception key in message properties.</param>
         /// <returns>New instance of <see cref="Message"/> with Exception property set.</returns>
-        public static Message WithException(this IMessage message, Exception exception)
+        public static Message WithException(this IMessage message, Exception exception, string exceptionKey = "Exception")
         {
             exception.AssertArgumentNotNull(nameof(exception));
 
-            return message.WithProperty("Exception", exception);
+            return message.WithProperty(exceptionKey, exception);
         }
     }
 }

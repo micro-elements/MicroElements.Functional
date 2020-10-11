@@ -15,12 +15,14 @@ namespace MicroElements.Functional
         /// Adds message to list.
         /// </summary>
         /// <param name="message">Message.</param>
-        new void Add(TMessage message);
+        /// <returns>The same list instance.</returns>
+        new IMutableMessageList<TMessage> Add(TMessage message);
 
         /// <summary>
         /// Appends other messages and returns new message list.
         /// </summary>
-        /// <param name="other">Other messages.</param>
-        new void AddRange(IEnumerable<TMessage> other);
+        /// <param name="messages">Other messages.</param>
+        /// <returns>The same list instance.</returns>
+        new IMutableMessageList<TMessage> AddRange(IEnumerable<TMessage> messages);
     }
 }

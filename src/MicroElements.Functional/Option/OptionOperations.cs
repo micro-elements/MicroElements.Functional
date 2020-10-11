@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using static MicroElements.Functional.Prelude;
 
@@ -25,10 +26,11 @@ namespace MicroElements.Functional
         /// <exception cref="ArgumentNullException">none is null.</exception>
         /// <exception cref="ResultIsNullException">result is null.</exception>
         [Pure]
+        [return: NotNull]
         public static B Match<A, B>(
             this in Option<A> source,
-            Func<A, B> some,
-            Func<B> none)
+            [DisallowNull] Func<A, B> some,
+            [DisallowNull] Func<B> none)
         {
             return MatchUnsafe(source, some, none)
                 .AssertNotNullResult();
@@ -47,10 +49,11 @@ namespace MicroElements.Functional
         /// <exception cref="ArgumentNullException">some is null.</exception>
         /// <exception cref="ArgumentNullException">none is null.</exception>
         [Pure]
+        [return: MaybeNull]
         public static B MatchUnsafe<A, B>(
             this in Option<A> source,
-            Func<A, B> some,
-            Func<B> none)
+            [DisallowNull] Func<A, B> some,
+            [DisallowNull] Func<B> none)
         {
             some.AssertArgumentNotNull(nameof(some));
             none.AssertArgumentNotNull(nameof(none));
@@ -73,10 +76,11 @@ namespace MicroElements.Functional
         /// <exception cref="ArgumentNullException">none is null.</exception>
         /// <exception cref="ResultIsNullException">result is null.</exception>
         [Pure]
+        [return: NotNull]
         public static B Match<A, B>(
             in Option<A> source,
-            Func<A, B> some,
-            B none)
+            [DisallowNull] Func<A, B> some,
+            [DisallowNull] B none)
         {
             some.AssertArgumentNotNull(nameof(some));
             none.AssertArgumentNotNull(nameof(none));
@@ -97,10 +101,11 @@ namespace MicroElements.Functional
         /// <returns>NotNull evaluated result.</returns>
         /// <exception cref="ArgumentNullException">some is null.</exception>
         [Pure]
+        [return: MaybeNull]
         public static B MatchUnsafe<A, B>(
             this in Option<A> source,
-            Func<A, B> some,
-            B none)
+            [DisallowNull] Func<A, B> some,
+            [AllowNull] B none)
         {
             some.AssertArgumentNotNull(nameof(some));
 
@@ -120,10 +125,11 @@ namespace MicroElements.Functional
         /// <exception cref="ArgumentNullException">some is null.</exception>
         /// <exception cref="ArgumentNullException">none is null.</exception>
         [Pure]
+        [return: NotNull]
         public static Unit Match<A>(
             in Option<A> source,
-            Action<A> some,
-            Action none)
+            [DisallowNull] Action<A> some,
+            [DisallowNull] Action none)
         {
             some.AssertArgumentNotNull(nameof(some));
             none.AssertArgumentNotNull(nameof(none));
@@ -144,7 +150,7 @@ namespace MicroElements.Functional
         /// <returns>Source option unchanged.</returns>
         public static Option<A> MatchSome<A>(
             this in Option<A> source,
-            Action<A> some)
+            [DisallowNull] Action<A> some)
         {
             some.AssertArgumentNotNull(nameof(some));
 
@@ -164,7 +170,7 @@ namespace MicroElements.Functional
         /// <returns>Option of type <typeparamref name="B"/>.</returns>
         public static Option<B> Bind<A, B>(
             this in Option<A> option,
-            Func<A, Option<B>> bind)
+            [DisallowNull] Func<A, Option<B>> bind)
         {
             bind.AssertArgumentNotNull(nameof(bind));
 

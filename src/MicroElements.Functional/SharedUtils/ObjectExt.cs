@@ -46,7 +46,20 @@ namespace MicroElements.Functional
         /// return false.</returns>
         [Pure]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsNull<T>([AllowNull] this T value) =>
+        public static bool IsNull<T>([AllowNull][NotNullWhen(false)] this T value) =>
             TypeCheck<T>.IsNull(value);
+
+        /// <summary>
+        /// Returns true if value is not null. Value-types will always
+        /// return true.
+        /// </summary>
+        /// <typeparam name="T">Value type.</typeparam>
+        /// <param name="value">Value to check.</param>
+        /// <returns>True if value is not null.Value-types will always
+        /// return true.</returns>
+        [Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsNotNull<T>([AllowNull][NotNullWhen(true)] this T value) =>
+            !value.IsNull();
     }
 }

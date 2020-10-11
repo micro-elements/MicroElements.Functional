@@ -156,7 +156,7 @@ namespace MicroElements.Functional
             if (result.IsSuccess)
             {
                 var error = validate(result.Value);
-                if (!error.IsNull())
+                if (error.IsNotNull())
                     return error;
             }
 

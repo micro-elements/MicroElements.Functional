@@ -16,47 +16,36 @@ namespace MicroElements.Functional
         private readonly ConcurrentQueue<TMessage> _messages = new ConcurrentQueue<TMessage>();
 
         /// <inheritdoc />
-        public IEnumerator<TMessage> GetEnumerator()
-        {
-            return _messages.GetEnumerator();
-        }
+        public IEnumerator<TMessage> GetEnumerator() => _messages.GetEnumerator();
 
         /// <inheritdoc />
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return ((IEnumerable)_messages).GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_messages).GetEnumerator();
 
         /// <inheritdoc />
         public int Count => _messages.Count;
 
         /// <inheritdoc />
-        public void Add(TMessage message)
+        public IMutableMessageList<TMessage> Add(TMessage message)
         {
             _messages.Enqueue(message);
+            return this;
         }
 
         /// <inheritdoc />
-        public void AddRange(IEnumerable<TMessage> other)
+        public IMutableMessageList<TMessage> AddRange(IEnumerable<TMessage> messages)
         {
-            foreach (var message in other)
+            foreach (var message in messages)
             {
                 _messages.Enqueue(message);
             }
-        }
 
-        /// <inheritdoc />
-        IMessageList<TMessage> IMessageList<TMessage>.Add(TMessage message)
-        {
-            _messages.Enqueue(message);
             return this;
         }
 
         /// <inheritdoc />
-        IMessageList<TMessage> IMessageList<TMessage>.AddRange(IEnumerable<TMessage> other)
-        {
-            AddRange(other);
-            return this;
-        }
+        IMessageList<TMessage> IMessageList<TMessage>.Add(TMessage message) => Add(message);
+
+        /// <inheritdoc />
+        IMessageList<TMessage> IMessageList<TMessage>.AddRange(IEnumerable<TMessage> messages) => AddRange(messages);
     }
 }

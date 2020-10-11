@@ -28,7 +28,7 @@ namespace MicroElements.Functional
         /// <typeparam name="T">Value type.</typeparam>
         /// <param name="value">Value or null.</param>
         /// <returns>Option.</returns>
-        public static Option<T> ToOption<T>([AllowNull]this T value) => value;
+        public static Option<T> ToOption<T>([AllowNull] this T value) => value;
 
         /// <summary>
         /// Gets value or throws if option is in <see cref="OptionState.None"/> state.
@@ -47,8 +47,9 @@ namespace MicroElements.Functional
         /// <param name="source">Source option.</param>
         /// <param name="defaultValue">Default value.</param>
         /// <returns>Option value or default value.</returns>
-        public static T GetValueOrDefault<T>(this in Option<T> source, T defaultValue = default)
-            => source.MatchUnsafe((t) => t, () => defaultValue);
+        [return: MaybeNull]
+        public static T GetValueOrDefault<T>(this in Option<T> source, [AllowNull] T defaultValue = default)
+            => source.MatchUnsafe((t) => t, defaultValue);
 
         /// <summary>
         /// Gets value or returns default value.

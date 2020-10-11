@@ -10,7 +10,7 @@ namespace MicroElements.Functional
     /// <summary>
     /// Extension methods for <see cref="IDictionary{TKey,TValue}"/>.
     /// </summary>
-    public static partial class DictionaryExtensions
+    public static class DictionaryExtensions
     {
         /// <summary>
         /// Gets optional value from dictionary by key.
@@ -23,7 +23,7 @@ namespace MicroElements.Functional
         /// <returns><see cref="Option{A}"/>.</returns>
         public static Option<TValue> GetValueAsOption<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
         {
-            if (dictionary.TryGetValue(key, out var value))
+            if (dictionary.TryGetValue(key, out var value) && value.IsNotNull())
                 return value;
             return None;
         }
@@ -39,7 +39,7 @@ namespace MicroElements.Functional
         /// <returns><see cref="Option{A}"/>.</returns>
         public static Option<TValue> GetValueAsOption<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dictionary, TKey key)
         {
-            if (dictionary.TryGetValue(key, out var value))
+            if (dictionary.TryGetValue(key, out var value) && value.IsNotNull())
                 return value;
             return None;
         }
@@ -55,7 +55,7 @@ namespace MicroElements.Functional
         /// <returns><see cref="Option{A}"/>.</returns>
         public static Option<TValue> GetValueAsOption<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key)
         {
-            if (dictionary.TryGetValue(key, out var value))
+            if (dictionary.TryGetValue(key, out var value) && value.IsNotNull())
                 return value;
             return None;
         }
