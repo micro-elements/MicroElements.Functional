@@ -1,4 +1,4 @@
-# 1.0.0-beta.3
+# 1.0.0
 - Breaking: netstandard2.1
 - Breaking: Nullable flag enabled for project
 - Some extensions methods annotated with nullable notation
