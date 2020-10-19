@@ -30,14 +30,17 @@ namespace MicroElements.Functional
             if (value == null)
                 return "null";
 
-            if (value is double num1)
-                return num1.ToString(DefaultNumberFormatInfo);
+            if (value is string stringValue)
+                return stringValue;
 
-            if (value is float num2)
-                return num2.ToString(DefaultNumberFormatInfo);
+            if (value is double doubleNumber)
+                return doubleNumber.ToString(DefaultNumberFormatInfo);
 
-            if (value is decimal num3)
-                return num3.ToString(DefaultNumberFormatInfo);
+            if (value is float floatNumber)
+                return floatNumber.ToString(DefaultNumberFormatInfo);
+
+            if (value is decimal decimalNumber)
+                return decimalNumber.ToString(DefaultNumberFormatInfo);
 
             if (value is DateTime dateTime)
                 return dateTime == dateTime.Date ? $"{dateTime:yyyy-MM-dd}" : $"{dateTime:yyyy-MM-ddTHH:mm:ss}";
