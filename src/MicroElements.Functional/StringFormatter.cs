@@ -12,7 +12,7 @@ namespace MicroElements.Functional
     /// <summary>
     /// StringFormat helpers.
     /// </summary>
-    public static class StringFormatExtensions
+    public static class StringFormatter
     {
         public static readonly NumberFormatInfo DefaultNumberFormatInfo = NumberFormatInfo.ReadOnly(
             new NumberFormatInfo
@@ -20,22 +20,38 @@ namespace MicroElements.Functional
                 NumberDecimalSeparator = ".",
             });
 
-        public static Func<object, string> DefaultFormatValue = value =>
+        /// <summary>
+        /// Default string formatting for most used types.
+        /// </summary>
+        /// <param name="value">Value to format.</param>
+        /// <returns>Formatted string.</returns>
+        public static string DefaultFormatValue(this object? value)
         {
-            switch (value)
-            {
-                case double num:
-                    return num.ToString(DefaultNumberFormatInfo);
-                case float num:
-                    return num.ToString(DefaultNumberFormatInfo);
-                case decimal num:
-                    return num.ToString(DefaultNumberFormatInfo);
-                case DateTime dateTime:
-                    return dateTime == dateTime.Date ? $"{dateTime:yyyy-MM-dd}" : $"{dateTime:yyyy-MM-ddTHH:mm:ss}";
-                default:
-                    return $"{value}";
-            }
-        };
+            if (value == null)
+                return "null";
+
+            if (value is double num1)
+                return num1.ToString(DefaultNumberFormatInfo);
+
+            if (value is float num2)
+                return num2.ToString(DefaultNumberFormatInfo);
+
+            if (value is decimal num3)
+                return num3.ToString(DefaultNumberFormatInfo);
+
+            if (value is DateTime dateTime)
+                return dateTime == dateTime.Date ? $"{dateTime:yyyy-MM-dd}" : $"{dateTime:yyyy-MM-ddTHH:mm:ss}";
+
+            string typeFullName = value.GetType().FullName;
+
+            if (typeFullName == "NodaTime.LocalDate" && value is IFormattable localDate)
+                return localDate.ToString("yyyy-MM-dd", null);
+
+            if (typeFullName == "NodaTime.LocalDateTime" && value is IFormattable localDateTime)
+                return localDateTime.ToString("yyyy-MM-ddTHH:mm:ss", null);
+
+            return $"{value}";
+        }
 
         /// <summary>
         /// Formats enumeration of value as tuple: (value1, value2, ...).
@@ -43,28 +59,37 @@ namespace MicroElements.Functional
         /// <param name="values">Values enumeration.</param>
         /// <param name="fieldSeparator">Optional field separator.</param>
         /// <param name="nullPlaceholder">Optional null placeholder.</param>
+        /// <param name="startSymbol">Start symbol. DefaultValue='('.</param>
+        /// <param name="endSymbol">End symbol. DefaultValue=')'.</param>
         /// <param name="formatValue">Func to format object value to string representation.</param>
         /// <returns>Formatted string.</returns>
         public static string FormatAsTuple(
             this IEnumerable values,
             string fieldSeparator = ", ",
             string nullPlaceholder = "null",
-            Func<object, string> formatValue = null)
+            string startSymbol = "(",
+            string endSymbol = ")",
+            Func<object, string>? formatValue = null)
         {
             values.AssertArgumentNotNull(nameof(values));
             fieldSeparator.AssertArgumentNotNull(nameof(fieldSeparator));
             nullPlaceholder.AssertArgumentNotNull(nameof(nullPlaceholder));
+            startSymbol.AssertArgumentNotNull(nameof(startSymbol));
+            endSymbol.AssertArgumentNotNull(nameof(endSymbol));
+
+            formatValue ??= DefaultFormatValue;
 
             var stringBuilder = new StringBuilder();
-            stringBuilder.Append("(");
+            stringBuilder.Append(startSymbol);
             foreach (var value in values)
             {
-                string text = value != null ? formatValue != null ? formatValue(value) : value.ToString() : nullPlaceholder;
+                string text = value != null ? formatValue(value) : nullPlaceholder;
                 stringBuilder.Append($"{text}{fieldSeparator}");
             }
+
             if (stringBuilder.Length > fieldSeparator.Length)
                 stringBuilder.Length -= fieldSeparator.Length;
-            stringBuilder.Append(")");
+            stringBuilder.Append(endSymbol);
             return stringBuilder.ToString();
         }
 
@@ -86,7 +111,7 @@ namespace MicroElements.Functional
             fieldSeparator.AssertArgumentNotNull(nameof(fieldSeparator));
             nullPlaceholder.AssertArgumentNotNull(nameof(nullPlaceholder));
 
-            formatValue = formatValue ?? DefaultFormatValue;
+            formatValue ??= DefaultFormatValue;
 
             var stringBuilder = new StringBuilder();
             stringBuilder.Append("{");

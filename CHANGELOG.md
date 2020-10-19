@@ -1,3 +1,6 @@
+# 1.1.0
+- More generic FormatAsTuple extension
+
 # 1.0.0
 - Breaking: netstandard2.1
 - Breaking: Nullable flag enabled for project
