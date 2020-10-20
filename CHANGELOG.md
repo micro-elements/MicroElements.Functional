@@ -1,5 +1,6 @@
 # 1.2.0
 - Fixed TypeExtensions.GetDefaultValue
+- Added TypeExtensions.IsAssignableTo and TypeExtensions.IsConcreteType
 
 # 1.1.0
 - More generic FormatAsTuple extension

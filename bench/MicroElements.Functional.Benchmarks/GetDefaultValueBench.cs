@@ -20,9 +20,20 @@ namespace MicroElements.Functional.Benchmarks
         [Benchmark]
         public void GetDefaultValueCompiled()
         {
-            TypeExtensions.GetDefaultValueCompiled(typeof(int));
-            TypeExtensions.GetDefaultValueCompiled(typeof(object));
-            TypeExtensions.GetDefaultValueCompiled(typeof(Nullable<int>));
+            TypeExtensions2.GetDefaultValueCompiled(typeof(int));
+            TypeExtensions2.GetDefaultValueCompiled(typeof(object));
+            TypeExtensions2.GetDefaultValueCompiled(typeof(Nullable<int>));
         }
+    }
+
+    public static class TypeExtensions2
+    {
+        public static object? GetDefaultValueCompiled(this Type type)
+        {
+            Func<Unit, object> func = CodeCompiler.CachedCompiledFunc<Unit, object>(type, GetDefaultValueInternal<CodeCompiler.GenericType>);
+            return func(Unit.Default);
+        }
+
+        internal static object GetDefaultValueInternal<T>(Unit unit) => default(T);
     }
 }
