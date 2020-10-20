@@ -9,7 +9,7 @@ namespace MicroElements.Functional
     {
         public static object? GetDefaultValue(this Type type)
         {
-            return type.IsNullableStruct() ? Activator.CreateInstance(type) : null;
+            return type.IsValueType ? Activator.CreateInstance(type) : null;
         }
 
         public static object? GetDefaultValueCompiled(this Type type)

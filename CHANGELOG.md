@@ -1,3 +1,6 @@
+# 1.2.0
+- Fixed TypeExtensions.GetDefaultValue
+
 # 1.1.0
 - More generic FormatAsTuple extension
 

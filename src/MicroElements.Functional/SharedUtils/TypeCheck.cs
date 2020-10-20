@@ -17,8 +17,8 @@ namespace MicroElements.Functional
 
         static TypeCheck()
         {
-            IsNullableStruct = Nullable.GetUnderlyingType(typeof(T)) != null;
-            IsReferenceType = !typeof(T).GetTypeInfo().IsValueType;
+            IsNullableStruct = typeof(T).IsNullableStruct();
+            IsReferenceType = typeof(T).IsReferenceType();
             DefaultEqualityComparer = EqualityComparer<T>.Default;
         }
 
