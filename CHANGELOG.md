@@ -1,3 +1,8 @@
+# 1.3.0
+- Added JetBrains.Annotations (slim version)
+- AssertArgumentNotNull marked with NoEnumeration and InvokerParameterName
+- More nullability and API markup with annotations 
+
 # 1.2.0
 - Fixed TypeExtensions.GetDefaultValue
 - Added TypeExtensions.IsAssignableTo and TypeExtensions.IsConcreteType

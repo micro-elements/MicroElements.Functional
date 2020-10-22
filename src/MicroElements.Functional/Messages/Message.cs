@@ -37,7 +37,7 @@ namespace MicroElements.Functional
         /// <summary>
         /// Event name.
         /// </summary>
-        public string EventName { get; }
+        public string? EventName { get; }
 
         /// <summary>
         /// Message properties.
@@ -82,10 +82,10 @@ namespace MicroElements.Functional
             string originalMessage,
             MessageSeverity severity = MessageSeverity.Information,
             DateTimeOffset? timestamp = null,
-            string eventName = null,
-            IReadOnlyCollection<KeyValuePair<string, object>> properties = null,
-            IMessageTemplateParser messageTemplateParser = null,
-            IMessageTemplateRenderer messageTemplateRenderer = null)
+            string? eventName = null,
+            IReadOnlyCollection<KeyValuePair<string, object>>? properties = null,
+            IMessageTemplateParser? messageTemplateParser = null,
+            IMessageTemplateRenderer? messageTemplateRenderer = null)
         {
             // Required
             OriginalMessage = originalMessage.AssertArgumentNotNull(nameof(originalMessage));
@@ -200,11 +200,11 @@ namespace MicroElements.Functional
         /// <summary>
         /// Optional temporary context for caches.
         /// </summary>
-        class MessageContext
+        private class MessageContext
         {
             private readonly Message _message;
-            private readonly IMessageTemplateParser _messageTemplateParser;
-            private readonly IMessageTemplateRenderer _messageTemplateRenderer;
+            private readonly IMessageTemplateParser? _messageTemplateParser;
+            private readonly IMessageTemplateRenderer? _messageTemplateRenderer;
 
             private readonly Lazy<MessageTemplate> _lazyMessageTemplate;
             private readonly Lazy<SortedList<string, object>> _lazyAllProperties;
@@ -219,8 +219,8 @@ namespace MicroElements.Functional
 
             public MessageContext(
                 Message message,
-                IMessageTemplateParser messageTemplateParser,
-                IMessageTemplateRenderer messageTemplateRenderer)
+                IMessageTemplateParser? messageTemplateParser,
+                IMessageTemplateRenderer? messageTemplateRenderer)
             {
                 _message = message;
                 _messageTemplateParser = messageTemplateParser;

@@ -14,6 +14,9 @@ namespace MicroElements.Functional
     /// </summary>
     public static class StringFormatter
     {
+        /// <summary>
+        /// Invariant format info. Uses '.' as decimal separator for floating point numbers.
+        /// </summary>
         public static readonly NumberFormatInfo DefaultNumberFormatInfo = NumberFormatInfo.ReadOnly(
             new NumberFormatInfo
             {
@@ -130,6 +133,6 @@ namespace MicroElements.Functional
             return stringBuilder.ToString();
         }
 
-        public static string AddIfNotNull(this string text, string separator) => text != null ? $"{text}{separator}" : string.Empty;
+        public static string AddIfNotNull(this string? text, string separator) => text != null ? $"{text}{separator}" : string.Empty;
     }
 }

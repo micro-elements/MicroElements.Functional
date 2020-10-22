@@ -37,34 +37,11 @@ namespace MicroElements.Functional
         /// <summary>
         /// Event name.
         /// </summary>
-        string EventName { get; }
+        string? EventName { get; }
 
         /// <summary>
         /// Message properties.
         /// </summary>
         IReadOnlyCollection<KeyValuePair<string, object>> Properties { get; }
     }
-
-    public interface ITemplatedMessage
-    {
-        /// <summary>
-        /// Original message.
-        /// Can be in form of MessageTemplates.org.
-        /// </summary>
-        string OriginalMessage { get; }
-
-        /// <summary>
-        /// Formatted message.
-        /// It's a result of MessageTemplate rendered with <seealso cref="Properties"/>.
-        /// </summary>
-        string FormattedMessage { get; }
-    }
-
-    //public static class MessageExtensions
-    //{
-    //    public static string Text(this IMessage message)
-    //    {
-    //        return message.
-    //    }
-    //}
 }

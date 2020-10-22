@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using JetBrains.Annotations;
 
 namespace MicroElements.Functional
 {
@@ -33,7 +34,7 @@ namespace MicroElements.Functional
         /// <returns>NotNull arg or throws <see cref="ArgumentNullException"/>.</returns>
         /// <exception cref="ArgumentNullException">The argument is null.</exception>
         [return: NotNull]
-        public static T AssertArgumentNotNull<T>([AllowNull] this T arg, string name)
+        public static T AssertArgumentNotNull<T>([AllowNull] [NoEnumeration] this T arg, [InvokerParameterName] string name)
         {
             if (arg.IsNull())
                 throw new ArgumentNullException(name);
