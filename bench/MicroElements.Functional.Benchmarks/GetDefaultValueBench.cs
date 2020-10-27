@@ -30,7 +30,7 @@ namespace MicroElements.Functional.Benchmarks
     {
         public static object? GetDefaultValueCompiled(this Type type)
         {
-            Func<Unit, object> func = CodeCompiler.CachedCompiledFunc<Unit, object>(type, GetDefaultValueInternal<CodeCompiler.GenericType>);
+            Func<Unit, object> func = CodeCompiler.CachedCompiledFunc<Unit, object>(type, "GetDefaultValue", GetDefaultValueInternal<CodeCompiler.GenericType>);
             return func(Unit.Default);
         }
 
