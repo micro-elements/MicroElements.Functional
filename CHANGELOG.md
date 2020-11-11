@@ -1,3 +1,8 @@
+# 1.4.0
+- Added Error struct
+- Added CanBeNull and CanNotBeNull
+- Added Flatten extension
+
 # 1.3.0
 - Added JetBrains.Annotations (slim version)
 - AssertArgumentNotNull marked with NoEnumeration and InvokerParameterName
