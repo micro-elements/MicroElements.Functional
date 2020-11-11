@@ -76,5 +76,14 @@ namespace MicroElements.Functional
 
             return Option<T>.None;
         }
+
+        /// <summary>
+        /// Flattens <paramref name="enumerationOfEnumerations"/> instances into a single, new enumerable.
+        /// </summary>
+        /// <typeparam name="T">Enumerable type.</typeparam>
+        /// <param name="enumerationOfEnumerations">Enumeration of enumerations.</param>
+        /// <returns>Single enumeration.</returns>
+        public static IEnumerable<T> Flatten<T>(this IEnumerable<IEnumerable<T>> enumerationOfEnumerations) =>
+            enumerationOfEnumerations.SelectMany(enumerable => enumerable);
     }
 }
