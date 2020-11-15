@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.Contracts;
 using static MicroElements.Functional.Prelude;
 
 namespace MicroElements.Functional
@@ -16,6 +17,7 @@ namespace MicroElements.Functional
         /// </summary>
         /// <param name="action">Action.</param>
         /// <returns>Func that returns Unit.</returns>
+        [Pure]
         public static Func<Unit> ToFunc(this Action action)
             => () => { action(); return Unit(); };
 
@@ -25,6 +27,7 @@ namespace MicroElements.Functional
         /// <typeparam name="T">Arg type.</typeparam>
         /// <param name="action">Action.</param>
         /// <returns>Func that returns Unit.</returns>
+        [Pure]
         public static Func<T, Unit> ToFunc<T>(this Action<T> action)
             => t => { action(t); return Unit(); };
 
@@ -35,7 +38,25 @@ namespace MicroElements.Functional
         /// <typeparam name="T2">Arg2 type.</typeparam>
         /// <param name="action">Action with two args.</param>
         /// <returns>Func that returns Unit.</returns>
+        [Pure]
         public static Func<T1, T2, Unit> ToFunc<T1, T2>(this Action<T1, T2> action)
-            => (T1 t1, T2 t2) => { action(t1, t2); return Unit(); };
+            => (t1, t2) => { action(t1, t2); return Unit(); };
+
+        /// <summary>
+        /// Combines two actions.
+        /// </summary>
+        /// <typeparam name="T">Action arg type.</typeparam>
+        /// <param name="first">Optional action1.</param>
+        /// <param name="second">Optional action2.</param>
+        /// <returns>Action that is a combination of both actions.</returns>
+        [Pure]
+        public static Action<T> Combine<T>(this Action<T>? first, Action<T>? second)
+        {
+            return arg =>
+            {
+                first?.Invoke(arg);
+                second?.Invoke(arg);
+            };
+        }
     }
 }

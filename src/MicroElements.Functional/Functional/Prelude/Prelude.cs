@@ -48,7 +48,7 @@ namespace MicroElements.Functional
         public static Func<T1, Func<T2, Func<T3, R>>> Curry<T1, T2, T3, R>(this Func<T1, T2, T3, R> f)
             => a => b => c => f(a, b, c);
 
-
+        [Pure]
         public static Func<T1, Func<T2, T3, R>> CurryFirst<T1, T2, T3, R>(this Func<T1, T2, T3, R> f)
             => a => (b, c) => f(a, b, c);
     }

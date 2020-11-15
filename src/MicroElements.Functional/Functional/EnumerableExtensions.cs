@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 
 namespace MicroElements.Functional
@@ -83,7 +84,58 @@ namespace MicroElements.Functional
         /// <typeparam name="T">Enumerable type.</typeparam>
         /// <param name="enumerationOfEnumerations">Enumeration of enumerations.</param>
         /// <returns>Single enumeration.</returns>
-        public static IEnumerable<T> Flatten<T>(this IEnumerable<IEnumerable<T>> enumerationOfEnumerations) =>
-            enumerationOfEnumerations.SelectMany(enumerable => enumerable);
+        public static IEnumerable<T> Flatten<T>(this IEnumerable<IEnumerable<T>> enumerationOfEnumerations)
+        {
+            return enumerationOfEnumerations.SelectMany(enumerable => enumerable);
+        }
+
+        /// <summary>
+        /// Materializes <paramref name="source"/> as <see cref="IReadOnlyList{T}"/> and invokes <paramref name="action"/>.
+        /// If <paramref name="action"/> is null then no materialization occurs.
+        /// </summary>
+        /// <typeparam name="T">Value type.</typeparam>
+        /// <param name="source">Source enumeration.</param>
+        /// <param name="action">Optional action with source snapshot as argument.</param>
+        /// <returns>The same enumeration if action is null or materialized enumeration.</returns>
+        public static IEnumerable<T> Materialize<T>(this IEnumerable<T> source, Action<IReadOnlyList<T>>? action)
+        {
+            if (action == null)
+                return source;
+
+            var materializedItems = source.ToArray();
+            action(materializedItems);
+            return materializedItems;
+        }
+
+        /// <summary>
+        /// Iterates values.
+        /// Can be used to replace <see cref="Enumerable.ToArray{TSource}"/> if no need to create array but only iterate.
+        /// </summary>
+        /// <typeparam name="T">Value type.</typeparam>
+        /// <param name="values">Enumeration.</param>
+        public static void Iterate<T>(this IEnumerable<T> values)
+        {
+            values.Iterate(DoNothing);
+        }
+
+        /// <summary>
+        /// Iterates values and executes <paramref name="action"/> for each value.
+        /// </summary>
+        /// <typeparam name="T">Value type.</typeparam>
+        /// <param name="values">Enumeration.</param>
+        /// <param name="action">Action to execute.</param>
+        public static void Iterate<T>(this IEnumerable<T> values, Action<T> action)
+        {
+            values.AssertArgumentNotNull(nameof(values));
+            action.AssertArgumentNotNull(nameof(action));
+
+            foreach (T value in values)
+            {
+                action(value);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void DoNothing<T>(T value) { }
     }
 }

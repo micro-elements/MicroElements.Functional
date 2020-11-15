@@ -1,3 +1,7 @@
+# 1.5.0
+- Added Combine extension for actions and functions.
+- Added Materialize and Iterate extensions
+
 # 1.4.0
 - Added Error struct
 - Added CanBeNull and CanNotBeNull

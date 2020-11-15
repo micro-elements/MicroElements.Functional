@@ -55,6 +55,6 @@ namespace MicroElements.Functional
         /// Explicit conversion to <see cref="CanNotBeNull{T}"/>.
         /// </summary>
         /// <param name="value">Value.</param>
-        public static explicit operator CanNotBeNull<T>([DisallowNull] T value) => new CanNotBeNull<T>(value);
+        public static implicit operator CanNotBeNull<T>([DisallowNull] T value) => new CanNotBeNull<T>(value);
     }
 }
