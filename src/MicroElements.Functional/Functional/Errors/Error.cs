@@ -11,7 +11,8 @@ namespace MicroElements.Functional
     /// Provides strong typed error code and message.
     /// </summary>
     /// <typeparam name="TErrorCode">ErrorCode type.</typeparam>
-    public readonly struct Error<TErrorCode> : IError<TErrorCode>, IEquatable<Error<TErrorCode>>
+    [Serializable]
+    public class Error<TErrorCode> : IError<TErrorCode>, IEquatable<Error<TErrorCode>>
         where TErrorCode : notnull
     {
         /// <summary>
@@ -162,7 +163,7 @@ namespace MicroElements.Functional
         /// <param name="undefinedCode">ErrorCode that returns if error occurs but undefined.</param>
         /// <returns>Optional error.</returns>
         public static Error<TErrorCode>? Try<TErrorCode>(Action action, TErrorCode undefinedCode)
-            where TErrorCode : notnull
+            where TErrorCode : struct
         {
             try
             {
