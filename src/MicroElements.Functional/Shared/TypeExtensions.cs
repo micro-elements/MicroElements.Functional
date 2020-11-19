@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
+// ReSharper disable once CheckNamespace
 namespace MicroElements.Functional
 {
     /// <summary>
@@ -13,26 +13,118 @@ namespace MicroElements.Functional
     public static class TypeExtensions
     {
         /// <summary>
+        /// Returns a value indicating whether the type is a reference type.
+        /// </summary>
+        /// <param name="type">Source type.</param>
+        /// <returns>True if argument is a reference type.</returns>
+        public static bool IsReferenceType(this Type type)
+        {
+            type.AssertArgumentNotNull(nameof(type));
+
+            return !type.GetTypeInfo().IsValueType;
+        }
+
+        /// <summary>
+        /// Returns a value indicating whether the type is a nullable struct.
+        /// </summary>
+        /// <param name="type">Source type.</param>
+        /// <returns>True if argument is a nullable struct.</returns>
+        public static bool IsNullableStruct(this Type type)
+        {
+            type.AssertArgumentNotNull(nameof(type));
+
+            return type.GetTypeInfo().IsValueType && Nullable.GetUnderlyingType(type) != null;
+        }
+
+        /// <summary>
+        /// Returns <c>true</c> if <c>null</c> can be assigned to type.
+        /// </summary>
+        /// <param name="targetType">Target type.</param>
+        /// <returns><c>true</c> if <c>null</c> can be assigned to type.</returns>
+        public static bool CanAcceptNull(this Type targetType)
+        {
+            targetType.AssertArgumentNotNull(nameof(targetType));
+
+            return targetType.IsReferenceType() || targetType.IsNullableStruct();
+        }
+
+        /// <summary>
+        /// Returns <c>true</c> if <c>null</c> can not be assigned to type.
+        /// </summary>
+        /// <param name="targetType">Target type.</param>
+        /// <returns><c>true</c> if <c>null</c> can not be assigned to type.</returns>
+        public static bool CanNotAcceptNull(this Type targetType)
+        {
+            targetType.AssertArgumentNotNull(nameof(targetType));
+
+            return !targetType.CanAcceptNull();
+        }
+
+        /// <summary>
+        /// Returns <c>true</c> if <paramref name="value"/> is assignable to <paramref name="targetType"/>.
+        /// </summary>
+        /// <param name="targetType">Type.</param>
+        /// <param name="value">Value to check.</param>
+        /// <returns><c>true</c> if <paramref name="value"/> is assignable to <paramref name="targetType"/>.</returns>
+        public static bool IsAssignableTo(this Type targetType, object value)
+        {
+            targetType.AssertArgumentNotNull(nameof(targetType));
+            value.AssertArgumentNotNull(nameof(value));
+
+            return value.GetType().IsAssignableTo(targetType);
+        }
+
+        /// <summary>
+        /// Returns <c>true</c> if <paramref name="value"/> is assignable to <paramref name="targetType"/>.
+        /// </summary>
+        /// <param name="value">Value to check.</param>
+        /// <param name="targetType">Type to check.</param>
+        /// <returns><c>true</c> if <paramref name="value"/> is assignable to <paramref name="targetType"/>.</returns>
+        public static bool IsAssignableTo(this object value, Type targetType)
+        {
+            value.AssertArgumentNotNull(nameof(value));
+            targetType.AssertArgumentNotNull(nameof(targetType));
+
+            return value.GetType().IsAssignableTo(targetType);
+        }
+
+        /// <summary>
+        /// Returns <c>true</c> if <paramref name="sourceType"/> is assignable to <paramref name="targetType"/>.
+        /// </summary>
+        /// <param name="sourceType">Source type.</param>
+        /// <param name="targetType">Type to check.</param>
+        /// <returns><c>true</c> if <paramref name="sourceType"/> is assignable to <paramref name="targetType"/>.</returns>
+        public static bool IsAssignableTo(this Type sourceType, Type targetType)
+        {
+            sourceType.AssertArgumentNotNull(nameof(sourceType));
+            targetType.AssertArgumentNotNull(nameof(targetType));
+
+            return targetType.GetTypeInfo().IsAssignableFrom(sourceType.GetTypeInfo());
+        }
+
+        /// <summary>
         /// Gets default value for type.
         /// </summary>
         /// <param name="type">Source type.</param>
         /// <returns>Default value.</returns>
-        public static object? GetDefaultValue([DisallowNull] this Type type)
+        public static object? GetDefaultValue(this Type type)
         {
             type.AssertArgumentNotNull(nameof(type));
+
             return type.IsValueType ? Activator.CreateInstance(type) : null;
         }
 
         /// <summary>
-        /// Determines whether <paramref name="type"/> is assignable to <typeparamref name="T" />.
+        /// Determines whether <paramref name="sourceType"/> is assignable to <typeparamref name="T" />.
         /// </summary>
         /// <typeparam name="T">The type to test assignability to.</typeparam>
-        /// <param name="type">The type to check.</param>
+        /// <param name="sourceType">The type to check.</param>
         /// <returns>True if type is assignable to references of type <typeparamref name="T" />; otherwise, False.</returns>
-        public static bool IsAssignableTo<T>([DisallowNull] this Type type)
+        public static bool IsAssignableTo<T>(this Type sourceType)
         {
-            type.AssertArgumentNotNull(nameof(type));
-            return typeof(T).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo());
+            sourceType.AssertArgumentNotNull(nameof(sourceType));
+
+            return typeof(T).GetTypeInfo().IsAssignableFrom(sourceType.GetTypeInfo());
         }
 
         /// <summary>
@@ -40,9 +132,10 @@ namespace MicroElements.Functional
         /// </summary>
         /// <param name="type">The type to check.</param>
         /// <returns>True if type is concrete.</returns>
-        public static bool IsConcreteType([DisallowNull] this Type type)
+        public static bool IsConcreteType(this Type type)
         {
             type.AssertArgumentNotNull(nameof(type));
+
             return !type.IsInterface && !type.IsAbstract;
         }
     }

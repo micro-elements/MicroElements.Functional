@@ -1,3 +1,7 @@
+# 1.6.0
+- TypeCheck became public
+- Added methods to TypeExtensions: CanAcceptNull, CanNotAcceptNull, IsAssignableTo
+
 # 1.5.0
 - Added Combine extension for actions and functions.
 - Added Materialize and Iterate extensions

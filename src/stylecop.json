@@ -8,7 +8,10 @@
                 "licenseName": "MIT",
                 "licenseFile": "LICENSE"
             },
-            "xmlHeader": false
+            "xmlHeader": false,
+            "documentPrivateElements": false,
+            "documentPrivateFields": false,
+            "documentInternalElements": false
         },
         "orderingRules": {
             "usingDirectivesPlacement": "outsideNamespace"

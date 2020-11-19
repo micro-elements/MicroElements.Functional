@@ -5,12 +5,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 
+// ReSharper disable once CheckNamespace
 namespace MicroElements.Functional
 {
     /// <summary>
     /// ObjectExt from LanguageExt.
     /// </summary>
-    public static class ObjectExt
+    public static class ObjectExtensions
     {
         /// <summary>
         /// Returns true if the value is equal to this type's default value.

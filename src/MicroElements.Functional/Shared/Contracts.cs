@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 
+// ReSharper disable once CheckNamespace
 namespace MicroElements.Functional
 {
     /// <summary>

@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 
 // ReSharper disable once CheckNamespace
-namespace MicroElements
+namespace MicroElements.Functional
 {
     /// <summary>
     /// Creates compiled functions.
