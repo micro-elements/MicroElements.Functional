@@ -62,12 +62,50 @@ namespace MicroElements.Functional
         }
 
         [Pure]
-        public static A GetValueOrThrow<A, Error, Message>(this in Result<A, Error, Message> source) =>
-            source.Match((a, list) => a, (error, list) => throw new InvalidCastException($"Result in Failed state can not be cast to {typeof(A)}"));
+        public static A GetValueOrThrow<A, Error, Message>(this in Result<A, Error, Message> source, bool allowNullResult = false)
+        {
+            if (allowNullResult)
+                return source.MatchUnsafe((a, list) => a, (error, list) => throw ResultErrors.ResultIsFailed.ToException());
 
+            return source.Match((a, list) => a, (error, list) => throw ResultErrors.ResultIsFailed.ToException());
+        }
+
+        /// <summary>
+        /// Gets result value for success and throws <see cref="ExceptionWithError{TErrorCode}"/> with <see cref="ResultErrors.ResultIsFailed"/> for failed result.
+        /// </summary>
+        /// <typeparam name="A">Success value type.</typeparam>
+        /// <typeparam name="Error">Error type.</typeparam>
+        /// <param name="source">Source result.</param>
+        /// <param name="allowNullResult">Is null value allowed for result.</param>
+        /// <returns>Success value.</returns>
+        /// <exception cref="ExceptionWithError{TErrorCode}">Result is in failed state.</exception>
         [Pure]
-        public static A GetValueOrThrow<A, Error>(this in Result<A, Error> source) =>
-            source.Match((a) => a, (error) => throw new InvalidCastException($"Result in Failed state can not be cast to {typeof(A)}"));
+        public static A GetValueOrThrow<A, Error>(this in Result<A, Error> source, bool allowNullResult = false)
+        {
+            if (allowNullResult)
+                return source.MatchUnsafe((a) => a, (error) => throw ResultErrors.ResultIsFailed.ToException());
+
+            return source.Match((a) => a, (error) => throw ResultErrors.ResultIsFailed.ToException());
+        }
+
+        /// <summary>
+        /// Gets result value for success and throws <see cref="ExceptionWithError{TErrorCode}"/> for failed result.
+        /// </summary>
+        /// <typeparam name="A">Success value type.</typeparam>
+        /// <typeparam name="TErrorCode">Error code.</typeparam>
+        /// <param name="source">Source result.</param>
+        /// <param name="allowNullResult">Is null value allowed for result.</param>
+        /// <returns>Success value.</returns>
+        /// <exception cref="ExceptionWithError{TErrorCode}">Result is in failed state.</exception>
+        [Pure]
+        public static A GetValueOrThrow<A, TErrorCode>(this in Result<A, IError<TErrorCode>> source, bool allowNullResult = false)
+            where TErrorCode : notnull
+        {
+            if (allowNullResult)
+                return source.MatchUnsafe((a) => a, (error) => throw error.ToException());
+
+            return source.Match((a) => a, (error) => throw error.ToException());
+        }
 
         [Pure]
         public static A GetValueOrDefault<A, Error, Message>(
@@ -208,5 +246,16 @@ namespace MicroElements.Functional
         {
             return source.Validate(validate, message => message.IsError);
         }
+    }
+
+    public enum ResultError
+    {
+        ResultIsFailed
+    }
+
+    public static class ResultErrors
+    {
+        public static Error<ResultError> ResultIsFailed =
+            Error.CreateError(ResultError.ResultIsFailed, "Result is in Failed state. Value can not be extracted.");
     }
 }

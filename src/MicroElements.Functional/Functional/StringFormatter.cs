@@ -68,6 +68,8 @@ namespace MicroElements.Functional
         /// <param name="startSymbol">Start symbol. DefaultValue='('.</param>
         /// <param name="endSymbol">End symbol. DefaultValue=')'.</param>
         /// <param name="formatValue">Func to format object value to string representation.</param>
+        /// <param name="maxItems">Optional max items to render.</param>
+        /// <param name="maxTextLength">Limits max text length.</param>
         /// <returns>Formatted string.</returns>
         public static string FormatAsTuple(
             this IEnumerable values,
@@ -75,7 +77,9 @@ namespace MicroElements.Functional
             string nullPlaceholder = "null",
             string startSymbol = "(",
             string endSymbol = ")",
-            Func<object, string>? formatValue = null)
+            Func<object, string>? formatValue = null,
+            int? maxItems = null,
+            int maxTextLength = 1028)
         {
             values.AssertArgumentNotNull(nameof(values));
             fieldSeparator.AssertArgumentNotNull(nameof(fieldSeparator));
@@ -83,20 +87,41 @@ namespace MicroElements.Functional
             startSymbol.AssertArgumentNotNull(nameof(startSymbol));
             endSymbol.AssertArgumentNotNull(nameof(endSymbol));
 
-            formatValue ??= DefaultFormatValue;
+            formatValue ??= FormatAsTupleDefault;
 
             var stringBuilder = new StringBuilder();
             stringBuilder.Append(startSymbol);
+            int count = 1;
             foreach (var value in values)
             {
+                if (stringBuilder.Length > maxTextLength || (maxItems.HasValue && count > maxItems.Value))
+                    break;
+
                 string text = value != null ? formatValue(value) : nullPlaceholder;
                 stringBuilder.Append($"{text}{fieldSeparator}");
+
+                count++;
             }
+
+            if (stringBuilder.Length > maxTextLength || (maxItems.HasValue && count > maxItems.Value))
+                stringBuilder.Append($"...{fieldSeparator}");
 
             if (stringBuilder.Length > fieldSeparator.Length)
                 stringBuilder.Length -= fieldSeparator.Length;
+
             stringBuilder.Append(endSymbol);
             return stringBuilder.ToString();
+        }
+
+        private static string FormatAsTupleDefault(object? value)
+        {
+            if (value is ICollection collection)
+                return collection.FormatAsTuple();
+            if (value is ValueTuple<string, object?> nameValueTuple)
+                return $"({nameValueTuple.Item1}: {FormatAsTupleDefault(nameValueTuple.Item2)})";
+            if (value is KeyValuePair<string, object?> keyValuePair)
+                return $"({keyValuePair.Key}: {FormatAsTupleDefault(keyValuePair.Value)})";
+            return DefaultFormatValue(value);
         }
 
         /// <summary>
@@ -108,20 +133,20 @@ namespace MicroElements.Functional
         /// <param name="formatValue">Func to format object value to string representation.</param>
         /// <returns>Formatted string.</returns>
         public static string FormatAsJson(
-            this IEnumerable<(string Name, object Value)> values,
+            this IEnumerable<(string Name, object? Value)> values,
             string fieldSeparator = ", ",
             string nullPlaceholder = "null",
-            Func<object, string> formatValue = null)
+            Func<object?, string>? formatValue = null)
         {
             values.AssertArgumentNotNull(nameof(values));
             fieldSeparator.AssertArgumentNotNull(nameof(fieldSeparator));
             nullPlaceholder.AssertArgumentNotNull(nameof(nullPlaceholder));
 
-            formatValue ??= DefaultFormatValue;
+            formatValue ??= FormatAsJsonDefault;
 
             var stringBuilder = new StringBuilder();
             stringBuilder.Append("{");
-            foreach ((string Name, object Value) formatComponent in values)
+            foreach ((string Name, object? Value) formatComponent in values)
             {
                 var formatted = formatValue(formatComponent.Value) ?? nullPlaceholder;
                 stringBuilder.Append($"{formatComponent.Name}: \"{formatted}\"{fieldSeparator}");
@@ -133,6 +158,11 @@ namespace MicroElements.Functional
             return stringBuilder.ToString();
         }
 
-        public static string AddIfNotNull(this string? text, string separator) => text != null ? $"{text}{separator}" : string.Empty;
+        private static string FormatAsJsonDefault(object? value)
+        {
+            if (value is IFormattableObject collection)
+                return collection.GetNameValuePairs().FormatAsJson();
+            return DefaultFormatValue(value);
+        }
     }
 }

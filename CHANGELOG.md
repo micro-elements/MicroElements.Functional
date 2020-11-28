@@ -1,3 +1,10 @@
+# 1.7.0
+- GetValueOrThrow for Result accepts allowNullResult that allows Result to have hull value as Success
+- Added extension IsNumericType and IsNullableNumericType
+- Added ErrorExtensions.ToException and ErrorExtensions.Throw
+- Added ReflectionExtensions and TypeCache
+- FormatAsTuple can limit render be items count and text length, allows to render name value tuples and collections
+
 # 1.6.0
 - TypeCheck became public
 - Added methods to TypeExtensions: CanAcceptNull, CanNotAcceptNull, IsAssignableTo

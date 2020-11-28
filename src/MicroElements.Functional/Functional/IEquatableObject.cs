@@ -14,6 +14,6 @@ namespace MicroElements.Functional
         /// Gets all components for equality comparison.
         /// </summary>
         /// <returns>Enumeration of equality components.</returns>
-        IEnumerable<object> GetEqualityComponents();
+        IEnumerable<object?> GetEqualityComponents();
     }
 }

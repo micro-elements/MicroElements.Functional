@@ -3,6 +3,7 @@
 
 using System;
 using System.Reflection;
+using MicroElements.Shared;
 
 // ReSharper disable once CheckNamespace
 namespace MicroElements.Functional
@@ -34,6 +35,37 @@ namespace MicroElements.Functional
             type.AssertArgumentNotNull(nameof(type));
 
             return type.GetTypeInfo().IsValueType && Nullable.GetUnderlyingType(type) != null;
+        }
+
+        /// <summary>
+        /// Returns a value indicating whether the type is a numeric type.
+        /// </summary>
+        /// <param name="type">Source type.</param>
+        /// <returns>True if argument is a numeric type.</returns>
+        public static bool IsNumericType(this Type type)
+        {
+            type.AssertArgumentNotNull(nameof(type));
+
+            return TypeCache.NumericTypes.Contains(type);
+        }
+
+        /// <summary>
+        /// Returns a value indicating whether the type is a nullable numeric type.
+        /// </summary>
+        /// <param name="type">Source type.</param>
+        /// <returns>True if argument is a nullable numeric type.</returns>
+        public static bool IsNullableNumericType(this Type type)
+        {
+            type.AssertArgumentNotNull(nameof(type));
+
+            if (!type.GetTypeInfo().IsValueType)
+                return false;
+
+            Type? underlyingType = Nullable.GetUnderlyingType(type);
+            if (underlyingType is null)
+                return false;
+
+            return underlyingType.IsNumericType();
         }
 
         /// <summary>
@@ -118,7 +150,7 @@ namespace MicroElements.Functional
         /// Determines whether <paramref name="sourceType"/> is assignable to <typeparamref name="T" />.
         /// </summary>
         /// <typeparam name="T">The type to test assignability to.</typeparam>
-        /// <param name="sourceType">The type to check.</param>
+        /// <param name="sourceType">Source type to check.</param>
         /// <returns>True if type is assignable to references of type <typeparamref name="T" />; otherwise, False.</returns>
         public static bool IsAssignableTo<T>(this Type sourceType)
         {
@@ -128,15 +160,28 @@ namespace MicroElements.Functional
         }
 
         /// <summary>
-        /// Determines whether <paramref name="type"/> is concrete type: (not interface and not abstract).
+        /// Determines whether <paramref name="sourceType"/> is concrete type: (not interface and not abstract).
         /// </summary>
-        /// <param name="type">The type to check.</param>
+        /// <param name="sourceType">Source type to check.</param>
         /// <returns>True if type is concrete.</returns>
-        public static bool IsConcreteType(this Type type)
+        public static bool IsConcreteType(this Type sourceType)
         {
-            type.AssertArgumentNotNull(nameof(type));
+            sourceType.AssertArgumentNotNull(nameof(sourceType));
 
-            return !type.IsInterface && !type.IsAbstract;
+            return !sourceType.IsInterface && !sourceType.IsAbstract;
+        }
+
+        /// <summary>
+        /// Determines whether <paramref name="sourceType"/> is concrete class and assignable to <typeparamref name="T" />.
+        /// </summary>
+        /// <typeparam name="T">Target type to test assignability to.</typeparam>
+        /// <param name="sourceType">Source type to check.</param>
+        /// <returns>True if type is assignable to references of type <typeparamref name="T" />; otherwise, False.</returns>
+        public static bool IsConcreteAndAssignableTo<T>(this Type sourceType)
+        {
+            sourceType.AssertArgumentNotNull(nameof(sourceType));
+
+            return sourceType.IsConcreteType() && sourceType.IsAssignableTo<T>();
         }
     }
 }

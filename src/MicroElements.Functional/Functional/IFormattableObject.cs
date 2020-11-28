@@ -14,6 +14,6 @@ namespace MicroElements.Functional
         /// Gets object state as key-value pairs.
         /// </summary>
         /// <returns>Enumeration of key-value pairs.</returns>
-        IEnumerable<(string Name, object Value)> GetNameValuePairs();
+        IEnumerable<(string Name, object? Value)> GetNameValuePairs();
     }
 }

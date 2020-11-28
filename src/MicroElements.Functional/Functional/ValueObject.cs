@@ -18,10 +18,10 @@ namespace MicroElements.Functional
         /// Gets all components for equality comparison.
         /// </summary>
         /// <returns>Enumeration of equality components.</returns>
-        public abstract IEnumerable<object> GetEqualityComponents();
+        public abstract IEnumerable<object?> GetEqualityComponents();
 
         /// <inheritdoc />
-        public bool Equals(ValueObject other)
+        public bool Equals(ValueObject? other)
         {
             if (ReferenceEquals(null, other))
                 return false;
@@ -32,7 +32,7 @@ namespace MicroElements.Functional
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
                 return false;
@@ -61,7 +61,7 @@ namespace MicroElements.Functional
         /// <summary>
         /// Equality operator.
         /// </summary>
-        public static bool operator ==(ValueObject a, ValueObject b)
+        public static bool operator ==(ValueObject? a, ValueObject? b)
         {
             if (ReferenceEquals(a, null) && ReferenceEquals(b, null))
                 return true;
@@ -75,13 +75,13 @@ namespace MicroElements.Functional
         /// <summary>
         /// Inequality operator.
         /// </summary>
-        public static bool operator !=(ValueObject a, ValueObject b)
+        public static bool operator !=(ValueObject? a, ValueObject? b)
         {
             return !(a == b);
         }
 
         /// <inheritdoc />
-        public int CompareTo(ValueObject other)
+        public int CompareTo(ValueObject? other)
         {
             if (ReferenceEquals(this, other))
                 return 0;

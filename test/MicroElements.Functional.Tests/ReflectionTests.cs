@@ -1,5 +1,6 @@
 ﻿using System;
 using FluentAssertions;
+using MicroElements.Shared;
 using Xunit;
 
 namespace MicroElements.Functional.Tests
@@ -54,6 +55,13 @@ namespace MicroElements.Functional.Tests
 
             default(int?).IsNull().Should().Be(true);
             default(int?).IsDefault().Should().Be(true);
+        }
+
+        [Fact]
+        public void test_type_cache()
+        {
+            TypeCache.NumericTypesWithNullable.Types.Count.Should().Be(22);
+            TypeCache.NumericTypes.Types.Count.Should().Be(11);
         }
     }
 }
