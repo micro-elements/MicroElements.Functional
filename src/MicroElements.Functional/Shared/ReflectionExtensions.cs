@@ -178,13 +178,8 @@ namespace MicroElements.Shared
     /// Use to reduce reflection time.
     /// Use: <see cref="Create"/> method to create type cache.
     /// </summary>
-    public class TypeCache
+    public partial class TypeCache
     {
-        /// <summary>
-        /// Gets default type cache with all assembly types.
-        /// </summary>
-        public static TypeCache Default { get; } = Create(AssemblySource.Default, TypeSource.AllPublicTypes);
-
         /// <summary>
         /// Gets Assembly filters that was used to get <see cref="Assemblies"/>.
         /// </summary>
@@ -214,6 +209,11 @@ namespace MicroElements.Shared
         /// Gets types indexed by type alias.
         /// </summary>
         public IReadOnlyDictionary<string, Type> TypeByAlias { get; }
+
+        /// <summary>
+        /// Gets type by its alias name.
+        /// </summary>
+        public IReadOnlyDictionary<Type, string> AliasForType { get; }
 
         /// <summary>
         /// Creates type cache.
@@ -261,6 +261,13 @@ namespace MicroElements.Shared
                 .ToDictionary(
                     registration => registration.Alias ?? registration.Type.FullName,
                     registration => registration.Type);
+
+            AliasForType = TypeSource
+                .TypeRegistrations
+                .Where(registration => registration.Alias != null)
+                .ToDictionary(
+                    registration => registration.Type,
+                    registration => registration.Alias ?? registration.Type.Name);
         }
 
         /// <summary>
@@ -365,6 +372,24 @@ namespace MicroElements.Shared
         }
 
         /// <summary>
+        /// Gets optional alias for type.
+        /// </summary>
+        /// <param name="type">Type to search.</param>
+        /// <returns>true if the type cache contains the specified type; otherwise, false.</returns>
+        public string? GetAliasForType(Type type)
+        {
+            return AliasForType.GetValueOrDefault(type);
+        }
+    }
+
+    public partial class TypeCache
+    {
+        /// <summary>
+        /// Gets default type cache with all assembly types.
+        /// </summary>
+        public static TypeCache Default { get; } = Create(AssemblySource.Default, TypeSource.AllPublicTypes);
+
+        /// <summary>
         /// Gets Numeric types set with aliases.
         /// Types: byte, short, int, long, float, double, decimal, sbyte, ushort, uint, ulong.
         /// </summary>
@@ -407,6 +432,31 @@ namespace MicroElements.Shared
                         new TypeRegistration(typeof(uint?), "uint?"),
                         new TypeRegistration(typeof(ulong?), "ulong?"),
                     }).ToArray()));
+
+        /// <summary>
+        /// Struct types from NodaTime package.
+        /// Many MicroElements packages uses NodaTime so moved it here.
+        /// </summary>
+        public static TypeCache NodaTimeTypes { get; } = Create(
+            typeSource: TypeSource.FromTypeRegistrations(
+                Enumerable.Empty<TypeRegistration>()
+                    .Concat(NodaTypeRegistrations("LocalDateTime"))
+                    .Concat(NodaTypeRegistrations("LocalDate"))
+                    .Concat(NodaTypeRegistrations("LocalTime"))
+                    .Concat(NodaTypeRegistrations("Duration"))
+                    .Concat(NodaTypeRegistrations("Instant"))
+                    .Concat(NodaTypeRegistrations("Interval"))
+                    .Concat(NodaTypeRegistrations("Offset"))
+                    .Concat(NodaTypeRegistrations("OffsetDate"))
+                    .Concat(NodaTypeRegistrations("OffsetDateTime"))
+                    .Concat(NodaTypeRegistrations("YearMonth"))
+                    .Concat(NodaTypeRegistrations("ZonedDateTime"))
+                    .Concat(NodaTypeRegistrations("AnnualDate"))
+                    .Concat(NodaTypeRegistrations("ZonedDateTime"))
+                    .ToArray()));
+
+        private static IEnumerable<TypeRegistration> NodaTypeRegistrations(string alias) => 
+            TypeRegistration.TypeAndNullableTypeRegistrations($"NodaTime.{alias}", alias);
     }
 
     /// <summary>
@@ -709,7 +759,17 @@ namespace MicroElements.Shared
         public static TypeSource FromTypes(params Type[] types)
         {
             TypeRegistration[] typeRegistrations = types.NotNull().Select(type => new TypeRegistration(type, source: TypeRegistration.SourceType.Manual)).ToArray();
-            return TypeSource.Empty.With(typeRegistrations: typeRegistrations);
+            return Empty.With(typeRegistrations: typeRegistrations);
+        }
+
+        /// <summary>
+        /// Creates new <see cref="TypeSource"/> from provided type registrations.
+        /// </summary>
+        /// <param name="typeRegistrations">Type registrations to add to source.</param>
+        /// <returns>New <see cref="TypeSource"/> instance.</returns>
+        public static TypeSource FromTypeRegistrations(params TypeRegistration[] typeRegistrations)
+        {
+            return Empty.With(typeRegistrations: typeRegistrations);
         }
 
         /// <summary>
@@ -801,6 +861,28 @@ namespace MicroElements.Shared
             yield return Type;
             yield return Alias;
         }
+
+        /// <summary>
+        /// Returns <see cref="TypeRegistration"/> by type FullName with optional alias.
+        /// Also returns nullable type registration for this type if its a value type.
+        /// </summary>
+        /// <param name="fullName">Type FullName.</param>
+        /// <param name="alias">Type alias.</param>
+        /// <param name="typeCache">Optional type cache which contains searching type. If not set then <see cref="TypeCache.Default"/> will be used.</param>
+        /// <returns>Enumeration of <see cref="TypeRegistration"/>. Can be empty if type was not found.</returns>
+        public static IEnumerable<TypeRegistration> TypeAndNullableTypeRegistrations(string fullName, string? alias = null, TypeCache? typeCache = null)
+        {
+            Type? type = (typeCache ?? TypeCache.Default).GetByAliasOrFullName(fullName);
+            if (type != null)
+            {
+                yield return new TypeRegistration(type, alias);
+                if (type.IsValueType)
+                {
+                    Type nullableType = typeof(Nullable<>).MakeGenericType(type);
+                    yield return new TypeRegistration(nullableType, alias + "?");
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -814,13 +896,13 @@ namespace MicroElements.Shared
         /// <param name="typeCache">Source type cache.</param>
         /// <param name="typeName">Type alias or fullName.</param>
         /// <returns>Type or null.</returns>
-        public static Type? GetType(this TypeCache typeCache, string typeName)
+        public static Type? GetByAliasOrFullName(this TypeCache typeCache, string typeName)
         {
-            Type type = typeCache.TypeByAlias.GetValueOrDefault(typeName);
+            Type? type = typeCache.GetByAlias(typeName);
             if (type != null)
                 return type;
 
-            type = typeCache.TypeByFullName.GetValueOrDefault(typeName);
+            type = typeCache.GetByFullName(typeName);
             if (type != null)
                 return type;
 

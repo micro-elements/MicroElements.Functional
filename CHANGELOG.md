@@ -1,3 +1,7 @@
+# 1.8.0
+- TypeCache AliasForType index
+- Added NodaTime TypeCache without direct reference
+
 # 1.7.0
 - GetValueOrThrow for Result accepts allowNullResult that allows Result to have hull value as Success
 - Added extension IsNumericType and IsNullableNumericType
