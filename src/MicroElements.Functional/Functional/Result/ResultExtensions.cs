@@ -116,6 +116,12 @@ namespace MicroElements.Functional
         [Pure]
         public static A GetValueOrDefault<A, Error>(
             this in Result<A, Error> source,
+            A defaultValue = default) =>
+            source.MatchUnsafe((a) => a, (error) => defaultValue);
+
+        [Pure]
+        public static A GetValueOrDefault<A, Error>(
+            this in Result<A, Error> source,
             Func<Error, A> factory) =>
             source.MatchUnsafe((a) => a, (error) => factory(error));
 

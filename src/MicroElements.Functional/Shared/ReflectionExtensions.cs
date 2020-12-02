@@ -301,6 +301,19 @@ namespace MicroElements.Shared
             return new TypeCache(assemblySourceResolved, typeSourceResolved);
         }
 
+        /// <summary>
+        /// Creates Lazy <see cref="TypeCache"/> by <see cref="AssemblySource"/> and <see cref="TypeSource"/>.
+        /// </summary>
+        /// <param name="assemblySource">Assembly filters that was used to get <see cref="Assemblies"/>. If not set <see cref="Shared.AssemblySource.Empty"/> will be used.</param>
+        /// <param name="typeSource">Type filters that was used to get <see cref="Types"/>. If not set <see cref="Shared.TypeSource.Empty"/> will be used.</param>
+        /// <returns>New Lazy <see cref="TypeCache"/> instance.</returns>
+        public static Lazy<TypeCache> CreateLazy(
+            AssemblySource? assemblySource = null,
+            TypeSource? typeSource = null)
+        {
+            return new Lazy<TypeCache>(() => Create(assemblySource, typeSource));
+        }
+
         /// <inheritdoc />
         public override string ToString()
         {
@@ -387,7 +400,7 @@ namespace MicroElements.Shared
         /// <summary>
         /// Gets default type cache with all assembly types.
         /// </summary>
-        public static TypeCache Default { get; } = Create(AssemblySource.Default, TypeSource.AllPublicTypes);
+        public static Lazy<TypeCache> Default { get; } = CreateLazy(AssemblySource.Default, TypeSource.AllPublicTypes);
 
         /// <summary>
         /// Gets Numeric types set with aliases.
@@ -403,7 +416,6 @@ namespace MicroElements.Shared
                 new TypeRegistration(typeof(float), "float"),
                 new TypeRegistration(typeof(double), "double"),
                 new TypeRegistration(typeof(decimal), "decimal"),
-
                 new TypeRegistration(typeof(sbyte), "sbyte"),
                 new TypeRegistration(typeof(ushort), "ushort"),
                 new TypeRegistration(typeof(uint), "uint"),
@@ -437,7 +449,7 @@ namespace MicroElements.Shared
         /// Struct types from NodaTime package.
         /// Many MicroElements packages uses NodaTime so moved it here.
         /// </summary>
-        public static TypeCache NodaTimeTypes { get; } = Create(
+        public static Lazy<TypeCache> NodaTimeTypes { get; } = CreateLazy(
             typeSource: TypeSource.FromTypeRegistrations(
                 Enumerable.Empty<TypeRegistration>()
                     .Concat(NodaTypeRegistrations("LocalDateTime"))
@@ -452,10 +464,9 @@ namespace MicroElements.Shared
                     .Concat(NodaTypeRegistrations("YearMonth"))
                     .Concat(NodaTypeRegistrations("ZonedDateTime"))
                     .Concat(NodaTypeRegistrations("AnnualDate"))
-                    .Concat(NodaTypeRegistrations("ZonedDateTime"))
                     .ToArray()));
 
-        private static IEnumerable<TypeRegistration> NodaTypeRegistrations(string alias) => 
+        private static IEnumerable<TypeRegistration> NodaTypeRegistrations(string alias) =>
             TypeRegistration.TypeAndNullableTypeRegistrations($"NodaTime.{alias}", alias);
     }
 
@@ -872,7 +883,7 @@ namespace MicroElements.Shared
         /// <returns>Enumeration of <see cref="TypeRegistration"/>. Can be empty if type was not found.</returns>
         public static IEnumerable<TypeRegistration> TypeAndNullableTypeRegistrations(string fullName, string? alias = null, TypeCache? typeCache = null)
         {
-            Type? type = (typeCache ?? TypeCache.Default).GetByAliasOrFullName(fullName);
+            Type? type = (typeCache ?? TypeCache.Default.Value).GetByAliasOrFullName(fullName);
             if (type != null)
             {
                 yield return new TypeRegistration(type, alias);

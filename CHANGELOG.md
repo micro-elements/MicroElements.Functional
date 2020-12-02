@@ -1,3 +1,8 @@
+# 1.9.0
+- Lazy TypeCache
+- Fixed NodaTime TypeCache creation error
+- Added GetValueOrDefault for Result<A,Error> with default value
+
 # 1.8.0
 - TypeCache AliasForType index
 - Added NodaTime TypeCache without direct reference

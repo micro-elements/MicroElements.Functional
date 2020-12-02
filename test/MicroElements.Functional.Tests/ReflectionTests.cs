@@ -1,6 +1,7 @@
 ﻿using System;
 using FluentAssertions;
 using MicroElements.Shared;
+using NodaTime;
 using Xunit;
 
 namespace MicroElements.Functional.Tests
@@ -62,6 +63,10 @@ namespace MicroElements.Functional.Tests
         {
             TypeCache.NumericTypesWithNullable.Types.Count.Should().Be(22);
             TypeCache.NumericTypes.Types.Count.Should().Be(11);
+
+            // Use LocalDate to force load NodaTime assembly
+            LocalDate localDate = new LocalDate(2020, 12, 02);
+            TypeCache.NodaTimeTypes.Value.Types.Count.Should().Be(24);
         }
     }
 }

@@ -58,6 +58,7 @@ namespace MicroElements.Functional
         /// <param name="source">Source option.</param>
         /// <param name="fallback">Function that returns default value.</param>
         /// <returns>Option value or default value.</returns>
+        [return: MaybeNull]
         public static T GetValueOrDefault<T>(this in Option<T> source, Func<T> fallback)
             => source.MatchUnsafe((t) => t, fallback);
 
