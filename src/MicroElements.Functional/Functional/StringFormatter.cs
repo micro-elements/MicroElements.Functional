@@ -56,6 +56,18 @@ namespace MicroElements.Functional
             if (typeFullName == "NodaTime.LocalDateTime" && value is IFormattable localDateTime)
                 return localDateTime.ToString("yyyy-MM-ddTHH:mm:ss", null);
 
+            if (value is ICollection collection)
+                return collection.FormatAsTuple(startSymbol: "[", endSymbol: "]");
+
+            //if (value is (int tupleKey, object tupleValue))
+            //    return $"({tupleKey}: {DefaultFormatValue(tupleValue)})";
+
+            if (value is ValueTuple<string, object?> nameValueTuple)
+                return $"({nameValueTuple.Item1}: {DefaultFormatValue(nameValueTuple.Item2)})";
+
+            if (value is KeyValuePair<string, object?> keyValuePair)
+                return $"({keyValuePair.Key}: {DefaultFormatValue(keyValuePair.Value)})";
+
             return $"{value}";
         }
 
@@ -117,10 +129,13 @@ namespace MicroElements.Functional
         {
             if (value is ICollection collection)
                 return collection.FormatAsTuple();
+
             if (value is ValueTuple<string, object?> nameValueTuple)
                 return $"({nameValueTuple.Item1}: {FormatAsTupleDefault(nameValueTuple.Item2)})";
+
             if (value is KeyValuePair<string, object?> keyValuePair)
                 return $"({keyValuePair.Key}: {FormatAsTupleDefault(keyValuePair.Value)})";
+
             return DefaultFormatValue(value);
         }
 

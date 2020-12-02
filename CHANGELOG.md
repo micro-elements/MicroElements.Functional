@@ -1,3 +1,6 @@
+# 1.10.0
+- StringFormatter.DefaultFormatValue supports collections, and some tuple types
+
 # 1.9.0
 - Lazy TypeCache
 - Fixed NodaTime TypeCache creation error
