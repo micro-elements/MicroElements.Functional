@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using MicroElements.CodeContracts;
 
 namespace MicroElements.Functional
 {
@@ -40,7 +41,9 @@ namespace MicroElements.Functional
         public CanNotBeNull([DisallowNull] T value)
         {
             // AssertArgumentNotNull is from MicroElements.Functional
-            _value = value.AssertArgumentNotNull(nameof(value));
+            value.AssertArgumentNotNull(nameof(value));
+
+            _value = value;
             _isInitialized = true;
         }
 

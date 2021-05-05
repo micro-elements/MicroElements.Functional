@@ -102,4 +102,13 @@ namespace MicroElements.Functional
         {
         }
     }
+
+    [Serializable]
+    public class ResultIfFailedException : Exception
+    {
+        public ResultIfFailedException()
+            : base("Result is in Failed state. Value can not be extracted.")
+        {
+        }
+    }
 }

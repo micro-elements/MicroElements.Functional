@@ -40,7 +40,7 @@ namespace MicroElements.Functional
         /// <param name="messages">Message list.</param>
         /// <returns>Success result.</returns>
         public static Result<A, Error, Message> Success<A, Error, Message>(A value, IEnumerable<Message> messages)
-            => new Result<A, Error, Message>(value, messages.ToMessageList());
+            => new Result<A, Error, Message>(value, new MessageList<Message>(messages));
 
         /// <summary>
         /// Creates success result from value.
@@ -81,7 +81,7 @@ namespace MicroElements.Functional
         /// <param name="messages">Message list.</param>
         /// <returns>Failed result.</returns>
         public static Result<A, Error, Message> Fail<A, Error, Message>(Error error, IEnumerable<Message> messages)
-            => new Result<A, Error, Message>(error, messages.ToMessageList());
+            => new Result<A, Error, Message>(error, new MessageList<Message>(messages));
 
         public static Result<A, Error, Message> Fail<A, Error, Message>(Error error, Message message)
             => new Result<A, Error, Message>(error, new MessageList<Message>(message));

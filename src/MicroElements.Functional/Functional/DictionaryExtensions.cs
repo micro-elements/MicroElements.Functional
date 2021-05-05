@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using MicroElements.Functional.Errors;
+using MicroElements.Reflection;
 using static MicroElements.Functional.Prelude;
 
 namespace MicroElements.Functional

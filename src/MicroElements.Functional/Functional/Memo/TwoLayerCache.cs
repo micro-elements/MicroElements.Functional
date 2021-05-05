@@ -61,6 +61,7 @@ namespace MicroElements.Functional
             {
                 // Value exists in cold cache so move to hot cache.
                 _hotCache.TryAdd(key, value);
+
                 // If not remove from cold then cold cache size can be twice as hot.
                 //_coldCache.TryRemove(key, out _);
 

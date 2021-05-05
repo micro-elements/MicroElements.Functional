@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.Contracts;
 using System.Threading.Tasks;
+using MicroElements.CodeContracts;
 
 namespace MicroElements.Functional
 {

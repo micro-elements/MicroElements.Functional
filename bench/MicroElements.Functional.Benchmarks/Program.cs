@@ -6,7 +6,7 @@ namespace MicroElements.Functional.Benchmarks
     {
         public static void Main(string[] args)
         {
-            var summary = BenchmarkRunner.Run<GetDefaultValueBench>();
+            var summary = BenchmarkRunner.Run<StructVsClass>();
         }
     }
 }

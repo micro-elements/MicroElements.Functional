@@ -6,22 +6,19 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using MicroElements.CodeContracts;
 
-namespace MicroElements.Functional
+namespace MicroElements.Functional.Internals
 {
     /// <summary>
     /// StringFormat helpers.
     /// </summary>
-    public static class StringFormatter
+    internal static class StringFormatter
     {
         /// <summary>
         /// Invariant format info. Uses '.' as decimal separator for floating point numbers.
         /// </summary>
-        public static readonly NumberFormatInfo DefaultNumberFormatInfo = NumberFormatInfo.ReadOnly(
-            new NumberFormatInfo
-            {
-                NumberDecimalSeparator = ".",
-            });
+        private static readonly NumberFormatInfo _defaultNumberFormatInfo = NumberFormatInfo.ReadOnly(new NumberFormatInfo { NumberDecimalSeparator = "." });
 
         /// <summary>
         /// Default string formatting for most used types.
@@ -37,13 +34,13 @@ namespace MicroElements.Functional
                 return stringValue;
 
             if (value is double doubleNumber)
-                return doubleNumber.ToString(DefaultNumberFormatInfo);
+                return doubleNumber.ToString(_defaultNumberFormatInfo);
 
             if (value is float floatNumber)
-                return floatNumber.ToString(DefaultNumberFormatInfo);
+                return floatNumber.ToString(_defaultNumberFormatInfo);
 
             if (value is decimal decimalNumber)
-                return decimalNumber.ToString(DefaultNumberFormatInfo);
+                return decimalNumber.ToString(_defaultNumberFormatInfo);
 
             if (value is DateTime dateTime)
                 return dateTime == dateTime.Date ? $"{dateTime:yyyy-MM-dd}" : $"{dateTime:yyyy-MM-ddTHH:mm:ss}";
@@ -58,9 +55,6 @@ namespace MicroElements.Functional
 
             if (value is ICollection collection)
                 return collection.FormatAsTuple(startSymbol: "[", endSymbol: "]");
-
-            //if (value is (int tupleKey, object tupleValue))
-            //    return $"({tupleKey}: {DefaultFormatValue(tupleValue)})";
 
             if (value is ValueTuple<string, object?> nameValueTuple)
                 return $"({nameValueTuple.Item1}: {DefaultFormatValue(nameValueTuple.Item2)})";

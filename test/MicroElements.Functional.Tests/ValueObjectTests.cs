@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using FluentAssertions;
+using MicroElements.CodeContracts;
 using Xunit;
 
 namespace MicroElements.Functional.Tests
@@ -115,8 +116,11 @@ namespace MicroElements.Functional.Tests
         /// <inheritdoc />
         public FormattableName(string firstName, string lastName)
         {
-            FirstName = firstName.AssertArgumentNotNull(nameof(firstName));
-            LastName = lastName.AssertArgumentNotNull(nameof(lastName));
+            firstName.AssertArgumentNotNull(nameof(firstName));
+            lastName.AssertArgumentNotNull(nameof(lastName));
+
+            FirstName = firstName;
+            LastName = lastName;
         }
 
         /// <inheritdoc />

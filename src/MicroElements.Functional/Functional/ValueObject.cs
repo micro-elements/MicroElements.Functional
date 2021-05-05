@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MicroElements.Functional.Internals;
 
 namespace MicroElements.Functional
 {

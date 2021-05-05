@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
+using MicroElements.CodeContracts;
 
 namespace MicroElements.Functional
 {
@@ -29,8 +30,11 @@ namespace MicroElements.Functional
         /// <param name="messages">Message list.</param>
         public ValueWithMessages(A value, IEnumerable<Message> messages)
         {
-            Value = value.AssertArgumentNotNull(nameof(value));
-            Messages = messages.AssertArgumentNotNull(nameof(messages)).ToMessageList();
+            value.AssertArgumentNotNull(nameof(value));
+            messages.AssertArgumentNotNull(nameof(messages));
+
+            Value = value;
+            Messages = new MessageList<Message>(messages);
         }
 
         /// <summary>
@@ -40,8 +44,11 @@ namespace MicroElements.Functional
         /// <param name="message">Single Message.</param>
         public ValueWithMessages(A value, Message message)
         {
-            Value = value.AssertArgumentNotNull(nameof(value));
-            Messages = message.AssertArgumentNotNull(nameof(message)).ToMessageList();
+            value.AssertArgumentNotNull(nameof(value));
+            message.AssertArgumentNotNull(nameof(message));
+
+            Value = value;
+            Messages = new MessageList<Message>(message);
         }
 
         /// <summary>
