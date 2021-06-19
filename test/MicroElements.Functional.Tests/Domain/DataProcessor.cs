@@ -19,14 +19,14 @@ namespace MicroElements.Functional.Tests.Domain
                     (error, messages) => Console.WriteLine("Error"));
         }
 
-        public Result<string, string> ReadFile(string fileName)
+        public Result<string, ErrorMessage> ReadFile(string fileName)
         {
-            return Try(() => File.ReadAllText(fileName), exception => exception.Message);
+            return Try(() => File.ReadAllText(fileName), exception => new ErrorMessage(exception.Message));
         }
 
-        public Result<CustomerDto, string> TryParseCustomerDto(string source)
+        public Result<CustomerDto, ErrorMessage> TryParseCustomerDto(string source)
         {
-            return Try(() => ParseCustomerDto(source), exception => exception.Message);
+            return Try(() => ParseCustomerDto(source), exception => new ErrorMessage(exception.Message));
         }
 
         public CustomerDto ParseCustomerDto(string source)
@@ -34,7 +34,7 @@ namespace MicroElements.Functional.Tests.Domain
             return JsonConvert.DeserializeObject<CustomerDto>(source);
         }
 
-        public IEnumerable<string> ValidateCustomer(CustomerDto customer)
+        public IEnumerable<ErrorMessage> ValidateCustomer(CustomerDto customer)
         {
             if (String.IsNullOrWhiteSpace(customer.Name))
                 yield return ("Customer name is empty");
@@ -55,5 +55,20 @@ namespace MicroElements.Functional.Tests.Domain
         public int Id { get; }
         public string Name { get; }
         public string Email { get; }
+    }
+
+    public class ErrorMessage : ICanBeError
+    {
+        public string Text { get; }
+
+        public ErrorMessage(string text)
+        {
+            Text = text;
+        }
+
+        public static implicit operator ErrorMessage(string value) => new ErrorMessage(value);
+
+        /// <inheritdoc />
+        public bool IsError => true;
     }
 }

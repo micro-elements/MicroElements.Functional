@@ -20,8 +20,4 @@
     <ProjectReference Include="..\..\src\MicroElements.Functional\MicroElements.Functional.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="MessageTemplate\" />
-  </ItemGroup>
-
 </Project>

@@ -53,4 +53,8 @@ namespace MicroElements.Functional.Tests
             result3.GetErrorValueType().Should().Be(typeof(DomainError));
         }
     }
+
+    public interface IMessage
+    {
+    }
 }

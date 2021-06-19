@@ -1,7 +1,6 @@
 ﻿using System;
 using FluentAssertions;
 using MicroElements.Reflection;
-using MicroElements.Shared;
 using NodaTime;
 using Xunit;
 
@@ -62,6 +61,7 @@ namespace MicroElements.Functional.Tests
         [Fact]
         public void test_type_cache()
         {
+            
             TypeCache.NumericTypesWithNullable.Types.Count.Should().Be(22);
             TypeCache.NumericTypes.Types.Count.Should().Be(11);
 

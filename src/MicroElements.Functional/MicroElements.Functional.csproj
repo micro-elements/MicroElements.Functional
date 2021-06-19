@@ -9,14 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Shared\ReflectionExtensions.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Shared\ReflectionExtensions.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="MicroElements.Shared.Sources" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

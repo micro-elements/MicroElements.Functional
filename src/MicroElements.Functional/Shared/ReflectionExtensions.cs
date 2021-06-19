@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using MicroElements.CodeContracts;
 using MicroElements.Functional;
+using MicroElements.Functional.Internals;
 
 #region Supressions
 
@@ -35,7 +36,7 @@ namespace MicroElements.Shared
         /// <returns>Assemblies.</returns>
         public static IEnumerable<Assembly> LoadAssemblies(
             AssemblySource assemblySource,
-            IMutableMessageList<Message>? messages = null)
+            ICollection<string>? messages = null)
         {
             assemblySource.AssertArgumentNotNull(nameof(assemblySource));
 
@@ -81,7 +82,7 @@ namespace MicroElements.Shared
         public static IReadOnlyCollection<Type> GetTypes(
             IReadOnlyCollection<Assembly> assemblies,
             TypeFilters typeFilters,
-            IMutableMessageList<Message>? messages = null)
+            ICollection<string>? messages = null)
         {
             assemblies.AssertArgumentNotNull(nameof(assemblies));
 
@@ -108,7 +109,7 @@ namespace MicroElements.Shared
         /// <exception cref="T:System.ArgumentNullException">
         /// Thrown if <paramref name="assembly" /> is <see langword="null" />.
         /// </exception>
-        public static IEnumerable<Type> GetDefinedTypesSafe(this Assembly assembly, IMutableMessageList<Message>? messages = null)
+        public static IEnumerable<Type> GetDefinedTypesSafe(this Assembly assembly, ICollection<string>? messages = null)
         {
             assembly.AssertArgumentNotNull(nameof(assembly));
 
@@ -122,7 +123,7 @@ namespace MicroElements.Shared
                 {
                     foreach (Exception loaderException in ex.LoaderExceptions)
                     {
-                        messages.AddError(loaderException.Message);
+                        messages.Add(loaderException.Message);
                     }
                 }
 
@@ -136,7 +137,7 @@ namespace MicroElements.Shared
         /// <param name="assemblyFile">The name or path of the file that contains the manifest of the assembly.</param>
         /// <param name="messages">Message list for diagnostic messages.</param>
         /// <returns>Assembly or null if error occurred.</returns>
-        public static Assembly? TryLoadAssemblyFrom(string assemblyFile, IMutableMessageList<Message>? messages = null)
+        public static Assembly? TryLoadAssemblyFrom(string assemblyFile, ICollection<string>? messages = null)
         {
             try
             {
@@ -144,7 +145,7 @@ namespace MicroElements.Shared
             }
             catch (Exception e)
             {
-                messages?.AddError($"Error on load assembly {assemblyFile}. Message: {e.Message}");
+                messages?.Add($"Error on load assembly {assemblyFile}. Message: {e.Message}");
                 return null;
             }
         }
@@ -284,7 +285,7 @@ namespace MicroElements.Shared
             assemblySource ??= AssemblySource.Empty;
             typeSource ??= TypeSource.Empty;
 
-            IMutableMessageList<Message> messages = new ConcurrentMessageList<Message>();
+            ICollection<string> messages = new List<string>();
 
             Assembly[] assemblies = Reflection.LoadAssemblies(assemblySource, messages).ToArray();
 
