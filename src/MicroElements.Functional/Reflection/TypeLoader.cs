@@ -11,19 +11,12 @@ using MicroElements.CodeContracts;
 using MicroElements.Functional;
 using MicroElements.Functional.Internals;
 
-#region Supressions
-
-// ReSharper disable CheckNamespace
-#pragma warning disable SA1649 // File name should match first type name
-
-#endregion
-
-namespace MicroElements.Shared
+namespace MicroElements.Reflection
 {
     /// <summary>
     /// Reflection utils.
     /// </summary>
-    public static class Reflection
+    public static class TypeLoader
     {
         /// <summary>
         /// Loads assemblies according <paramref name="assemblySource"/>.
@@ -61,7 +54,7 @@ namespace MicroElements.Shared
                         .Concat(Directory.EnumerateFiles(assemblySource.LoadFromDirectory, "*.exe", SearchOption.TopDirectoryOnly))
                         .IncludeByPatterns(fileName => fileName, assemblyFilters.IncludePatterns)
                         .ExcludeByPatterns(fileName => fileName, assemblyFilters.ExcludePatterns)
-                        .Select(assemblyFile => Reflection.TryLoadAssemblyFrom(assemblyFile, messages)!)
+                        .Select(assemblyFile => TypeLoader.TryLoadAssemblyFrom(assemblyFile, messages)!)
                         .Where(assembly => assembly != null);
 
                 assemblies = assemblies.Concat(assembliesFromDirectory);
@@ -149,327 +142,6 @@ namespace MicroElements.Shared
                 return null;
             }
         }
-    }
-
-    /// <summary>
-    /// Provides methods for filtering.
-    /// </summary>
-    internal static class Filtering
-    {
-        internal static string WildcardToRegex(string pat) => "^" + Regex.Escape(pat).Replace(@"\*", ".*").Replace(@"\?", ".") + "$";
-
-        internal static bool FileNameMatchesPattern(string filename, string pattern) => Regex.IsMatch(Path.GetFileName(filename) ?? string.Empty, WildcardToRegex(pattern));
-
-        internal static IEnumerable<T> IncludeByPatterns<T>(this IEnumerable<T> values, Func<T, string> filterComponent, IReadOnlyCollection<string>? includePatterns = null)
-        {
-            if (includePatterns == null)
-                return values;
-            return values.Where(value => includePatterns.Any(pattern => FileNameMatchesPattern(filterComponent(value), pattern)));
-        }
-
-        internal static IEnumerable<T> ExcludeByPatterns<T>(this IEnumerable<T> values, Func<T, string> filterComponent, IReadOnlyCollection<string>? excludePatterns = null)
-        {
-            if (excludePatterns == null)
-                return values;
-            return values.Where(value => excludePatterns.Any(excludePattern => !FileNameMatchesPattern(filterComponent(value), excludePattern)));
-        }
-    }
-
-    /// <summary>
-    /// Represents type cache and methods for working with types.
-    /// Use to reduce reflection time.
-    /// Use: <see cref="Create"/> method to create type cache.
-    /// </summary>
-    public partial class TypeCache
-    {
-        /// <summary>
-        /// Gets Assembly filters that was used to get <see cref="Assemblies"/>.
-        /// </summary>
-        public AssemblySource AssemblySource { get; }
-
-        /// <summary>
-        /// Gets Type filters that was used to get <see cref="Types"/>.
-        /// </summary>
-        public TypeSource TypeSource { get; }
-
-        /// <summary>
-        /// Gets assemblies that matches assembly filters.
-        /// </summary>
-        public IReadOnlyCollection<Assembly> Assemblies { get; }
-
-        /// <summary>
-        /// Gets types that matches type filters.
-        /// </summary>
-        public IReadOnlyCollection<Type> Types { get; }
-
-        /// <summary>
-        /// Gets types indexed by <see cref="Type.FullName"/>.
-        /// </summary>
-        public IReadOnlyDictionary<string, Type> TypeByFullName { get; }
-
-        /// <summary>
-        /// Gets types indexed by type alias.
-        /// </summary>
-        public IReadOnlyDictionary<string, Type> TypeByAlias { get; }
-
-        /// <summary>
-        /// Gets type by its alias name.
-        /// </summary>
-        public IReadOnlyDictionary<Type, string> AliasForType { get; }
-
-        /// <summary>
-        /// Creates type cache.
-        /// </summary>
-        /// <param name="assemblySource">Assembly filters that was used to get <see cref="Assemblies"/>.</param>
-        /// <param name="typeSource">Type filters that was used to get <see cref="Types"/>.</param>
-        public TypeCache(
-            AssemblySource assemblySource,
-            TypeSource typeSource)
-        {
-            assemblySource.AssertArgumentNotNull(nameof(assemblySource));
-            typeSource.AssertArgumentNotNull(nameof(typeSource));
-
-            AssemblySource = assemblySource;
-            TypeSource = typeSource;
-            Assemblies = assemblySource.ResultAssemblies.NotNull().ToArray();
-
-            Types = TypeSource
-                .TypeRegistrations
-                .Select(registration => registration.Type)
-                .Distinct()
-                .ToArray();
-
-            string[] typeNames = Types
-                .Select(type => type.FullName)
-                .Distinct()
-                .ToArray();
-
-            if (typeNames.Length != Types.Count)
-            {
-                TypeByFullName = Types
-                    .GroupBy(type => type.FullName)
-                    .Select(group => group.First())
-                    .ToDictionary(type => type.FullName!, type => type);
-            }
-            else
-            {
-                TypeByFullName = Types
-                    .ToDictionary(type => type.FullName!, type => type);
-            }
-
-            TypeByAlias = TypeSource
-                .TypeRegistrations
-                .Where(registration => registration.Alias != null)
-                .ToDictionary(
-                    registration => registration.Alias ?? registration.Type.FullName,
-                    registration => registration.Type);
-
-            AliasForType = TypeSource
-                .TypeRegistrations
-                .Where(registration => registration.Alias != null)
-                .ToDictionary(
-                    registration => registration.Type,
-                    registration => registration.Alias ?? registration.Type.Name);
-        }
-
-        /// <summary>
-        /// Creates <see cref="TypeCache"/> by <see cref="AssemblySource"/> and <see cref="TypeSource"/>.
-        /// </summary>
-        /// <param name="assemblySource">Assembly filters that was used to get <see cref="Assemblies"/>. If not set <see cref="Shared.AssemblySource.Empty"/> will be used.</param>
-        /// <param name="typeSource">Type filters that was used to get <see cref="Types"/>. If not set <see cref="Shared.TypeSource.Empty"/> will be used.</param>
-        /// <returns>New <see cref="TypeCache"/> instance.</returns>
-        public static TypeCache Create(
-            AssemblySource? assemblySource = null,
-            TypeSource? typeSource = null)
-        {
-            assemblySource ??= AssemblySource.Empty;
-            typeSource ??= TypeSource.Empty;
-
-            ICollection<string> messages = new List<string>();
-
-            Assembly[] assemblies = Reflection.LoadAssemblies(assemblySource, messages).ToArray();
-
-            TypeRegistration[] typeRegistrations = Reflection.GetTypes(assemblies, typeSource.TypeFilters, messages)
-                .Select(type => new TypeRegistration(type, source: TypeRegistration.SourceType.AssemblyScan))
-                .Concat(typeSource.TypeRegistrations.NotNull())
-                .ToArray();
-
-            if (assemblySource.FilterByTypeFilters)
-                assemblies = typeRegistrations.Select(registration => registration.Type).Select(type => type.Assembly).Distinct().ToArray();
-
-            AssemblySource assemblySourceResolved = assemblySource.With(resultAssemblies: assemblies);
-            TypeSource typeSourceResolved = typeSource.With(typeRegistrations: typeRegistrations);
-
-            return new TypeCache(assemblySourceResolved, typeSourceResolved);
-        }
-
-        /// <summary>
-        /// Creates Lazy <see cref="TypeCache"/> by <see cref="AssemblySource"/> and <see cref="TypeSource"/>.
-        /// </summary>
-        /// <param name="assemblySource">Assembly filters that was used to get <see cref="Assemblies"/>. If not set <see cref="Shared.AssemblySource.Empty"/> will be used.</param>
-        /// <param name="typeSource">Type filters that was used to get <see cref="Types"/>. If not set <see cref="Shared.TypeSource.Empty"/> will be used.</param>
-        /// <returns>New Lazy <see cref="TypeCache"/> instance.</returns>
-        public static Lazy<TypeCache> CreateLazy(
-            AssemblySource? assemblySource = null,
-            TypeSource? typeSource = null)
-        {
-            return new Lazy<TypeCache>(() => Create(assemblySource, typeSource));
-        }
-
-        /// <inheritdoc />
-        public override string ToString()
-        {
-            IEnumerable<string> Parts()
-            {
-                yield return $"AssemblyCount: {Assemblies.Count}";
-                yield return $"TypeCount: {Types.Count}";
-                yield return $"Assemblies: {Assemblies.Select(assembly => assembly.GetName().Name).FormatAsTuple(maxItems: 20)}";
-                yield return $"Types: {TypeSource.TypeRegistrations.Select(registration => registration.Alias ?? registration.Type.FullName).FormatAsTuple(maxItems: 40)}";
-            }
-
-            return Parts().FormatAsTuple();
-        }
-
-        /// <summary>
-        /// Creates new <see cref="TypeCache"/> with some changes.
-        /// </summary>
-        /// <param name="assemblySource">Optional AssemblySource.</param>
-        /// <param name="typeSource">Optional TypeSource.</param>
-        /// <returns>New <see cref="TypeCache"/> instance.</returns>
-        public TypeCache With(
-            AssemblySource? assemblySource = null,
-            TypeSource? typeSource = null)
-        {
-            TypeCache source = this;
-            return new TypeCache(
-                assemblySource: assemblySource ?? source.AssemblySource,
-                typeSource: typeSource ?? source.TypeSource);
-        }
-
-        /// <summary>
-        /// Determines whether the type cache contains the specified type.
-        /// </summary>
-        /// <param name="type">The type to check.</param>
-        /// <returns>true if the type cache contains the specified type; otherwise, false.</returns>
-        public bool Contains(Type type)
-        {
-            return TypeByFullName.ContainsKey(type.FullName);
-        }
-
-        /// <summary>
-        /// Determines whether the type cache contains the specified type.
-        /// </summary>
-        /// <param name="typeFullName">Type name to check.</param>
-        /// <returns>true if the type cache contains the specified type; otherwise, false.</returns>
-        public bool ContainsByFullName(string typeFullName)
-        {
-            return TypeByFullName.ContainsKey(typeFullName);
-        }
-
-        /// <summary>
-        /// Gets type by specified <paramref name="typeFullName"/>.
-        /// </summary>
-        /// <param name="typeFullName">Type name to check.</param>
-        /// <returns>true if the type cache contains the specified type; otherwise, false.</returns>
-        public Type? GetByFullName(string typeFullName)
-        {
-            return TypeByFullName.GetValueOrDefault(typeFullName);
-        }
-
-        /// <summary>
-        /// Gets type by specified <paramref name="alias"/>.
-        /// </summary>
-        /// <param name="alias">Type name alias.</param>
-        /// <returns>true if the type cache contains the specified type; otherwise, false.</returns>
-        public Type? GetByAlias(string alias)
-        {
-            return TypeByAlias.GetValueOrDefault(alias);
-        }
-
-        /// <summary>
-        /// Gets optional alias for type.
-        /// </summary>
-        /// <param name="type">Type to search.</param>
-        /// <returns>true if the type cache contains the specified type; otherwise, false.</returns>
-        public string? GetAliasForType(Type type)
-        {
-            return AliasForType.GetValueOrDefault(type);
-        }
-    }
-
-    public partial class TypeCache
-    {
-        /// <summary>
-        /// Gets default type cache with all assembly types.
-        /// </summary>
-        public static Lazy<TypeCache> Default { get; } = CreateLazy(AssemblySource.Default, TypeSource.AllPublicTypes);
-
-        /// <summary>
-        /// Gets Numeric types set with aliases.
-        /// Types: byte, short, int, long, float, double, decimal, sbyte, ushort, uint, ulong.
-        /// </summary>
-        public static TypeCache NumericTypes { get; } = Create(
-            typeSource: TypeSource.Empty.With(typeRegistrations: new[]
-            {
-                new TypeRegistration(typeof(byte), "byte"),
-                new TypeRegistration(typeof(short), "short"),
-                new TypeRegistration(typeof(int), "int"),
-                new TypeRegistration(typeof(long), "long"),
-                new TypeRegistration(typeof(float), "float"),
-                new TypeRegistration(typeof(double), "double"),
-                new TypeRegistration(typeof(decimal), "decimal"),
-                new TypeRegistration(typeof(sbyte), "sbyte"),
-                new TypeRegistration(typeof(ushort), "ushort"),
-                new TypeRegistration(typeof(uint), "uint"),
-                new TypeRegistration(typeof(ulong), "ulong"),
-            }));
-
-        /// <summary>
-        /// Gets Numeric types set with nullable numeric types.
-        /// Types: byte, short, int, long, float, double, decimal, sbyte, ushort, uint, ulong.
-        /// NullableTypes: byte?, short?, int?, long?, float?, double?, decimal?, sbyte?, ushort?, uint?, ulong?.
-        /// </summary>
-        public static TypeCache NumericTypesWithNullable { get; } = Create(
-            typeSource: TypeSource.Empty.With(typeRegistrations:
-                NumericTypes.TypeSource.TypeRegistrations
-                    .Concat(new[]
-                    {
-                        new TypeRegistration(typeof(byte?), "byte?"),
-                        new TypeRegistration(typeof(short?), "short?"),
-                        new TypeRegistration(typeof(int?), "int?"),
-                        new TypeRegistration(typeof(long?), "long?"),
-                        new TypeRegistration(typeof(float?), "float?"),
-                        new TypeRegistration(typeof(double?), "double?"),
-                        new TypeRegistration(typeof(decimal?), "decimal?"),
-                        new TypeRegistration(typeof(sbyte?), "sbyte?"),
-                        new TypeRegistration(typeof(ushort?), "ushort?"),
-                        new TypeRegistration(typeof(uint?), "uint?"),
-                        new TypeRegistration(typeof(ulong?), "ulong?"),
-                    }).ToArray()));
-
-        /// <summary>
-        /// Struct types from NodaTime package.
-        /// Many MicroElements packages uses NodaTime so moved it here.
-        /// </summary>
-        public static Lazy<TypeCache> NodaTimeTypes { get; } = CreateLazy(
-            typeSource: TypeSource.FromTypeRegistrations(
-                Enumerable.Empty<TypeRegistration>()
-                    .Concat(NodaTypeRegistrations("LocalDateTime"))
-                    .Concat(NodaTypeRegistrations("LocalDate"))
-                    .Concat(NodaTypeRegistrations("LocalTime"))
-                    .Concat(NodaTypeRegistrations("Duration"))
-                    .Concat(NodaTypeRegistrations("Instant"))
-                    .Concat(NodaTypeRegistrations("Interval"))
-                    .Concat(NodaTypeRegistrations("Offset"))
-                    .Concat(NodaTypeRegistrations("OffsetDate"))
-                    .Concat(NodaTypeRegistrations("OffsetDateTime"))
-                    .Concat(NodaTypeRegistrations("YearMonth"))
-                    .Concat(NodaTypeRegistrations("ZonedDateTime"))
-                    .Concat(NodaTypeRegistrations("AnnualDate"))
-                    .ToArray()));
-
-        private static IEnumerable<TypeRegistration> NodaTypeRegistrations(string alias) =>
-            TypeRegistration.TypeAndNullableTypeRegistrations($"NodaTime.{alias}", alias);
     }
 
     /// <summary>
@@ -883,7 +555,7 @@ namespace MicroElements.Shared
         /// <param name="alias">Type alias.</param>
         /// <param name="typeCache">Optional type cache which contains searching type. If not set then <see cref="TypeCache.Default"/> will be used.</param>
         /// <returns>Enumeration of <see cref="TypeRegistration"/>. Can be empty if type was not found.</returns>
-        public static IEnumerable<TypeRegistration> TypeAndNullableTypeRegistrations(string fullName, string? alias = null, TypeCache? typeCache = null)
+        public static IEnumerable<TypeRegistration> TypeAndNullableTypeRegistrations(string fullName, string? alias = null, ITypeCache? typeCache = null)
         {
             Type? type = (typeCache ?? TypeCache.Default.Value).GetByAliasOrFullName(fullName);
             if (type != null)
@@ -899,27 +571,26 @@ namespace MicroElements.Shared
     }
 
     /// <summary>
-    /// Extension methods for <see cref="TypeCache"/>.
+    /// Provides methods for filtering.
     /// </summary>
-    public static class TypeCacheExtensions
+    internal static class Filtering
     {
-        /// <summary>
-        /// Gets type by alias or fullName from <paramref name="typeCache"/>.
-        /// </summary>
-        /// <param name="typeCache">Source type cache.</param>
-        /// <param name="typeName">Type alias or fullName.</param>
-        /// <returns>Type or null.</returns>
-        public static Type? GetByAliasOrFullName(this TypeCache typeCache, string typeName)
+        internal static string WildcardToRegex(string pat) => "^" + Regex.Escape(pat).Replace(@"\*", ".*").Replace(@"\?", ".") + "$";
+
+        internal static bool FileNameMatchesPattern(string filename, string pattern) => Regex.IsMatch(Path.GetFileName(filename) ?? string.Empty, WildcardToRegex(pattern));
+
+        internal static IEnumerable<T> IncludeByPatterns<T>(this IEnumerable<T> values, Func<T, string> filterComponent, IReadOnlyCollection<string>? includePatterns = null)
         {
-            Type? type = typeCache.GetByAlias(typeName);
-            if (type != null)
-                return type;
+            if (includePatterns == null)
+                return values;
+            return values.Where(value => includePatterns.Any(pattern => FileNameMatchesPattern(filterComponent(value), pattern)));
+        }
 
-            type = typeCache.GetByFullName(typeName);
-            if (type != null)
-                return type;
-
-            return Type.GetType(typeName);
+        internal static IEnumerable<T> ExcludeByPatterns<T>(this IEnumerable<T> values, Func<T, string> filterComponent, IReadOnlyCollection<string>? excludePatterns = null)
+        {
+            if (excludePatterns == null)
+                return values;
+            return values.Where(value => excludePatterns.Any(excludePattern => !FileNameMatchesPattern(filterComponent(value), excludePattern)));
         }
     }
 }
