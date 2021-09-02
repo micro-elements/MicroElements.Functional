@@ -467,23 +467,26 @@ namespace MicroElements.Functional
                         continue;
                     }
 
-                    string textValue = token.Format != null ?
+                    string? textValue = token.Format != null ?
                         RenderValueWithFormat(token, propValue) :
                         RenderToString(propValue);
 
-                    if (token.Alignment != 0)
+                    if (textValue != null)
                     {
-                        output.Write($"{{0,{token.Alignment}}}", textValue);
-                    }
-                    else
-                    {
-                        output.WriteText(textValue);
+                        if (token.Alignment != 0)
+                        {
+                            output.Write($"{{0,{token.Alignment}}}", textValue);
+                        }
+                        else
+                        {
+                            output.WriteText(textValue);
+                        }
                     }
                 }
             }
         }
 
-        private string RenderValueWithFormat(Token token, object propValue)
+        private string? RenderValueWithFormat(Token token, object propValue)
         {
             var formats = ParseFormats(token.Format);
             foreach (var format in formats)
@@ -495,23 +498,20 @@ namespace MicroElements.Functional
             return RenderToString(propValue);
         }
 
-        private static string RenderToString(object propValue, string format = null)
+        private static string? RenderToString(object? propValue, string? format = null)
         {
+            if (propValue is null)
+                return null;
+
             if (propValue is string textValue)
-            {
                 return textValue;
-            }
 
             if (format != null && propValue is IFormattable formattable)
             {
-                textValue = formattable.ToString(format, null);
-            }
-            else
-            {
-                textValue = propValue.ToString();
+                return formattable.ToString(format, null);
             }
 
-            return textValue;
+            return propValue.ToString();
         }
 
         /// <summary>
@@ -674,7 +674,7 @@ namespace MicroElements.Functional
         /// </summary>
         /// <param name="value">Input value.</param>
         /// <returns></returns>
-        object Render(object value);
+        object Render(object? value);
     }
 
     /// <summary>
@@ -690,13 +690,13 @@ namespace MicroElements.Functional
         protected abstract string RenderString(string textValue);
 
         /// <inheritdoc />
-        public object Render(object value)
+        public object Render(object? value)
         {
             string text = ValueToString(value);
             return RenderString(text);
         }
 
-        private static string ValueToString(object value)
+        private static string ValueToString(object? value)
         {
             if (value == null)
                 return string.Empty;

@@ -1,3 +1,6 @@
+# 1.11.0
+- Fixed MessageTemplate bug with null property value
+
 # 1.10.0
 - StringFormatter.DefaultFormatValue supports collections, and some tuple types
 

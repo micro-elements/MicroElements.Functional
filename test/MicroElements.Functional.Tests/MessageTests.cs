@@ -41,6 +41,15 @@ namespace MicroElements.Functional.Tests
         }
 
         [Fact]
+        public void message_template_with_null_value()
+        {
+            var message = new Message("User '{Name}' created.")
+                .WithProperty("Name", null);
+
+            message.FormattedMessage.Should().Be("User '' created.");
+        }
+
+        [Fact]
         public void Test3()
         {
             var timestamp = new DateTimeOffset(2019, 05, 09, 10, 40, 55, TimeSpan.Zero);
