@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using MicroElements.CodeContracts;
+using MicroElements.Reflection.ObjectExtensions;
 
 namespace MicroElements.Functional
 {

@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using MicroElements.CodeContracts;
 using static MicroElements.Functional.Prelude;
 
 namespace MicroElements.Functional

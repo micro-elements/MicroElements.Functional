@@ -1,5 +1,7 @@
 ﻿using System;
 using FluentAssertions;
+using MicroElements.Reflection.ObjectExtensions;
+using MicroElements.Reflection.TypeExtensions;
 using MicroElements.Shared;
 using NodaTime;
 using Xunit;

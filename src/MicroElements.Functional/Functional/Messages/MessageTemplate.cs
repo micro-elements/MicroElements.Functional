@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MicroElements.CodeContracts;
 
 //using TextSpan = System.ReadOnlySpan<char>; //todo: remove after performance tests (span has no perf win...)
 using TextSpan = System.String;

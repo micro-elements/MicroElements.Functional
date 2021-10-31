@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using MicroElements.CodeContracts;
 
 namespace MicroElements.Functional
 {
@@ -39,7 +40,6 @@ namespace MicroElements.Functional
         /// <exception cref="ArgumentNullException">value is null.</exception>
         public CanNotBeNull([DisallowNull] T value)
         {
-            // AssertArgumentNotNull is from MicroElements.Functional
             _value = value.AssertArgumentNotNull(nameof(value));
             _isInitialized = true;
         }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using FluentAssertions;
+using MicroElements.CodeContracts;
 using Xunit;
 
 namespace MicroElements.Functional.Tests

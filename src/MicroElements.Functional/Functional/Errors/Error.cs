@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using MicroElements.CodeContracts;
 
 namespace MicroElements.Functional
 {

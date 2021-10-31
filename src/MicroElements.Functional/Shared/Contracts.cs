@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
+using MicroElements.Reflection.ObjectExtensions;
 
 // ReSharper disable once CheckNamespace
 namespace MicroElements.Functional
@@ -25,21 +26,5 @@ namespace MicroElements.Functional
             => result.IsNull()
                 ? throw new ResultIsNullException()
                 : result;
-
-        /// <summary>
-        /// Checks that argument of an operation is not null.
-        /// </summary>
-        /// <typeparam name="T">Argument type.</typeparam>
-        /// <param name="arg">The argument.</param>
-        /// <param name="name">The argument name.</param>
-        /// <returns>NotNull arg or throws <see cref="ArgumentNullException"/>.</returns>
-        /// <exception cref="ArgumentNullException">The argument is null.</exception>
-        [return: NotNull]
-        public static T AssertArgumentNotNull<T>([AllowNull] [NoEnumeration] this T arg, [InvokerParameterName] string name)
-        {
-            if (arg.IsNull())
-                throw new ArgumentNullException(name);
-            return arg;
-        }
     }
 }

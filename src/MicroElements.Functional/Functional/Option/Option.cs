@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using MicroElements.Reflection.ObjectExtensions;
 
 namespace MicroElements.Functional
 {

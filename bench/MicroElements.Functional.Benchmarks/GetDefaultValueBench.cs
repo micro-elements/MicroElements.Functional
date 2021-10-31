@@ -1,6 +1,8 @@
 ﻿using System;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
+using MicroElements.Reflection.CodeCompiler;
+using MicroElements.Reflection.TypeExtensions;
 
 namespace MicroElements.Functional.Benchmarks
 {

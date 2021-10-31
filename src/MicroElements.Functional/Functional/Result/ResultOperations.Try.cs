@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using MicroElements.CodeContracts;
 
 namespace MicroElements.Functional
 {
