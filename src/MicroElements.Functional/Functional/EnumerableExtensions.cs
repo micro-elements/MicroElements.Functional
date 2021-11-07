@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using JetBrains.Annotations;
 using MicroElements.CodeContracts;
 using MicroElements.Reflection.TypeCheck;
 
@@ -16,43 +14,6 @@ namespace MicroElements.Functional
     /// </summary>
     public static class EnumerableExtensions
     {
-        /// <summary>
-        /// Returns not null <see cref="IEnumerable{T}"/>.
-        /// </summary>
-        /// <typeparam name="T">Item type.</typeparam>
-        /// <param name="items"><see cref="IEnumerable{T}"/> or null.</param>
-        /// <returns>The same items or empty enumeration.</returns>
-        [LinqTunnel]
-        public static IEnumerable<T> NotNull<T>([NoEnumeration] this IEnumerable<T>? items) =>
-            items ?? Array.Empty<T>();
-
-        /// <summary>
-        /// Returns not null <see cref="IReadOnlyCollection{T}"/>.
-        /// </summary>
-        /// <typeparam name="T">Item type.</typeparam>
-        /// <param name="items"><see cref="IReadOnlyCollection{T}"/> or null.</param>
-        /// <returns>The same items or empty collection.</returns>
-        public static IReadOnlyCollection<T> NotNull<T>(IReadOnlyCollection<T>? items) =>
-            items ?? Array.Empty<T>();
-
-        /// <summary>
-        /// Returns not null <see cref="IReadOnlyList{T}"/>.
-        /// </summary>
-        /// <typeparam name="T">Item type.</typeparam>
-        /// <param name="items"><see cref="IReadOnlyList{T}"/> or null.</param>
-        /// <returns>The same items or empty list.</returns>
-        public static IReadOnlyList<T> NotNull<T>(IReadOnlyList<T>? items) =>
-            items ?? Array.Empty<T>();
-
-        /// <summary>
-        /// Returns not null Array of T.
-        /// </summary>
-        /// <typeparam name="T">Item type.</typeparam>
-        /// <param name="items">array or null.</param>
-        /// <returns>The same items or empty array.</returns>
-        public static T[] NotNull<T>(T[]? items) =>
-            items ?? Array.Empty<T>();
-
         /// <summary>
         /// Returns the first element of the sequence that satisfies a condition or None if no such element is found.
         /// It's like FirstOrDefault but returns Option.
@@ -108,36 +69,5 @@ namespace MicroElements.Functional
             action(materializedItems);
             return materializedItems;
         }
-
-        /// <summary>
-        /// Iterates values.
-        /// Can be used to replace <see cref="Enumerable.ToArray{TSource}"/> if no need to create array but only iterate.
-        /// </summary>
-        /// <typeparam name="T">Value type.</typeparam>
-        /// <param name="values">Enumeration.</param>
-        public static void Iterate<T>(this IEnumerable<T> values)
-        {
-            values.Iterate(DoNothing);
-        }
-
-        /// <summary>
-        /// Iterates values and executes <paramref name="action"/> for each value.
-        /// </summary>
-        /// <typeparam name="T">Value type.</typeparam>
-        /// <param name="values">Enumeration.</param>
-        /// <param name="action">Action to execute.</param>
-        public static void Iterate<T>(this IEnumerable<T> values, Action<T> action)
-        {
-            values.AssertArgumentNotNull(nameof(values));
-            action.AssertArgumentNotNull(nameof(action));
-
-            foreach (T value in values)
-            {
-                action(value);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void DoNothing<T>(T value) { }
     }
 }

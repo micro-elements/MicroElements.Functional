@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using MicroElements.Collections.TwoLayerCache;
 
 namespace MicroElements.Functional
 {
@@ -89,7 +90,7 @@ namespace MicroElements.Functional
                         else
                         {
                             result = func(a);
-                            cache.Add(a, result);
+                            cache.TryAdd(a, result);
                         }
                     }
                     syncMap.TryRemove(a, out sync);

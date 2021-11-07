@@ -9,6 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MicroElements.CodeContracts.Sources" Version="1.0.0" PrivateAssets="all" />
+    <PackageReference Include="MicroElements.Collections.Sources" Version="1.1.0" PrivateAssets="all" />
+    <PackageReference Include="MicroElements.Formatting.Sources" Version="1.0.0" PrivateAssets="all" />
     <PackageReference Include="MicroElements.Reflection.Sources" Version="1.1.0" PrivateAssets="all" />
   </ItemGroup>
 

@@ -8,6 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="MessageTemplate\**" />
+    <EmbeddedResource Remove="MessageTemplate\**" />
+    <None Remove="MessageTemplate\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoFixture" Version="4.8.0" />
     <PackageReference Include="FluentAssertions" Version="5.6.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
@@ -18,10 +24,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\MicroElements.Functional\MicroElements.Functional.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="MessageTemplate\" />
   </ItemGroup>
 
 </Project>

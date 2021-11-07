@@ -1,3 +1,6 @@
+# 2.0.0-beta.1
+- Most of shared code base moved to MicroElements.Shared projects: MicroElements.CodeContracts.Sources, MicroElements.Collections.Sources, MicroElements.Formatting.Sources, MicroElements.Reflection.Sources
+
 # 1.11.0
 - Fixed MessageTemplate bug with null property value
 
